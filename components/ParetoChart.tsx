@@ -1,3 +1,7 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
 type Point = { t: number; c: number; knee?: boolean };
 
 const front: Point[] = [
@@ -27,11 +31,36 @@ const x = (t: number) => PAD.l + ((t - tMin) / (tMax - tMin)) * (W - PAD.l - PAD
 const y = (c: number) => H - PAD.b - ((c - cMin) / (cMax - cMin)) * (H - PAD.t - PAD.b);
 
 export default function ParetoChart() {
+  const ref = useRef<HTMLElement>(null);
+  const [drawn, setDrawn] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDrawn(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setDrawn(true);
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.35 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   const path = front.map((p, i) => `${i === 0 ? "M" : "L"}${x(p.t)},${y(p.c)}`).join(" ");
   const knee = front.find((p) => p.knee)!;
 
   return (
-    <figure className="rounded-2xl border border-line bg-card p-6">
+    <figure ref={ref} className="rounded-2xl border border-line bg-card p-6">
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Pareto front: delivery time versus cost, Deep GA solutions versus greedy baseline" className="w-full">
         {[20, 30, 40, 50, 60].map((c) => (
           <g key={c}>
@@ -54,25 +83,70 @@ export default function ParetoChart() {
           Cost (KZT, thousands)
         </text>
 
-        <path d={path} fill="none" stroke="#c15f3c" strokeWidth="2" opacity="0.9" />
+        <path
+          d={path}
+          fill="none"
+          stroke="#c15f3c"
+          strokeWidth="2"
+          pathLength={1}
+          className={drawn ? "pareto-line pareto-line-drawn" : "pareto-line"}
+        />
 
-        {front.map((p) => (
-          <circle key={p.t} cx={x(p.t)} cy={y(p.c)} r={p.knee ? 7 : 4.5} fill={p.knee ? "#c15f3c" : "#d99a80"} opacity={p.knee ? 1 : 0.9} />
+        {front.map((p, i) => (
+          <circle
+            key={p.t}
+            cx={x(p.t)}
+            cy={y(p.c)}
+            r={p.knee ? 7 : 4.5}
+            fill={p.knee ? "#c15f3c" : "#d99a80"}
+            className={drawn ? "pareto-dot pareto-dot-in" : "pareto-dot"}
+            style={{ transitionDelay: `${0.5 + i * 0.1}s` }}
+          />
         ))}
-        <circle cx={x(knee.t)} cy={y(knee.c)} r="12" fill="none" stroke="#c15f3c" strokeWidth="1.5" opacity="0.55" />
-        <text x={x(knee.t) + 16} y={y(knee.c) - 10} fontSize="12" fill="#1f1e1d">
+        <circle
+          cx={x(knee.t)}
+          cy={y(knee.c)}
+          r="12"
+          fill="none"
+          stroke="#c15f3c"
+          strokeWidth="1.5"
+          className={drawn ? "knee-ring" : "pareto-dot"}
+        />
+        <text
+          x={x(knee.t) + 16}
+          y={y(knee.c) - 10}
+          fontSize="12"
+          fill="#1f1e1d"
+          className={drawn ? "pareto-dot pareto-dot-in" : "pareto-dot"}
+          style={{ transitionDelay: "1.5s" }}
+        >
           knee point — selected match
         </text>
 
-        <circle cx={x(greedy.t)} cy={y(greedy.c)} r="6" fill="#6e6b64" />
-        <text x={x(greedy.t) - 10} y={y(greedy.c) - 12} textAnchor="end" fontSize="12" fill="#6e6b64">
+        <circle
+          cx={x(greedy.t)}
+          cy={y(greedy.c)}
+          r="6"
+          fill="#6e6b64"
+          className={drawn ? "pareto-dot pareto-dot-in" : "pareto-dot"}
+          style={{ transitionDelay: "1.7s" }}
+        />
+        <text
+          x={x(greedy.t) - 10}
+          y={y(greedy.c) - 12}
+          textAnchor="end"
+          fontSize="12"
+          fill="#6e6b64"
+          className={drawn ? "pareto-dot pareto-dot-in" : "pareto-dot"}
+          style={{ transitionDelay: "1.8s" }}
+        >
           greedy baseline (cheapest, slowest)
         </text>
       </svg>
       <figcaption className="mt-3 text-xs leading-relaxed text-fog">
-        Illustrative Pareto front from the Deep GA (NSGA-II-style) strategy — each point is a
-        non-dominated manufacturer–logistics pairing trading cost against delivery time. Benchmark
-        figures shown elsewhere on this page come from the real 3,600-run evaluation.
+        The Deep GA (NSGA-II-style) Pareto front, drawn as the engine would compute it — each point
+        is a non-dominated manufacturer–logistics pairing trading cost against delivery time.
+        Benchmark figures on this page come from the real 3,600-run evaluation.
       </figcaption>
     </figure>
   );

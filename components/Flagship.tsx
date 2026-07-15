@@ -1,5 +1,6 @@
 import Reveal from "@/components/Reveal";
 import ParetoChart from "@/components/ParetoChart";
+import CountUp from "@/components/CountUp";
 import { flagship } from "@/lib/profile";
 
 export default function Flagship() {
@@ -41,7 +42,9 @@ export default function Flagship() {
           <div className="mt-16 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 lg:grid-cols-6">
             {flagship.metrics.map((m) => (
               <div key={m.label} className="bg-card p-6">
-                <p className="font-serif text-3xl font-semibold text-ink">{m.value}</p>
+                <p className="font-serif text-3xl font-semibold text-ink">
+                  <CountUp value={m.value} />
+                </p>
                 <p className="mt-2 text-xs leading-snug text-fog">{m.label}</p>
               </div>
             ))}
@@ -83,8 +86,9 @@ export default function Flagship() {
               href={flagship.liveUrl}
               target="_blank"
               rel="noreferrer"
-              className="rounded-full bg-ink px-6 py-3 text-sm font-medium text-cream transition hover:bg-clay"
+              className="btn-lift inline-flex items-center gap-2.5 rounded-full bg-ink px-6 py-3 text-sm font-medium text-cream transition hover:bg-clay"
             >
+              <span className="live-dot" aria-hidden="true" />
               Live demo ↗
             </a>
             <a
@@ -104,6 +108,10 @@ export default function Flagship() {
               Source &amp; README ↗
             </a>
           </div>
+          <p className="mt-4 text-xs text-fog">
+            Deployed and running right now — the free-tier API cold-starts in ~50 s on first
+            request.
+          </p>
         </Reveal>
       </div>
     </section>
