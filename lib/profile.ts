@@ -80,8 +80,8 @@ export const projects: Project[] = [
   {
     name: "Todo Web App",
     blurb:
-      "Full-stack task-management app with authentication, role-based access, and a responsive UI — refactored for cleaner structure and maintainability.",
-    stack: ["TypeScript", "Node.js", "Express", "React"],
+      "Full-stack task-management app with JWT authentication, lists, groups, and role-based access — modular PHP backend, MySQL, vanilla JS (ESM) frontend, Dockerized local setup.",
+    stack: ["PHP 8.2", "MySQL", "JavaScript (ESM)", "JWT", "Docker"],
     repoUrl: "https://github.com/Luxenonbeterris/todo-webapp-refactored",
   },
 ];
