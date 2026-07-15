@@ -1,19 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #0a0d13;
-  --color-panel: #10141d;
-  --color-card: #131a26;
-  --color-line: #202a3a;
-  --color-fog: #8b95a7;
-  --color-snow: #e9edf4;
-  --color-accent: #f97316;
-  --color-amber: #fdba74;
+  --color-oat: #f0eee6;
+  --color-card: #faf9f5;
+  --color-ink: #1f1e1d;
+  --color-fog: #6e6b64;
+  --color-line: #dedbd1;
+  --color-clay: #c15f3c;
+  --color-coal: #191919;
+  --color-cream: #f5f3ec;
 
   --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
-    monospace;
+  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
 }
 
 html {
@@ -21,34 +20,20 @@ html {
 }
 
 body {
-  background-color: var(--color-ink);
-  color: var(--color-snow);
+  background-color: var(--color-oat);
+  color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
 ::selection {
-  background: rgba(249, 115, 22, 0.35);
-}
-
-.hero-glow {
-  background:
-    radial-gradient(1100px 480px at 18% -10%, rgba(249, 115, 22, 0.14), transparent 60%),
-    radial-gradient(900px 420px at 85% 0%, rgba(56, 130, 246, 0.08), transparent 55%);
-}
-
-.grid-lines {
-  background-image:
-    linear-gradient(rgba(139, 149, 167, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 149, 167, 0.05) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
+  background: rgba(193, 95, 60, 0.22);
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -61,7 +46,7 @@ body {
 }
 
 .reveal.is-in {
-  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  animation: rise 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {
