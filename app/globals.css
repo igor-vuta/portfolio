@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0a0d13;
+  --color-panel: #10141d;
+  --color-card: #131a26;
+  --color-line: #202a3a;
+  --color-fog: #8b95a7;
+  --color-snow: #e9edf4;
+  --color-accent: #f97316;
+  --color-amber: #fdba74;
+
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas,
+    monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ink);
+  color: var(--color-snow);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(249, 115, 22, 0.35);
+}
+
+.hero-glow {
+  background:
+    radial-gradient(1100px 480px at 18% -10%, rgba(249, 115, 22, 0.14), transparent 60%),
+    radial-gradient(900px 420px at 85% 0%, rgba(56, 130, 246, 0.08), transparent 55%);
+}
+
+.grid-lines {
+  background-image:
+    linear-gradient(rgba(139, 149, 167, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 149, 167, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 85%);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.reveal {
+  opacity: 0;
+}
+
+.reveal.is-in {
+  animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+  }
+  .reveal.is-in {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
