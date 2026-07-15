@@ -74,15 +74,23 @@ export const projects: Project[] = [
     name: "Qubly Landing Page",
     blurb:
       "Pixel-perfect, responsive landing page implemented from a Figma design — spacing, typography, and breakpoints matched to spec.",
-    stack: ["HTML", "CSS", "JavaScript", "Figma"],
-    liveUrl: "https://luxenonbeterris.github.io/qubly-landing/",
+    stack: ["HTML", "Sass", "JavaScript", "Bootstrap", "Figma"],
+    liveUrl: "https://igor-vuta.github.io/qubly-landing/",
+    repoUrl: "https://github.com/igor-vuta/qubly-landing",
+  },
+  {
+    name: "Currency Exchange Bot",
+    blurb:
+      "Multilingual Telegram bot for currency rates, conversions, and financial insights — dual data sources (exchange-rate API + Central Bank data), deployed on Heroku.",
+    stack: ["Python", "Telegram Bot API", "REST", "Heroku"],
+    repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
   },
   {
     name: "Todo Web App",
     blurb:
       "Full-stack task-management app with JWT authentication, lists, groups, and role-based access — modular PHP backend, MySQL, vanilla JS (ESM) frontend, Dockerized local setup.",
     stack: ["PHP 8.2", "MySQL", "JavaScript (ESM)", "JWT", "Docker"],
-    repoUrl: "https://github.com/Luxenonbeterris/todo-webapp-refactored",
+    repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
   },
 ];
 
