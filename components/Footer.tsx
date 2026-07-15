@@ -1,4 +1,5 @@
 import Reveal from "@/components/Reveal";
+import CopyEmail from "@/components/CopyEmail";
 import { identity } from "@/lib/profile";
 
 export default function Footer() {
@@ -16,10 +17,11 @@ export default function Footer() {
           <div className="mt-9 flex flex-wrap gap-3">
             <a
               href={`mailto:${identity.email}`}
-              className="rounded-full bg-cream px-6 py-3 text-sm font-medium text-coal transition hover:bg-clay hover:text-cream"
+              className="btn-lift rounded-full bg-cream px-6 py-3 text-sm font-medium text-coal transition hover:bg-clay hover:text-cream"
             >
               {identity.email}
             </a>
+            <CopyEmail email={identity.email} />
             <a
               href={identity.github}
               target="_blank"
