@@ -3,20 +3,20 @@ import { identity } from "@/lib/profile";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="border-t border-line/60 bg-panel/40">
+    <footer id="contact" className="bg-coal text-cream">
       <div className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24">
         <Reveal>
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-accent">Contact</p>
-          <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-5xl">
+          <p className="text-xs font-medium uppercase tracking-[0.18em] text-clay">Contact</p>
+          <h2 className="mt-4 font-serif text-4xl font-semibold tracking-tight sm:text-6xl">
             Let&apos;s build something.
           </h2>
-          <p className="mt-4 max-w-xl text-fog">
+          <p className="mt-5 max-w-xl leading-relaxed text-cream/70">
             {identity.availability}. The fastest way to reach me is email — I reply quickly.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap gap-3">
             <a
               href={`mailto:${identity.email}`}
-              className="rounded-xl bg-accent px-5 py-3 text-sm font-semibold text-ink transition hover:bg-amber"
+              className="rounded-full bg-cream px-6 py-3 text-sm font-medium text-coal transition hover:bg-clay hover:text-cream"
             >
               {identity.email}
             </a>
@@ -24,7 +24,7 @@ export default function Footer() {
               href={identity.github}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl border border-line px-5 py-3 text-sm font-medium transition hover:border-accent/60 hover:text-amber"
+              className="rounded-full border border-cream/25 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
             >
               GitHub ↗
             </a>
@@ -32,21 +32,21 @@ export default function Footer() {
               href={identity.linkedin}
               target="_blank"
               rel="noreferrer"
-              className="rounded-xl border border-line px-5 py-3 text-sm font-medium transition hover:border-accent/60 hover:text-amber"
+              className="rounded-full border border-cream/25 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
             >
               LinkedIn ↗
             </a>
           </div>
         </Reveal>
-        <div className="mt-16 flex flex-col justify-between gap-3 border-t border-line/60 pt-6 text-xs text-fog sm:flex-row">
+        <div className="mt-20 flex flex-col justify-between gap-3 border-t border-cream/15 pt-6 text-xs text-cream/60 sm:flex-row">
           <p>© 2026 Igor Vuta · {identity.location}</p>
           <p>
-            Built with Next.js, TypeScript & Tailwind CSS — statically exported.{" "}
+            Built with Next.js, TypeScript &amp; Tailwind CSS — statically exported.{" "}
             <a
               href={`${identity.github}/portfolio`}
               target="_blank"
               rel="noreferrer"
-              className="text-amber transition hover:text-accent"
+              className="text-clay transition hover:underline"
             >
               View source ↗
             </a>
