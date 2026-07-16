@@ -3,7 +3,7 @@ export const identity = {
   role: "Software Developer",
   stackLine: "Python · TypeScript · FastAPI · Next.js",
   location: "Leicester, UK",
-  degree: "BSc (Hons) Computer Science, De Montfort University — 2026",
+  degree: "BSc (Hons) Computer Science, First-Class Honours — De Montfort University, 2026",
   email: "igor_vuta@proton.me",
   github: "https://github.com/igor-vuta",
   linkedin: "https://www.linkedin.com/in/igor-vuta-b88017390",
