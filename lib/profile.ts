@@ -81,16 +81,34 @@ export const projects: Project[] = [
   {
     name: "Currency Exchange Bot",
     blurb:
-      "Multilingual Telegram bot for currency rates, conversions, and financial insights — dual data sources (exchange-rate API + Central Bank data), deployed on Heroku.",
-    stack: ["Python", "Telegram Bot API", "REST", "Heroku"],
+      "Button-only multilingual Telegram bot for live rates and conversions — no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
+    stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
+    liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
     repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
   },
   {
     name: "Todo Web App",
     blurb:
-      "Full-stack task-management app with JWT authentication, lists, groups, and role-based access — modular PHP backend, MySQL, vanilla JS (ESM) frontend, Dockerized local setup.",
+      "Full-stack task-management app with JWT authentication, lists, groups, and role-based access — modular PHP backend, MySQL, vanilla JS (ESM) frontend, Dockerized and continuously deployed to Railway.",
     stack: ["PHP 8.2", "MySQL", "JavaScript (ESM)", "JWT", "Docker"],
+    liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
+  },
+  {
+    name: "Vue Folder Tree",
+    blurb:
+      "Recursive folder-tree component for Vue 3 with animated expand/collapse, full keyboard navigation, ARIA roles for screen readers, and optional checkboxes — zero runtime dependencies.",
+    stack: ["Vue 3", "Vite", "Accessibility (ARIA)", "GitHub Pages"],
+    liveUrl: "https://igor-vuta.github.io/vue-folder-tree/",
+    repoUrl: "https://github.com/igor-vuta/vue-folder-tree",
+  },
+  {
+    name: "React Starter Pro",
+    blurb:
+      "Opinionated React 19 + Vite starter with the tedious parts already wired up: Tailwind CSS 4, ESLint, Prettier, Husky and lint-staged pre-commit hooks, and a GitHub Actions deploy pipeline.",
+    stack: ["React 19", "Vite", "Tailwind CSS 4", "ESLint", "GitHub Actions"],
+    liveUrl: "https://igor-vuta.github.io/react-starter-pro/",
+    repoUrl: "https://github.com/igor-vuta/react-starter-pro",
   },
 ];
 
