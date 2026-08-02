@@ -230,39 +230,43 @@ document.documentElement.classList.add('js');
      flying two pixels up its own faceplate reads as a glitch, not a
      gesture. Their native navigation is untouched.
 
-     Where it lands is a hash of the destination, not a random number. The
-     brief allows randomness only in ambient drift and never in anything
-     the user clicks — a control that traced a different arc on every press
-     could not be recognised. Same href, same arc, always. Swap the hash
-     for Math.random() below if variation is ever wanted.
+     The flight is random, per press, at the owner's explicit direction
+     (2026-08-03) — a released balloon, not an instrument gesture. This
+     consciously overrides the project rule that nothing the user clicks
+     may be random; the rule stands everywhere else, this one animation is
+     the sanctioned exception. Duration 1.2-1.9s, drift, sway, jitter, and
+     rotation are all drawn fresh each time, so no two releases match.
 
-     The path is sampled: 26 transform+scale keyframes along a sine whose
-     amplitude damps to zero on arrival, handed to the Web Animations API,
-     so the compositor runs the flight and no JS executes per frame.
+     The shape is still a balloon's, not noise: one slow sway carries the
+     body, a smaller fast wobble roughens it, rotation follows the sway
+     like a pendant on a string, and the rise accelerates slightly the way
+     a balloon does once it is free. All of it is sampled into 40 keyframes
+     and handed to the Web Animations API, so the compositor runs the
+     flight and no JS executes per frame — random in parameters, still
+     zero-cost in motion.
 
-     External links hold their tab until the ghost lands. The first version
-     let them navigate immediately on the theory that delaying a new tab
-     risks the popup blocker — and the result was that the flight always
-     played in a tab the user had just left, which is the same as no flight
-     at all. The blocker risk is real but bounded: browsers honour
-     window.open for several seconds of transient user activation after a
-     genuine click, and the flight takes half of one. If a blocker eats it
-     anyway, the fallback navigates in place — a same-tab landing beats a
-     control that swallowed the click. */
-  var T_MS = 520, T_AMP = 40, T_TOP = 28, T_END_SCALE = 0.1;
+     External links hold their tab until three quarters of the flight has
+     played, then open. Immediate navigation put the whole animation in a
+     tab the user had just left; holding to the very end of a 1.9s flight
+     punishes the click. Blocker risk is bounded — browsers honour
+     window.open for several seconds of transient activation — and if one
+     eats it anyway the fallback navigates in place. */
+  var T_TOP = 24;
 
-  function hashOf(s) {
-    var h = 0;
-    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
-    return h;
-  }
+  function rnd(a, b) { return a + Math.random() * (b - a); }
 
-  function trail(el, key) {
+  function trail(el) {
     var r = el.getBoundingClientRect();
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
-    // 0.15-0.85 of the viewport, so it never lands under the header's
-    // wordmark or off the edge.
-    var ex = innerWidth * (0.15 + (hashOf(key) % 71) / 100);
+
+    var dur = rnd(1200, 1900);
+    // Endpoint: a drift from the release point, clamped inside 8-92% of the
+    // viewport so a balloon released near an edge doesn't leave the page.
+    var ex = Math.min(innerWidth * 0.92, Math.max(innerWidth * 0.08,
+      cx + rnd(-180, 180)));
+    var swayAmp = rnd(30, 72), swayHz = rnd(1.1, 2.1), swayPh = rnd(0, 6.283);
+    var jitAmp = rnd(8, 22), jitHz = rnd(2.8, 4.8), jitPh = rnd(0, 6.283);
+    var rotAmp = rnd(5, 13), rotPh = rnd(0, 6.283);
 
     var ghost = el.cloneNode(true);
     ghost.removeAttribute('id');
@@ -277,31 +281,39 @@ document.documentElement.classList.add('js');
     ghost.style.height = r.height + 'px';
     document.body.appendChild(ghost);
 
-    var frames = [], STEPS = 26;
+    var frames = [], STEPS = 40;
     for (var s = 0; s <= STEPS; s++) {
       var t = s / STEPS;
-      var x = cx + (ex - cx) * t + Math.sin(t * Math.PI * 3) * T_AMP * (1 - t);
-      var y = cy + (T_TOP - cy) * t;
-      var sc = 1 - (1 - T_END_SCALE) * t;
+      // Rise accelerates slightly (t^1.15): slow lift-off, confident climb.
+      var rise = Math.pow(t, 1.15);
+      var x = cx + (ex - cx) * t
+        + Math.sin(t * swayHz * 6.283 + swayPh) * swayAmp * (1 - 0.35 * t)
+        + Math.sin(t * jitHz * 6.283 + jitPh) * jitAmp;
+      var y = cy + (T_TOP - cy) * rise;
+      var sc = 1 - 0.85 * t;
+      // Rotation rides the sway's rhythm — a pendant under a balloon, not
+      // a tumble.
+      var rot = Math.sin(t * swayHz * 6.283 + rotPh) * rotAmp * (1 - 0.3 * t);
       frames.push({
-        transform: 'translate3d(' + (x - cx).toFixed(1) + 'px,' + (y - cy).toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')',
+        transform: 'translate3d(' + (x - cx).toFixed(1) + 'px,' + (y - cy).toFixed(1) + 'px,0)'
+          + ' rotate(' + rot.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')',
         // Full presence for most of the flight, gone in the last stretch —
-        // it lands *into* the page edge rather than resting on it.
-        opacity: t < 0.8 ? 1 : (1 - t) / 0.2
+        // it escapes past the page edge rather than resting on it.
+        opacity: t < 0.85 ? 1 : (1 - t) / 0.15
       });
     }
 
-    ghost.animate(frames, {
-      duration: T_MS,
-      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      fill: 'forwards'
-    });
+    // Linear timing: the physics is baked into the sampled path itself, and
+    // an easing on top would bend the balloon's rise a second time.
+    ghost.animate(frames, { duration: dur, easing: 'linear', fill: 'forwards' });
 
     el.style.opacity = '0.35';
     setTimeout(function () {
       ghost.remove();
       el.style.opacity = '';
-    }, T_MS + 120);
+    }, dur + 120);
+
+    return dur;
   }
 
   document.addEventListener('click', function (e) {
@@ -324,29 +336,38 @@ document.documentElement.classList.add('js');
     var target = anchor ? document.getElementById(href.slice(1)) : null;
 
     if (!target) {
-      trail(el, href || el.textContent || 'ctl');
+      var dur = trail(el);
       // Only http(s) links into a new tab are held for the flight. mailto
       // and plain buttons keep their own timing — delaying a mail client or
       // an in-place action buys nothing and can only break them.
       if (/^https?:/i.test(href) && el.getAttribute('target') === '_blank') {
         e.preventDefault();
         setTimeout(function () {
-          var w = window.open(href, '_blank', 'noopener,noreferrer');
-          if (!w) location.assign(href);
-        }, T_MS - 40);
+          // Never pass 'noopener' in the features string here: it makes
+          // window.open return null BY SPEC even on success, which turned
+          // the popup-blocked fallback below into "also navigate this tab,
+          // every time" — one click, two pages. Severing the opener by hand
+          // keeps the return value meaningful.
+          var w = window.open(href, '_blank');
+          if (w) { try { w.opener = null; } catch (err) {} }
+          else location.assign(href);
+        }, dur * 0.75);
       }
       return;
     }
 
     // Ours to time. scrollIntoView rather than assigning location.hash: the
     // hash does nothing when it already matches, so a second press of the
-    // same link would play the trail and then sit still.
+    // same link would play the trail and then sit still. The scroll starts
+    // 450ms in rather than after the flight — a 1.9s wait would read as a
+    // broken link, and the balloon is position:fixed, so it keeps floating
+    // serenely over the page scrolling away beneath it.
     e.preventDefault();
-    trail(el, href);
+    trail(el);
     setTimeout(function () {
       target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       history.pushState(null, '', href);
-    }, T_MS - 40);
+    }, 450);
   });
 })();
 `;
