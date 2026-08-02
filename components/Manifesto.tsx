@@ -27,11 +27,11 @@ export default function Manifesto() {
               href={flagship.repoUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="link readout text-sm"
+              className="link readout text-detail"
             >
               benchmark_evaluation.py
             </a>
-            <span className="ml-3 text-sm text-fog">— rerun it yourself</span>
+            <span className="ml-3 text-detail text-fog">— rerun it yourself</span>
           </p>
         </Reveal>
       </div>

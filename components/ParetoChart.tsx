@@ -338,7 +338,7 @@ export default function ParetoChart() {
         </tbody>
       </table>
 
-      <figcaption className="border-t border-line px-6 py-4 text-xs leading-relaxed text-fog">
+      <figcaption className="border-t border-line px-6 py-4 text-micro text-fog">
         The Deep GA (NSGA-II-style) Pareto front, drawn as the engine computes
         it — each mark is a non-dominated manufacturer–logistics pairing trading
         cost against delivery time. Benchmark figures on this page come from the

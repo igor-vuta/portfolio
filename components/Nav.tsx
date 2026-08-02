@@ -32,7 +32,7 @@ export default function Nav() {
           href="#top"
           className="flex shrink-0 items-baseline gap-2.5 no-underline"
         >
-          <span className="text-[0.9375rem] font-semibold tracking-tight text-ink">
+          <span className="text-body font-semibold tracking-tight text-ink">
             {identity.name}
           </span>
         </a>

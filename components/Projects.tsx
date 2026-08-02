@@ -19,13 +19,13 @@ export default function Projects() {
             <Reveal delay={i * 60} className="h-full">
               <article className="panel panel-interactive flex h-full flex-col">
                 <div className="border-b border-line px-6 py-3">
-                  <h3 className="text-base font-semibold tracking-tight">
+                  <h3 className="text-body font-semibold tracking-tight">
                     {p.name}
                   </h3>
                 </div>
 
                 <div className="flex flex-1 flex-col p-6">
-                  <p className="flex-1 text-sm leading-relaxed text-fog">
+                  <p className="flex-1 text-detail text-fog">
                     {p.blurb}
                   </p>
 
@@ -35,7 +35,7 @@ export default function Projects() {
                     {p.stack.map((s) => (
                       <li
                         key={s}
-                        className="well readout px-2 py-1 text-[0.6875rem] leading-none text-fog"
+                        className="well readout px-2 py-1 text-tag text-fog"
                       >
                         {s}
                       </li>

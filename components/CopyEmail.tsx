@@ -131,7 +131,7 @@ export default function CopyEmail({ email }: { email: string }) {
       {state === "failed" && (
         <span
           ref={fallbackRef}
-          className="readout select-all self-center text-sm text-clay"
+          className="readout select-all self-center text-detail text-clay"
         >
           {email}
         </span>

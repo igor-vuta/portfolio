@@ -127,13 +127,25 @@
   --spacing: 0.25rem;
 
   /* ── Type scale ──────────────────────────────────────────────────────────
-     Deliberate steps rather than a continuous ramp. Tracking tightens as size
-     grows — optically necessary, since the same tracking that reads as
-     confident at 12px reads as loose at 72px. Display sizes only, from
-     -0.02em to -0.04em; body text stays at 0. */
+     Seven steps, no continuous ramp, and nothing outside this list may appear
+     in a component. The band from `metric` down to `tag` is what actually
+     carries the page — display sizes are used five times in total.
+
+     Two rules hold across the whole scale:
+
+     Display tracking is a flat -0.03em rather than a per-step ramp. The old
+     -0.04 / -0.03 / -0.02 spread was an optical correction for a ramp that is
+     no longer there, and at these three sizes a single value reads as one
+     deliberate voice instead of three near-misses.
+
+     Line-height is 1.55 for prose and tightens as size drops, because short
+     strings do not need the leading that a 68ch paragraph does. Every step
+     carries its own, so a component never restates leading — which is what
+     the `leading-relaxed` / `leading-snug` overrides scattered through the
+     components were doing, silently overriding the scale they sat next to. */
   --text-display-xl: 4.5rem;
   --text-display-xl--line-height: 1.02;
-  --text-display-xl--letter-spacing: -0.04em;
+  --text-display-xl--letter-spacing: -0.03em;
 
   --text-display-lg: 3rem;
   --text-display-lg--line-height: 1.06;
@@ -141,16 +153,38 @@
 
   --text-display-md: 2rem;
   --text-display-md--line-height: 1.12;
-  --text-display-md--letter-spacing: -0.02em;
+  --text-display-md--letter-spacing: -0.03em;
 
-  --text-body-lg: 1.125rem;
-  --text-body-lg--line-height: 1.6;
+  /* Counting readouts. Tighter than the old text-3xl (1.875rem) it replaces,
+     and tracked in slightly so a six-cell metric row reads as one instrument
+     rather than six loose numbers. */
+  --text-metric: 1.75rem;
+  --text-metric--line-height: 1;
+  --text-metric--letter-spacing: -0.02em;
 
+  /* Ledes only. 17px, down from 18 — still clearly above body, no longer
+     drifting toward a display size. */
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.5;
+
+  /* The default. 15px, not 16. */
   --text-body: 0.9375rem;
-  --text-body--line-height: 1.6;
+  --text-body--line-height: 1.55;
 
+  /* Supporting prose: card bodies, list items, captions. Replaces Tailwind's
+     text-sm (14px) one step down. */
   --text-detail: 0.8125rem;
-  --text-detail--line-height: 1.55;
+  --text-detail--line-height: 1.5;
+
+  /* Notes and footnotes. Replaces text-xs at the same size, with leading that
+     suits two lines rather than twenty. */
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.45;
+
+  /* Single-word chips in the stack and skills lists. Set solid — these are
+     never more than one line, so leading would only pad the box. */
+  --text-tag: 0.6875rem;
+  --text-tag--line-height: 1;
 
   /* ── Motion ──────────────────────────────────────────────────────────────
      One easing curve, three durations. Mechanical: fast out of rest, settles
@@ -191,8 +225,15 @@ body {
   background-color: var(--color-ground);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  /* Prose baseline. Display sizes override this from the type scale. */
-  line-height: 1.6;
+
+  /* The document baseline, and the reason the page reads dense. --text-body
+     has been 15px since the token layer landed, but nothing applied it: the
+     body element inherited the browser's 16px, so every element that didn't
+     name a size explicitly was one step too large. Declared here, the scale
+     finally reaches the elements that don't ask for it. */
+  font-size: var(--text-body);
+  line-height: 1.55;
+
   font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -315,11 +356,16 @@ body {
 /* Readout: numerals that update, animate, or need to be compared down a
    column. Tabular figures and slashed zero — a counting metric must not
    reflow its own width mid-count. */
+/* Tracking deliberately not set here. `.readout` is unlayered and Tailwind's
+   utilities are not, so an unlayered letter-spacing on this class silently
+   outranks every `text-*` step it is combined with — the blanket -0.01em it
+   used to carry would have overridden the metric step's -0.02em on the one
+   element that step exists for. Size steps own tracking; this class owns the
+   face and the figures. */
 .readout {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums slashed-zero;
   font-feature-settings: "tnum" 1, "zero" 1;
-  letter-spacing: -0.01em;
 }
 
 /* Display headings. Tight, unromantic, set in the sans.

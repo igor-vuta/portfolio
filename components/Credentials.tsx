@@ -19,8 +19,8 @@ export default function Credentials() {
         {experience.map((job) => (
           <Reveal key={job.company}>
             <LabelledPanel label={job.company} note={job.period}>
-              <p className="text-sm font-medium text-clay">{job.role}</p>
-              <ul className="mt-4 space-y-2.5 text-sm leading-relaxed text-fog">
+              <p className="text-detail font-medium text-clay">{job.role}</p>
+              <ul className="mt-4 space-y-2.5 text-detail text-fog">
                 {job.points.map((pt) => (
                   <li key={pt} className="flex gap-3">
                     {/* Marker is decorative; the <li> already conveys
@@ -41,8 +41,8 @@ export default function Credentials() {
           <ul className="flex h-full flex-col gap-4">
             {certifications.map((c) => (
               <li key={c.name} className="panel flex-1 p-5">
-                <h3 className="text-sm font-semibold leading-snug">{c.name}</h3>
-                <p className="mt-1.5 text-xs leading-relaxed text-fog">
+                <h3 className="text-detail font-semibold">{c.name}</h3>
+                <p className="mt-1.5 text-micro text-fog">
                   {c.issuer}
                 </p>
 
@@ -52,12 +52,12 @@ export default function Credentials() {
                       href={c.verifyUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="link text-xs font-medium"
+                      className="link text-micro font-medium"
                     >
                       Verify credential ↗
                     </a>
                     {c.code && (
-                      <span className="readout text-xs text-fog">
+                      <span className="readout text-micro text-fog">
                         <span className="silk-sm">CODE</span> {c.code}
                       </span>
                     )}
@@ -76,7 +76,7 @@ export default function Credentials() {
       </div>
 
       <Reveal>
-        <p className="mt-5 text-sm text-fog">{internships}</p>
+        <p className="mt-5 text-detail text-fog">{internships}</p>
       </Reveal>
 
       {/* ── Skills matrix ──────────────────────────────────────────────────
@@ -96,7 +96,7 @@ export default function Credentials() {
                     {row.items.map((item) => (
                       <li
                         key={item}
-                        className="well readout px-2 py-1 text-[0.6875rem] leading-none text-ink"
+                        className="well readout px-2 py-1 text-tag text-ink"
                       >
                         {item}
                       </li>

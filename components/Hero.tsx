@@ -42,7 +42,7 @@ export default function Hero() {
         </Reveal>
 
         <Reveal delay={120}>
-          <p className="measure mt-8 text-lg leading-relaxed text-fog">
+          <p className="measure mt-8 text-body-lg text-fog">
             {identity.summary}
           </p>
         </Reveal>
@@ -63,7 +63,7 @@ export default function Hero() {
             {plate.map((row) => (
               <div key={row.k} className="bg-panel px-5 py-4">
                 <dt className="silk-sm text-fog">{row.k}</dt>
-                <dd className="mt-2 text-sm leading-snug text-ink">{row.v}</dd>
+                <dd className="mt-2 text-detail text-ink">{row.v}</dd>
               </div>
             ))}
 
@@ -72,7 +72,7 @@ export default function Hero() {
                 text so the status never depends on colour alone. */}
             <div className="bg-panel px-5 py-4 sm:col-span-2">
               <dt className="silk-sm text-fog">Availability</dt>
-              <dd className="mt-2 text-sm leading-snug text-ink">
+              <dd className="mt-2 text-detail text-ink">
                 {identity.availability}
               </dd>
             </div>

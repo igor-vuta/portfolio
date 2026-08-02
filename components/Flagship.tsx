@@ -16,7 +16,7 @@ export default function Flagship() {
       <div className="mt-14 grid gap-8 lg:grid-cols-[1.05fr_1fr] lg:items-start">
         <div>
           <Reveal>
-            <p className="measure leading-relaxed text-fog">
+            <p className="measure text-fog">
               {flagship.description}
             </p>
           </Reveal>
@@ -25,7 +25,7 @@ export default function Flagship() {
             {flagship.pillars.map((pillar, i) => (
               <Reveal key={pillar.title} delay={i * 60}>
                 <LabelledPanel label={pillar.title} interactive>
-                  <p className="text-sm leading-relaxed text-fog">
+                  <p className="text-detail text-fog">
                     {pillar.body}
                   </p>
                 </LabelledPanel>
@@ -51,17 +51,21 @@ export default function Flagship() {
           <dl className="mt-px grid grid-cols-2 gap-px bg-line md:grid-cols-3 lg:grid-cols-6">
             {flagship.metrics.map((m) => (
               <div key={m.label} className="well relative rounded-none p-5">
-                <dd className="readout text-3xl font-medium text-ink">
+                <dd className="readout text-metric font-medium text-ink">
                   <CountUp value={m.value} />
                 </dd>
-                <dt className="mt-2 text-xs leading-snug text-fog">
+                {/* The labels carry figures too ("8.02 → 4.67 days",
+                    "120 × 30 seeds"), so they take tabular figures alongside
+                    the readouts above them — otherwise the digits in the
+                    caption row wander while the row above holds its columns. */}
+                <dt className="mt-2 text-micro tabular-nums text-fog">
                   {m.label}
                 </dt>
               </div>
             ))}
           </dl>
 
-          <p className="mt-3 text-xs text-fog">{flagship.benchmarkNote}</p>
+          <p className="mt-3 text-micro text-fog">{flagship.benchmarkNote}</p>
         </div>
       </Reveal>
 
@@ -78,8 +82,8 @@ export default function Flagship() {
               <li key={a.layer} className="flex flex-1 items-center gap-3">
                 <div className="well w-full px-5 py-4">
                   <p className="silk-sm text-fog">{a.layer}</p>
-                  <p className="mt-2 text-sm font-medium text-ink">{a.tech}</p>
-                  <p className="readout mt-1 text-xs text-clay">{a.host}</p>
+                  <p className="mt-2 text-detail font-medium text-ink">{a.tech}</p>
+                  <p className="readout mt-1 text-micro text-clay">{a.host}</p>
                 </div>
                 {i < flagship.architecture.length - 1 && (
                   <span
@@ -93,7 +97,7 @@ export default function Flagship() {
             ))}
           </ol>
 
-          <p className="mt-5 border-t border-line pt-4 text-xs leading-relaxed text-fog">
+          <p className="mt-5 border-t border-line pt-4 text-micro text-fog">
             Docker Compose for local development · 51 automated pytest tests ·
             Ruff + ESLint · Brevo SMTP email verification ·
             state-machine-enforced request lifecycle
@@ -117,7 +121,7 @@ export default function Flagship() {
 
         {/* Stated plainly rather than discovered by a user staring at a blank
             tab for a minute — the free tier really does cold-start. */}
-        <p className="mt-4 text-xs text-fog">
+        <p className="mt-4 text-micro text-fog">
           Deployed and running right now — the free-tier API cold-starts in
           roughly 50 seconds on the first request.
         </p>

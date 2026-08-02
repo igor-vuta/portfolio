@@ -20,7 +20,7 @@ export default function Footer() {
             Let&apos;s build something.
           </h2>
 
-          <p className="measure mt-5 leading-relaxed text-cream/70">
+          <p className="measure mt-5 text-cream/70">
             {identity.availability}. The fastest way to reach me is email — I
             reply quickly.
           </p>
@@ -42,7 +42,7 @@ export default function Footer() {
         </Reveal>
 
         {/* ── Chassis plate ───────────────────────────────────────────────── */}
-        <div className="mt-20 flex flex-col justify-between gap-4 border-t border-cream/15 pt-6 text-xs text-cream/55 sm:flex-row">
+        <div className="mt-20 flex flex-col justify-between gap-4 border-t border-cream/15 pt-6 text-micro text-cream/55 sm:flex-row">
           <p className="readout">
             © {new Date().getFullYear()} {identity.name} · {identity.location}
           </p>
