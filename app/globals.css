@@ -209,10 +209,26 @@
   --grid-major-alpha: 0.055;
 
   /* ── Motion ──────────────────────────────────────────────────────────────
-     One easing curve, three durations. Mechanical: fast out of rest, settles
-     without bounce. Nothing on this page overshoots. */
+     Two curves, three durations. Nothing on this page overshoots.
+
+     --ease-entrance is an expo-out: almost all of the distance is covered in
+     the first third, then a long settle. Correct for something arriving from
+     off-screen, where the tail sells the deceleration.
+
+     --ease-sharp exists because that tail is wrong under a finger. A control
+     responds to a press that has already happened, so the motion should be
+     over rather than settling — the long expo tail reads as slack, as though
+     the button is catching up with the click. This curve leaves rest fast and
+     arrives flat, with no visible easing at the end.
+
+     --dur-tap is 120ms, up from 80. Below roughly 100ms a state change reads
+     as an instant swap and the travel is lost entirely; the press stopped
+     feeling like a key and started feeling like a repaint. 120ms is long
+     enough to be seen as movement and short enough to stay under the
+     threshold where a control feels like it is lagging the input. */
   --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
-  --dur-tap: 80ms;
+  --ease-sharp: cubic-bezier(0.2, 0, 0, 1);
+  --dur-tap: 120ms;
   --dur-state: 160ms;
   --dur-enter: 300ms;
 
@@ -652,10 +668,16 @@ html.boot .reveal.is-in {
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color var(--dur-state) var(--ease-entrance),
-    border-color var(--dur-state) var(--ease-entrance),
-    color var(--dur-state) var(--ease-entrance),
-    transform var(--dur-tap) var(--ease-entrance);
+
+  /* Every control transition runs on the sharp curve. The identical
+     declaration on hover, active, and disabled is what makes a press feel
+     the same every time regardless of how the control was reached — there is
+     no per-state timing to drift, and nothing here is duration-scaled by
+     distance travelled. */
+  transition: background-color var(--dur-tap) var(--ease-sharp),
+    border-color var(--dur-tap) var(--ease-sharp),
+    color var(--dur-tap) var(--ease-sharp),
+    transform var(--dur-tap) var(--ease-sharp);
 }
 
 .ctl:hover {
@@ -787,8 +809,13 @@ html.boot .reveal.is-in {
   stroke-dashoffset: 1;
 }
 
+/* 1.1s to match CountUp's run exactly. The two are the page's paired
+   signature moments and sit in the same section, so when the chart and the
+   metric row start together they should also finish together — at 1.3s the
+   trace was still drawing after every number had already settled. Timing
+   only; the draw itself is unchanged. */
 .trace-drawn {
-  animation: draw 1.3s cubic-bezier(0.5, 0, 0.3, 1) 0.15s forwards;
+  animation: draw 1.1s cubic-bezier(0.5, 0, 0.3, 1) 0.15s forwards;
 }
 
 @keyframes draw {
