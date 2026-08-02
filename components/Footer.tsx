@@ -1,54 +1,59 @@
 import Reveal from "@/components/Reveal";
 import CopyEmail from "@/components/CopyEmail";
+import { ExternalLink } from "@/components/ui/Control";
 import { identity } from "@/lib/profile";
 
 export default function Footer() {
   return (
-    <footer id="contact" className="bg-coal text-cream">
-      <div className="mx-auto max-w-6xl scroll-mt-24 px-6 py-24">
+    <footer
+      id="contact"
+      aria-labelledby="contact-title"
+      className="on-coal bg-coal text-cream"
+    >
+      <div className="mx-auto max-w-6xl px-6 pb-16 pt-20">
         <Reveal>
-          <p className="text-xs font-medium uppercase tracking-[0.18em] text-clay">Contact</p>
-          <h2 className="mt-4 font-serif text-4xl font-semibold tracking-tight sm:text-6xl">
+          <div className="border-b border-cream/15 pb-4">
+            <p className="silk text-clay-soft">Contact</p>
+          </div>
+
+          <h2 id="contact-title" className="display mt-8 text-display-md sm:text-display-lg">
             Let&apos;s build something.
           </h2>
-          <p className="mt-5 max-w-xl leading-relaxed text-cream/70">
-            {identity.availability}. The fastest way to reach me is email — I reply quickly.
+
+          <p className="measure mt-5 leading-relaxed text-cream/70">
+            {identity.availability}. The fastest way to reach me is email — I
+            reply quickly.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
+
+          <div className="mt-9 flex flex-wrap items-center gap-3">
+            {/* mailto is a link, not an action — it must stay a link so it can
+                be opened in a new tab, copied, or dragged. */}
             <a
               href={`mailto:${identity.email}`}
-              className="btn-lift rounded-full bg-cream px-6 py-3 text-sm font-medium text-coal transition hover:bg-clay hover:text-cream"
+              className="ctl ctl-primary readout"
+              data-print-url="skip"
             >
               {identity.email}
             </a>
             <CopyEmail email={identity.email} />
-            <a
-              href={identity.github}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-cream/25 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
-            >
-              GitHub ↗
-            </a>
-            <a
-              href={identity.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="rounded-full border border-cream/25 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
-            >
-              LinkedIn ↗
-            </a>
+            <ExternalLink href={identity.github}>GitHub</ExternalLink>
+            <ExternalLink href={identity.linkedin}>LinkedIn</ExternalLink>
           </div>
         </Reveal>
-        <div className="mt-20 flex flex-col justify-between gap-3 border-t border-cream/15 pt-6 text-xs text-cream/60 sm:flex-row">
-          <p>© 2026 Igor Vuta · {identity.location}</p>
+
+        {/* ── Chassis plate ───────────────────────────────────────────────── */}
+        <div className="mt-20 flex flex-col justify-between gap-4 border-t border-cream/15 pt-6 text-xs text-cream/55 sm:flex-row">
+          <p className="readout">
+            © {new Date().getFullYear()} {identity.name} · {identity.location}
+          </p>
           <p>
-            Built with Next.js, TypeScript &amp; Tailwind CSS — statically exported.{" "}
+            Built with Next.js, TypeScript &amp; Tailwind CSS — statically
+            exported.{" "}
             <a
-              href={`${identity.github}/portfolio`}
+              href="https://github.com/igor-vuta/portfolio"
               target="_blank"
-              rel="noreferrer"
-              className="text-clay transition hover:underline"
+              rel="noopener noreferrer"
+              className="link"
             >
               View source ↗
             </a>

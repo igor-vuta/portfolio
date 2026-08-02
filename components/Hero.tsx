@@ -1,98 +1,82 @@
 import Reveal from "@/components/Reveal";
 import { identity } from "@/lib/profile";
+import { AnchorLink, ExternalLink } from "@/components/ui/Control";
 
+/**
+ * Opening panel.
+ *
+ * The two floating blobs are gone. They carried no information, moved
+ * continuously for the entire time the page was open, and were the only
+ * elements on the site that existed purely as texture — which is precisely what
+ * this redesign is meant to remove.
+ *
+ * What replaces them is a specification plate: the facts a recruiter opens a
+ * portfolio to find — status, work rights, degree, location — set as a legible
+ * data block instead of buried in a run-on sentence at the bottom of the fold.
+ */
 export default function Hero() {
-  return (
-    <section id="top" className="relative overflow-hidden">
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 600 600"
-        className="hero-blob pointer-events-none absolute -right-40 -top-24 w-[560px] opacity-[0.16] sm:-right-24"
-      >
-        <path
-          fill="#c15f3c"
-          d="M437 83c53 41 90 105 96 172 6 68-19 139-67 185-48 45-119 65-186 58-67-6-131-39-168-92-38-53-49-127-25-189 23-62 81-112 144-136 64-25 133-24 206 2z"
-        />
-      </svg>
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 600 600"
-        className="hero-blob-2 pointer-events-none absolute -right-64 top-40 w-[480px] opacity-[0.1]"
-      >
-        <path
-          fill="#1f1e1d"
-          d="M389 108c60 25 116 74 133 136 18 62-4 137-49 184-45 48-113 68-178 62-64-6-125-38-158-89-33-52-38-123-12-181 27-58 84-103 145-121 61-19 126-13 119 9z"
-        />
-      </svg>
+  const plate = [
+    { k: "Role", v: identity.role },
+    { k: "Location", v: identity.location },
+    { k: "Degree", v: identity.degree },
+    { k: "Stack", v: identity.stackLine },
+  ];
 
-      <div className="relative mx-auto max-w-6xl px-6 pb-24 pt-40 sm:pt-48">
+  return (
+    <section id="top" aria-labelledby="hero-title">
+      <div className="mx-auto max-w-6xl px-6 pb-20 pt-28 sm:pt-36">
         <Reveal>
-          <p className="text-sm text-fog">
-            {identity.name} · {identity.role} · {identity.location}
+          <p className="silk text-fog">
+            {identity.name} — {identity.role}
           </p>
         </Reveal>
-        <Reveal delay={90}>
-          <h1 className="mt-6 max-w-4xl font-serif text-5xl font-semibold leading-[1.05] tracking-tight sm:text-7xl">
+
+        <Reveal delay={60}>
+          <h1
+            id="hero-title"
+            className="display mt-6 max-w-4xl text-display-lg sm:text-display-xl"
+          >
             Software that ships — with{" "}
-            <span className="hl">
-              numbers
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 100 12"
-                preserveAspectRatio="none"
-                className="hl-svg"
-              >
-                <path
-                  d="M2 9 C 25 3, 50 11, 98 5"
-                  fill="none"
-                  stroke="#c15f3c"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  pathLength={1}
-                />
-              </svg>
-            </span>{" "}
-            to prove it.
+            <span className="text-clay">numbers</span> to prove it.
           </h1>
         </Reveal>
-        <Reveal delay={180}>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-fog">
+
+        <Reveal delay={120}>
+          <p className="measure mt-8 text-lg leading-relaxed text-fog">
             {identity.summary}
           </p>
         </Reveal>
-        <Reveal delay={260}>
-          <p className="mt-4 text-sm font-medium text-clay">{identity.stackLine}</p>
-        </Reveal>
-        <Reveal delay={340}>
+
+        <Reveal delay={180}>
           <div className="mt-10 flex flex-wrap items-center gap-3">
-            <a
-              href="#flagship"
-              className="btn-lift rounded-full bg-ink px-6 py-3 text-sm font-medium text-cream transition hover:bg-clay"
-            >
-              Explore Intelli-Factory ↓
-            </a>
-            <a
-              href={identity.github}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-lift rounded-full border border-ink/20 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
-            >
-              GitHub ↗
-            </a>
-            <a
-              href={identity.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-lift rounded-full border border-ink/20 px-6 py-3 text-sm font-medium transition hover:border-clay hover:text-clay"
-            >
-              LinkedIn ↗
-            </a>
+            <AnchorLink href="#flagship" variant="primary">
+              Explore Intelli-Factory
+            </AnchorLink>
+            <ExternalLink href={identity.github}>GitHub</ExternalLink>
+            <ExternalLink href={identity.linkedin}>LinkedIn</ExternalLink>
           </div>
         </Reveal>
-        <Reveal delay={420}>
-          <p className="mt-10 max-w-2xl text-sm text-fog">
-            {identity.degree} · {identity.availability}
-          </p>
+
+        {/* ── Specification plate ─────────────────────────────────────────── */}
+        <Reveal delay={240}>
+          <dl className="panel mt-14 grid grid-cols-1 gap-px overflow-hidden bg-line sm:grid-cols-2">
+            {plate.map((row) => (
+              <div key={row.k} className="bg-panel px-5 py-4">
+                <dt className="silk-sm text-fog">{row.k}</dt>
+                <dd className="mt-2 text-sm leading-snug text-ink">{row.v}</dd>
+              </div>
+            ))}
+
+            {/* Availability spans the full width — it is the one line a
+                recruiter is actually scanning for, and the lamp is paired with
+                text so the status never depends on colour alone. */}
+            <div className="bg-panel px-5 py-4 sm:col-span-2">
+              <dt className="silk-sm text-fog">Availability</dt>
+              <dd className="mt-2 text-sm leading-snug text-ink">
+                {identity.availability}
+              </dd>
+            </div>
+          </dl>
         </Reveal>
       </div>
     </section>

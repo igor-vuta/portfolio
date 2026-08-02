@@ -10,16 +10,26 @@ import SectionRail from "@/components/SectionRail";
 
 export default function Home() {
   return (
-    <main>
+    <>
+      {/* Chrome sits outside <main> so the skip link genuinely skips it —
+          landing inside a <main> that still contained the nav would defeat
+          the purpose of the link. */}
       <Nav />
       <ScrollProgress />
       <SectionRail />
-      <Hero />
-      <Flagship />
-      <Manifesto />
-      <Projects />
-      <Credentials />
+
+      <main id="main" tabIndex={-1}>
+        <Hero />
+        <Flagship />
+        <Manifesto />
+        <Projects />
+        <Credentials />
+      </main>
+
+      {/* Outside <main> deliberately: a <footer> nested inside <main> does not
+          expose the contentinfo landmark, so screen-reader users lose the
+          standard jump to contact details. */}
       <Footer />
-    </main>
+    </>
   );
 }
