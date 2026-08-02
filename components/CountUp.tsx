@@ -111,7 +111,7 @@ export default function CountUp({ value }: { value: string }) {
         {display}
       </span>
       {/* The unchanging, authoritative figure for assistive tech. */}
-      <span className="absolute h-px w-px overflow-hidden whitespace-nowrap [clip:rect(0,0,0,0)]">
+      <span className="sr-only">
         {value}
       </span>
     </>

@@ -307,8 +307,14 @@ export default function ParetoChart() {
         </ul>
       </div>
 
-      {/* Text alternative: the same numbers, navigable as a table. */}
-      <table className="absolute h-px w-px overflow-hidden whitespace-nowrap [clip:rect(0,0,0,0)]">
+      {/* Text alternative: the same numbers, navigable as a table.
+
+          The clip lives on the wrapper, not the table. A table ignores a 1px
+          width — display:table sizes to min-content — so wearing the class
+          itself it laid out at 908px and pushed the whole document sideways
+          on a phone. */}
+      <div className="sr-only">
+      <table>
         <caption>
           Pareto front computed by the Deep GA: cost in thousands of KZT against
           delivery time in days, with the greedy baseline for comparison.
@@ -337,6 +343,7 @@ export default function ParetoChart() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <figcaption className="border-t border-line px-6 py-4 text-micro text-fog">
         The Deep GA (NSGA-II-style) Pareto front, drawn as the engine computes

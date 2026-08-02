@@ -564,6 +564,39 @@ html.boot .reveal.is-in {
   text-wrap: balance;
 }
 
+/* Visually hidden, still announced. Clipped rather than display:none, which
+   would take it out of the accessibility tree along with the layout.
+
+   Was hand-rolled as `absolute h-px w-px overflow-hidden [clip:...]` at three
+   call sites. That works on a span, whose box becomes block-level under
+   position:absolute — but not on a table: display:table sizes to min-content
+   and ignores the 1px width, so the chart's text-alternative table laid out
+   at its natural 908px and pushed the document 562px wide on a phone. The
+   whole page then rendered in the left third of the viewport.
+
+   Hence the wrapper rule below, and hence this being a class rather than a
+   pattern people retype: the failure was invisible on a desktop viewport and
+   silent in every build. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Anything that cannot be shrunk — a table, a wide figure — goes *inside* an
+   .sr-only element rather than wearing the class itself. The clip on the
+   wrapper contains the overflow; the child is free to be its natural size. */
+.sr-only > * {
+  max-width: none;
+}
+
 /* Prose measure — capped so body text never runs past a comfortable line. */
 .measure {
   max-width: 68ch;

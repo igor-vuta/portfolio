@@ -31,7 +31,7 @@ function classes(variant: Variant, size: Size, extra?: string) {
 /** Screen-reader-only text. Clipped rather than hidden so it is still read. */
 export function SrOnly({ children }: { children: ReactNode }) {
   return (
-    <span className="absolute h-px w-px overflow-hidden whitespace-nowrap [clip:rect(0,0,0,0)]">
+    <span className="sr-only">
       {children}
     </span>
   );
