@@ -978,40 +978,30 @@ html.boot .reveal.is-in {
 }
 
 /* ── Trail ───────────────────────────────────────────────────────────────────
-   The marks that run from a pressed control to the top edge of the page.
-   Squares rather than dots — a circle would be the only round thing on a
-   page whose whole geometry is milled edges.
+   The ghost of a pressed control, mid-flight to the top of the page. It is a
+   clone of the real element and keeps the element's own classes, so almost
+   everything about its appearance is inherited — this rule only lifts it out
+   of the document and hands motion over to the Web Animations API, which
+   computes the path from where the control actually was.
 
    Sits above the chrome but below the boot terminal, and never takes a
-   pointer event: it is drawn on top of the interface it is leaving. Nothing
-   here animates in CSS; the transforms come from the Web Animations API so
-   the path can be computed from where the control actually is. */
-.trail-layer {
+   pointer event: it is drawn on top of the interface it is leaving. The
+   transition override kills the control's own hover/press transitions on the
+   clone — a ghost that re-runs its hover fade mid-flight shimmers. */
+.trail-ghost {
   position: fixed;
-  inset: 0;
   z-index: 150;
+  margin: 0;
   pointer-events: none;
+  transition: none;
+  will-change: transform, opacity;
 }
 
-.trail-dot {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 6px;
-  height: 6px;
-  /* Centres the mark on the sampled point rather than hanging it off the
-     top-left corner, which would put the whole path 3px out. */
-  margin: -3px 0 0 -3px;
-  background: var(--color-clay);
-  border-radius: var(--radius-inset);
-  will-change: transform;
-}
-
-/* Reduced motion never creates the layer — the click handler returns before
+/* Reduced motion never creates the ghost — the click handler returns before
    it is built, and the link navigates natively. This is the safety net for a
-   preference switched on mid-flight, with a run already on screen. */
+   preference switched on mid-flight, with a copy already in the air. */
 @media (prefers-reduced-motion: reduce) {
-  .trail-layer {
+  .trail-ghost {
     display: none;
   }
 }

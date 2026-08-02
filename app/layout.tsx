@@ -215,28 +215,35 @@ document.documentElement.classList.add('js');
   still.addEventListener('change', sync);
 
   /* ── Trail ────────────────────────────────────────────────────────────
-     A serpentine run of marks from the control you pressed to the top edge
-     of the page. In-page jumps wait for it; nothing else does.
+     Press a control anywhere in the body and a copy of it lifts off,
+     shrinks, and flies a serpentine path to the top of the page — the
+     macOS save-to-Dock gesture, pointed at the chrome. In-page jumps wait
+     for the flight; nothing else does.
+
+     What flies is a clone of the actual element, carrying its own classes,
+     so the ghost is pixel-identical to the control that was pressed — a
+     primary button flies as a primary button, a detent as a detent. The
+     original dims while its copy is in the air and recovers when the copy
+     lands, which is what sells "taken" rather than "duplicated".
+
+     Header controls are exempt. They already live at the top edge; a copy
+     flying two pixels up its own faceplate reads as a glitch, not a
+     gesture. Their native navigation is untouched.
 
      Where it lands is a hash of the destination, not a random number. The
      brief allows randomness only in ambient drift and never in anything
-     the user clicks, and that rule is right here for a practical reason as
-     much as a stylistic one: a control that traces a different arc on every
-     press cannot be recognised, and the third time you use the same link
-     you should be seeing the same movement. Same href, same arc, always.
-     Swap the hash for Math.random() below if you want true variation.
+     the user clicks — a control that traced a different arc on every press
+     could not be recognised. Same href, same arc, always. Swap the hash
+     for Math.random() below if variation is ever wanted.
 
-     The path is sampled, not drawn: 26 transforms along a sine whose
-     amplitude damps to zero as it arrives, so the wiggle reads as travel at
-     the start and as a landing at the end. Handed to the Web Animations API
-     as keyframes, which means the compositor runs it and no JS executes per
-     frame. Six marks on a 30ms stagger make the line read as one body.
+     The path is sampled: 26 transform+scale keyframes along a sine whose
+     amplitude damps to zero on arrival, handed to the Web Animations API,
+     so the compositor runs the flight and no JS executes per frame.
 
-     Deliberately not delayed: external links. They open in a new tab, focus
-     leaves immediately, and holding the gesture to play an animation nobody
-     will be looking at only risks the popup blocker. They get the trail;
-     they do not get the wait. */
-  var T_DOTS = 6, T_MS = 460, T_STAGGER = 30, T_AMP = 46, T_TOP = 28;
+     Deliberately not delayed: external links. They open in a new tab,
+     focus leaves immediately, and holding the gesture to play an animation
+     nobody is looking at only risks the popup blocker. */
+  var T_MS = 520, T_AMP = 40, T_TOP = 28, T_END_SCALE = 0.1;
 
   function hashOf(s) {
     var h = 0;
@@ -246,38 +253,49 @@ document.documentElement.classList.add('js');
 
   function trail(el, key) {
     var r = el.getBoundingClientRect();
-    var sx = r.left + r.width / 2, sy = r.top + r.height / 2;
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     // 0.15-0.85 of the viewport, so it never lands under the header's
     // wordmark or off the edge.
     var ex = innerWidth * (0.15 + (hashOf(key) % 71) / 100);
 
-    var layer = document.createElement('div');
-    layer.className = 'trail-layer';
-    layer.setAttribute('aria-hidden', 'true');
-    document.body.appendChild(layer);
+    var ghost = el.cloneNode(true);
+    ghost.removeAttribute('id');
+    ghost.removeAttribute('href');
+    ghost.setAttribute('aria-hidden', 'true');
+    ghost.className += ' trail-ghost';
+    // Lock the box: out of the layout, the clone would otherwise size to
+    // its content and visibly differ from the control it copies.
+    ghost.style.left = r.left + 'px';
+    ghost.style.top = r.top + 'px';
+    ghost.style.width = r.width + 'px';
+    ghost.style.height = r.height + 'px';
+    document.body.appendChild(ghost);
 
     var frames = [], STEPS = 26;
     for (var s = 0; s <= STEPS; s++) {
       var t = s / STEPS;
-      var x = sx + (ex - sx) * t + Math.sin(t * Math.PI * 3) * T_AMP * (1 - t);
-      var y = sy + (T_TOP - sy) * t;
-      frames.push({ transform: 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' });
-    }
-
-    for (var i = 0; i < T_DOTS; i++) {
-      var dot = document.createElement('span');
-      dot.className = 'trail-dot';
-      dot.style.opacity = String(1 - i / (T_DOTS + 1));
-      layer.appendChild(dot);
-      dot.animate(frames, {
-        duration: T_MS,
-        delay: i * T_STAGGER,
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        fill: 'forwards'
+      var x = cx + (ex - cx) * t + Math.sin(t * Math.PI * 3) * T_AMP * (1 - t);
+      var y = cy + (T_TOP - cy) * t;
+      var sc = 1 - (1 - T_END_SCALE) * t;
+      frames.push({
+        transform: 'translate3d(' + (x - cx).toFixed(1) + 'px,' + (y - cy).toFixed(1) + 'px,0) scale(' + sc.toFixed(3) + ')',
+        // Full presence for most of the flight, gone in the last stretch —
+        // it lands *into* the page edge rather than resting on it.
+        opacity: t < 0.8 ? 1 : (1 - t) / 0.2
       });
     }
 
-    setTimeout(function () { layer.remove(); }, T_MS + T_DOTS * T_STAGGER + 150);
+    ghost.animate(frames, {
+      duration: T_MS,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      fill: 'forwards'
+    });
+
+    el.style.opacity = '0.35';
+    setTimeout(function () {
+      ghost.remove();
+      el.style.opacity = '';
+    }, T_MS + 120);
   }
 
   document.addEventListener('click', function (e) {
@@ -291,6 +309,9 @@ document.documentElement.classList.add('js');
 
     var el = e.target && e.target.closest ? e.target.closest('a, button') : null;
     if (!el || el.classList.contains('skip')) return;
+    // Header controls sit on the top edge already; a copy flying two pixels
+    // up its own faceplate reads as a glitch. They navigate natively.
+    if (el.closest('header')) return;
 
     var href = el.getAttribute('href') || '';
     var anchor = href.charAt(0) === '#' && href.length > 1;
