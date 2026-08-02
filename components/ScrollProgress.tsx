@@ -6,9 +6,9 @@ import { useEffect, useRef } from "react";
  * Travel indicator seated in the header's lower edge.
  *
  * Two corrections from the previous build:
- *  - It was pinned at `top-16` (64px) against a 64px header. The header is now
- *    56px, and the offset is derived from the header rather than restated, so
- *    the two cannot drift apart again.
+ *  - It was pinned at `top-16` (64px) against a 64px header. Both now read
+ *    --header-h, so the bar is seated on the header's edge by construction
+ *    and the two cannot drift apart again.
  *  - `ResizeObserver` on the document tracks height changes that no scroll or
  *    resize event reports — fonts swapping in, or a section reflowing — which
  *    previously left the bar reading a stale fraction of a stale height.
@@ -58,7 +58,7 @@ export default function ScrollProgress() {
       ref={ref}
       aria-hidden="true"
       data-print="hide"
-      className="fixed inset-x-0 top-14 z-40 h-px origin-left bg-clay"
+      className="fixed inset-x-0 top-[var(--header-h)] z-40 h-px origin-left bg-clay"
       style={{ transform: "scaleX(0)" }}
     />
   );

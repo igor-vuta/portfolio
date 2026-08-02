@@ -25,7 +25,7 @@ export default function Nav() {
     >
       <nav
         aria-label="Primary"
-        className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-6"
+        className="mx-auto flex h-[var(--header-h)] max-w-6xl items-center gap-4 px-6"
       >
         {/* Identification plate. */}
         <a

@@ -87,6 +87,18 @@
   --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
     Consolas, "Liberation Mono", monospace;
 
+  /* ── Chassis ─────────────────────────────────────────────────────────────
+     The fixed header's height, declared once and consumed everywhere it
+     matters: the header itself, the travel indicator seated on its lower
+     edge, and the scroll offset every fragment jump has to clear.
+
+     Previously those three lived in three files — `h-14` in Nav, `top-14` in
+     ScrollProgress, and a hard-coded 5.5rem here — which is a drift waiting
+     to happen: change the header and two silent regressions ship with it.
+     --anchor-offset is derived, not restated, so it cannot fall out of step. */
+  --header-h: 3.5rem;
+  --anchor-offset: calc(var(--header-h) + 2rem);
+
   /* ── Geometry ────────────────────────────────────────────────────────────
      Squared. A 3px panel radius reads as a milled edge; anything rounder
      reads as software. Pills are gone entirely. */
@@ -164,12 +176,12 @@
 html {
   scroll-behavior: smooth;
 
-  /* Every fragment target clears the 56px fixed header plus breathing room.
+  /* Every fragment target clears the fixed header plus breathing room.
      Declared once on the scroll container so a new anchor physically cannot
-     be added without inheriting the offset — the previous build set
+     be added without inheriting the offset — an earlier build set
      scroll-margin on an inner wrapper while the id sat on the section, so
      every jump parked the heading underneath the header. */
-  scroll-padding-top: 5.5rem;
+  scroll-padding-top: var(--anchor-offset);
 
   /* Anchor jumps and focus rings both key off this. */
   -webkit-text-size-adjust: 100%;
@@ -188,6 +200,15 @@ body {
 
   /* Long words in project blurbs and URLs must never widen the page. */
   overflow-wrap: break-word;
+}
+
+/* The offset above lives on the scroll container and covers every jump. This
+   restates it on the anchored elements themselves — the same elements that
+   carry the `id`, never an inner wrapper — so the two can never be separated
+   again by a refactor that moves the id somewhere new. Selecting on [id]
+   rather than a class means an anchor cannot be added without the offset. */
+:where(section, footer, main)[id] {
+  scroll-margin-top: var(--anchor-offset);
 }
 
 ::selection {
@@ -700,6 +721,12 @@ body {
 
   html {
     scroll-padding-top: 0;
+  }
+
+  /* No fixed header on paper, so the offset would print as a gap above every
+     section. Reset alongside scroll-padding rather than instead of it. */
+  :where(section, footer, main)[id] {
+    scroll-margin-top: 0;
   }
 
   body {

@@ -4,9 +4,14 @@ import Reveal from "@/components/Reveal";
 /* ═══════════════════════════════════════════════════════════════════════════
    SECTION
    One shell for every band on the page, so section boundaries, grid width, and
-   anchor offsets are decided once instead of per-component. The previous build
-   repeated `mx-auto max-w-6xl scroll-mt-24 px-6 py-24` in four places, and put
-   the scroll offset on the wrong element in all four.
+   anchor offsets are decided once instead of per-component. An earlier build
+   repeated the same five container utilities in four places, and put the
+   scroll offset on an inner wrapper — the wrong element — in all four.
+
+   Note on wording: utility class names are deliberately not spelled out in
+   this comment. Tailwind scans source files as plain text, comments included,
+   so naming a class here is enough to generate it — the previous version of
+   this paragraph shipped a dead scroll-margin rule for exactly that reason.
 
    Padding is drawn from the spacing scale: pt-20 (5rem) / pb-24 (6rem).
    ═══════════════════════════════════════════════════════════════════════════ */
