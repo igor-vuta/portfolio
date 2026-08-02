@@ -213,6 +213,101 @@ document.documentElement.classList.add('js');
   sync();
   wide.addEventListener('change', sync);
   still.addEventListener('change', sync);
+
+  /* ── Trail ────────────────────────────────────────────────────────────
+     A serpentine run of marks from the control you pressed to the top edge
+     of the page. In-page jumps wait for it; nothing else does.
+
+     Where it lands is a hash of the destination, not a random number. The
+     brief allows randomness only in ambient drift and never in anything
+     the user clicks, and that rule is right here for a practical reason as
+     much as a stylistic one: a control that traces a different arc on every
+     press cannot be recognised, and the third time you use the same link
+     you should be seeing the same movement. Same href, same arc, always.
+     Swap the hash for Math.random() below if you want true variation.
+
+     The path is sampled, not drawn: 26 transforms along a sine whose
+     amplitude damps to zero as it arrives, so the wiggle reads as travel at
+     the start and as a landing at the end. Handed to the Web Animations API
+     as keyframes, which means the compositor runs it and no JS executes per
+     frame. Six marks on a 30ms stagger make the line read as one body.
+
+     Deliberately not delayed: external links. They open in a new tab, focus
+     leaves immediately, and holding the gesture to play an animation nobody
+     will be looking at only risks the popup blocker. They get the trail;
+     they do not get the wait. */
+  var T_DOTS = 6, T_MS = 460, T_STAGGER = 30, T_AMP = 46, T_TOP = 28;
+
+  function hashOf(s) {
+    var h = 0;
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  function trail(el, key) {
+    var r = el.getBoundingClientRect();
+    var sx = r.left + r.width / 2, sy = r.top + r.height / 2;
+    // 0.15-0.85 of the viewport, so it never lands under the header's
+    // wordmark or off the edge.
+    var ex = innerWidth * (0.15 + (hashOf(key) % 71) / 100);
+
+    var layer = document.createElement('div');
+    layer.className = 'trail-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+
+    var frames = [], STEPS = 26;
+    for (var s = 0; s <= STEPS; s++) {
+      var t = s / STEPS;
+      var x = sx + (ex - sx) * t + Math.sin(t * Math.PI * 3) * T_AMP * (1 - t);
+      var y = sy + (T_TOP - sy) * t;
+      frames.push({ transform: 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)' });
+    }
+
+    for (var i = 0; i < T_DOTS; i++) {
+      var dot = document.createElement('span');
+      dot.className = 'trail-dot';
+      dot.style.opacity = String(1 - i / (T_DOTS + 1));
+      layer.appendChild(dot);
+      dot.animate(frames, {
+        duration: T_MS,
+        delay: i * T_STAGGER,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards'
+      });
+    }
+
+    setTimeout(function () { layer.remove(); }, T_MS + T_DOTS * T_STAGGER + 150);
+  }
+
+  document.addEventListener('click', function (e) {
+    // Every early return here is a case where the browser must be left to do
+    // its own thing: reduced motion, a modified click the user expects to
+    // open a tab, a middle click, something already handled, or the boot
+    // sequence still holding the screen.
+    if (still.matches || e.defaultPrevented || e.button !== 0) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    if (root.classList.contains('boot')) return;
+
+    var el = e.target && e.target.closest ? e.target.closest('a, button') : null;
+    if (!el || el.classList.contains('skip')) return;
+
+    var href = el.getAttribute('href') || '';
+    var anchor = href.charAt(0) === '#' && href.length > 1;
+    var target = anchor ? document.getElementById(href.slice(1)) : null;
+
+    if (!target) { trail(el, href || el.textContent || 'ctl'); return; }
+
+    // Ours to time. scrollIntoView rather than assigning location.hash: the
+    // hash does nothing when it already matches, so a second press of the
+    // same link would play the trail and then sit still.
+    e.preventDefault();
+    trail(el, href);
+    setTimeout(function () {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      history.pushState(null, '', href);
+    }, T_MS - 40);
+  });
 })();
 `;
 
