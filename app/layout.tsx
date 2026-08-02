@@ -58,6 +58,56 @@ document.documentElement.classList.add('js');
   var wide = matchMedia('(min-width: 768px)');
   var still = matchMedia('(prefers-reduced-motion: reduce)');
 
+  /* ── Boot ─────────────────────────────────────────────────────────────
+     Once per session, capped at 900ms, abandoned on any input.
+
+     Three properties this has to hold, in order of how badly they fail:
+
+      1. It can never withhold content. The markup is complete before this
+         runs and every boot rule hangs off a class only this function adds,
+         so a thrown exception, a blocked bundle, or scripting being off all
+         land on the finished page rather than a blank one.
+      2. It must end. The cap is a timeout set in the same breath as the
+         class, not a completion callback from an animation that might never
+         fire — if any single stage stalls, 900ms still clears it.
+      3. It must not fight the reveal observer. On the way out it freezes
+         whatever the observer has already marked, so dropping the class
+         cannot restart an entrance animation on content already on screen.
+
+     sessionStorage access is wrapped: it throws outright in Safari's private
+     mode and under some embedded webviews, and a boot sequence is not worth
+     taking the head script down over. On a throw the sequence simply plays. */
+  var BOOT_CAP = 900;
+
+  function endBoot() {
+    if (!root.classList.contains('boot')) return;
+    var seen = document.querySelectorAll('.reveal.is-in');
+    for (var i = 0; i < seen.length; i++) seen[i].classList.add('reveal-settled');
+    root.classList.remove('boot');
+  }
+
+  function startBoot() {
+    if (still.matches) return;
+    try {
+      if (sessionStorage.getItem('booted')) return;
+      sessionStorage.setItem('booted', '1');
+    } catch (e) {}
+
+    root.classList.add('boot');
+    setTimeout(endBoot, BOOT_CAP);
+
+    var skips = ['keydown', 'pointerdown', 'wheel', 'touchstart'];
+    function skip() {
+      for (var i = 0; i < skips.length; i++) removeEventListener(skips[i], skip);
+      endBoot();
+    }
+    for (var i = 0; i < skips.length; i++) {
+      addEventListener(skips[i], skip, { passive: true, once: true });
+    }
+  }
+
+  startBoot();
+
   // Calibrated against real frame deltas, not guessed. At 60fps an ordinary
   // wheel scroll moves 20-60px per frame and a hard fling 150-250px, so VMAX
   // is set where a fling saturates and everything below it stays on the ramp:

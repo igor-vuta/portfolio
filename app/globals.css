@@ -408,6 +408,103 @@ body::before {
   }
 }
 
+/* Set on whatever the reveal observer had already marked at the moment the
+   boot sequence ended. Without it, dropping `.boot` re-enables the rule above
+   on elements that are already on screen, and their entrance animation
+   restarts from zero — a flash at the 900ms mark on exactly the content the
+   user is looking at. Applied per-element rather than as a document-level
+   flag, so reveals further down the page still animate normally afterwards.
+   Declared after the `.is-in` rule it has to beat; equal specificity, later
+   in source. */
+.js .reveal-settled,
+.js .reveal-settled.is-in {
+  opacity: 1;
+  animation: none;
+  transform: none;
+}
+
+/* ── Boot ────────────────────────────────────────────────────────────────────
+   Plays once per session, on a fixed schedule, and is over inside 900ms.
+
+     grid    0 → 300ms   the field draws downward
+     rules 200 → 520ms   hairlines take their colour
+     type  300 → 760ms   content arrives
+
+   Deliberately not a preloader. Nothing here gates rendering: the markup is
+   complete and readable at first paint, and every rule below is scoped to a
+   class that only JS adds and that removes itself on any input. Skipping does
+   not cancel a load — it drops an animation off finished content.
+
+   The stages overlap by design. Strict sequencing reads as three separate
+   events; a 100ms overlap reads as one machine coming up.
+
+   Not staged: the position rail and the travel indicator. The indicator is
+   scaled to zero at the top of the page and the rail's detents are hairlines
+   that belong to the chassis rather than the content — animating either would
+   be motion for its own sake. */
+html.boot body::before {
+  animation: bootGrid 300ms var(--ease-entrance) both;
+}
+
+@keyframes bootGrid {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Rules arrive by taking their colour, not by scaling — a hairline that grows
+   from a point is a graphic, a hairline that fades up is a rule appearing.
+   Each keyframe declares only `from`, so `to` resolves to whatever the
+   element's own border colour is and the two cannot fall out of step. */
+html.boot header {
+  animation: bootRuleBottom 320ms var(--ease-entrance) 200ms both;
+}
+
+html.boot main > section {
+  animation: bootRuleTop 320ms var(--ease-entrance) 200ms both;
+}
+
+@keyframes bootRuleBottom {
+  from {
+    border-bottom-color: transparent;
+  }
+}
+
+@keyframes bootRuleTop {
+  from {
+    border-top-color: transparent;
+  }
+}
+
+html.boot main,
+html.boot header nav,
+html.boot footer {
+  animation: bootType 460ms var(--ease-entrance) 300ms both;
+}
+
+@keyframes bootType {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* The reveal wrapper stands down for the duration. Both systems animate the
+   same content, and letting them overlap would stagger the hero twice on a
+   first load — once on the boot schedule, once on the observer's. Boot owns
+   the entrance; the observer owns everything after it. */
+html.boot .reveal,
+html.boot .reveal.is-in {
+  opacity: 1;
+  animation: none;
+  transform: none;
+}
+
 /* ═══ 3. TYPE ═════════════════════════════════════════════════════════════ */
 
 /* Silkscreen: the label vocabulary. Every label, section index, unit, axis
@@ -773,6 +870,22 @@ body::before {
     opacity: 1;
     animation: none;
     transform: none;
+  }
+
+  /* The boot class is never added under reduced motion, so these rules should
+     be unreachable. Declared anyway: the preference can be switched on while
+     the page is open, and the sequence must collapse to its end state rather
+     than freeze mid-stage. */
+  html.boot body::before,
+  html.boot header,
+  html.boot main,
+  html.boot main > section,
+  html.boot header nav,
+  html.boot footer {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
   }
 
   .knee-ring {
