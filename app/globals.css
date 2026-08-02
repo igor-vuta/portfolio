@@ -440,26 +440,192 @@ body::before {
 }
 
 /* ── Boot ────────────────────────────────────────────────────────────────────
-   Plays once per session, on a fixed schedule, and is over inside 900ms.
+   Plays once per session on a fixed schedule, and is over inside 5.4s.
 
-     grid    0 → 300ms   the field draws downward
-     rules 200 → 520ms   hairlines take their colour
-     type  300 → 760ms   content arrives
+     terminal   0 → 4900ms   deploy log types and streams, then lifts
+     grid    4500 → 4800ms   the field draws downward
+     rules   4650 → 4970ms   hairlines take their colour
+     type    4750 → 5210ms   content arrives
 
-   Deliberately not a preloader. Nothing here gates rendering: the markup is
-   complete and readable at first paint, and every rule below is scoped to a
-   class that only JS adds and that removes itself on any input. Skipping does
-   not cancel a load — it drops an animation off finished content.
+   The page's own stages start under the terminal and finish just after it
+   fades, so the machine is already coming up as the overlay clears rather
+   than the two running back to back.
 
-   The stages overlap by design. Strict sequencing reads as three separate
-   events; a 100ms overlap reads as one machine coming up.
+   This is a held screen, and worth being honest about the trade: five seconds
+   is a long time to stand between someone and a CV they came to read. Three
+   things keep it from being a preloader in the damaging sense — the markup
+   behind it is complete and readable at first paint, every rule here hangs
+   off a class only JS sets, and any key, tap, or wheel drops the whole thing
+   instantly. Skipping does not cancel a load; it removes an animation from
+   content that already arrived.
+
+   Stages overlap by design. Strict sequencing reads as separate events; an
+   overlap reads as one system coming up.
 
    Not staged: the position rail and the travel indicator. The indicator is
    scaled to zero at the top of the page and the rail's detents are hairlines
-   that belong to the chassis rather than the content — animating either would
-   be motion for its own sake. */
+   belonging to the chassis rather than the content. */
+
+/* Hidden unless the boot class is set, which is what makes a failed bundle,
+   disabled scripting, or reduced motion all resolve to "no overlay" rather
+   than "overlay stuck on screen". Never `visibility` alone — this must be out
+   of the layout entirely when it is not playing. */
+.boot-term {
+  display: none;
+}
+
+html.boot .boot-term {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--color-coal);
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: var(--text-detail);
+  line-height: 1.7;
+  font-variant-numeric: tabular-nums;
+
+  /* Lifts itself. The JS cap is a backstop for a stage that never runs, not
+     the mechanism — so an overlay that somehow outlived its script still
+     clears on time. visibility in the end state keeps it off the hit-testing
+     surface once transparent. */
+  animation: termOut 400ms var(--ease-entrance) 4500ms forwards;
+}
+
+@keyframes termOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.boot-term-body {
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.boot-sigil {
+  color: var(--color-clay-soft);
+}
+
+/* The command types itself by revealing width in whole characters. steps()
+   over a monospace face is what makes it land on character boundaries rather
+   than sliding — and it is pure CSS, so it cannot drift from the schedule the
+   rest of the sequence runs on. The step count is set inline from the
+   string's own length. */
+.boot-cmd {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: bootTypeCmd 1200ms 400ms forwards;
+}
+
+@keyframes bootTypeCmd {
+  to {
+    width: calc(var(--cmd-len) * 1ch);
+  }
+}
+
+.boot-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 0.15em;
+  background: var(--color-clay-soft);
+  vertical-align: text-bottom;
+  animation: bootCaret 900ms steps(1, end) infinite;
+}
+
+/* steps(1) so it snaps between states — a caret that fades is a glow. */
+@keyframes bootCaret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.boot-out {
+  margin-top: 1.25rem;
+}
+
+/* No `opacity: 0` here, deliberately. These keyframes declare only `from`, so
+   the implicit `to` resolves to the element's own underlying value — and a
+   base of 0 makes every line animate from nothing to nothing. `both` already
+   holds the from-state through the delay, which is the only thing the base
+   declaration was there for. Cost an invisible deploy log to find. */
+.boot-line {
+  animation: bootLine 220ms var(--ease-entrance) both;
+}
+
+/* max-content rather than 1fr on the value column. With 1fr the column
+   absorbed all the slack and pushed the status markers to the far edge of a
+   42rem block, leaving each `ok` stranded a couple of hundred pixels from the
+   line it belongs to. Sized to the widest value, the three columns still
+   align down the log but read as one unit per row. */
+.boot-out .boot-line {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, max-content) auto;
+  gap: 0.75rem;
+}
+
+@keyframes bootLine {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+.boot-key {
+  color: var(--color-clay-soft);
+}
+
+.boot-val {
+  margin: 0;
+  color: rgba(245, 243, 236, 0.72);
+}
+
+.boot-ok {
+  margin: 0;
+  color: #7fd0ab;
+}
+
+.boot-ready {
+  margin-top: 1.25rem;
+  color: var(--color-cream);
+}
+
+.boot-tick {
+  color: #7fd0ab;
+}
+
+.boot-skip {
+  margin-top: 2rem;
+  color: rgba(245, 243, 236, 0.42);
+  font-size: var(--text-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bootLine 220ms var(--ease-entrance) 800ms both;
+}
+
+/* Narrow viewports drop the three-column log to two lines per entry rather
+   than crushing a 6rem label column into a phone. */
+@media (max-width: 30rem) {
+  .boot-out .boot-line {
+    grid-template-columns: 5rem 1fr;
+  }
+
+  .boot-ok {
+    display: none;
+  }
+}
+
 html.boot body::before {
-  animation: bootGrid 300ms var(--ease-entrance) both;
+  animation: bootGrid 300ms var(--ease-entrance) 4500ms both;
 }
 
 @keyframes bootGrid {
@@ -478,11 +644,11 @@ html.boot body::before {
    Each keyframe declares only `from`, so `to` resolves to whatever the
    element's own border colour is and the two cannot fall out of step. */
 html.boot header {
-  animation: bootRuleBottom 320ms var(--ease-entrance) 200ms both;
+  animation: bootRuleBottom 320ms var(--ease-entrance) 4650ms both;
 }
 
 html.boot main > section {
-  animation: bootRuleTop 320ms var(--ease-entrance) 200ms both;
+  animation: bootRuleTop 320ms var(--ease-entrance) 4650ms both;
 }
 
 @keyframes bootRuleBottom {
@@ -500,7 +666,7 @@ html.boot main > section {
 html.boot main,
 html.boot header nav,
 html.boot footer {
-  animation: bootType 460ms var(--ease-entrance) 300ms both;
+  animation: bootType 460ms var(--ease-entrance) 4750ms both;
 }
 
 @keyframes bootType {
@@ -935,7 +1101,17 @@ html.boot .reveal.is-in {
   /* The boot class is never added under reduced motion, so these rules should
      be unreachable. Declared anyway: the preference can be switched on while
      the page is open, and the sequence must collapse to its end state rather
-     than freeze mid-stage. */
+     than freeze mid-stage.
+
+     The overlay is the one that matters. Every other stage frozen mid-way is
+     a cosmetic wrong; a full-screen terminal frozen mid-way is the site
+     replaced by a black rectangle, so it is removed outright rather than
+     animated to transparent. */
+  .boot-term,
+  html.boot .boot-term {
+    display: none !important;
+  }
+
   html.boot body::before,
   html.boot header,
   html.boot main,
@@ -1045,6 +1221,13 @@ html.boot .reveal.is-in {
      every page — and on some drivers, as a solid block. */
   body::before {
     display: none;
+  }
+
+  /* Belt and braces alongside data-print="hide": a print fired while the boot
+     terminal is up must not put a full-page black rectangle on paper. */
+  .boot-term,
+  html.boot .boot-term {
+    display: none !important;
   }
 
   /* Anything whose only job is on-screen navigation. */

@@ -76,8 +76,15 @@ document.documentElement.classList.add('js');
 
      sessionStorage access is wrapped: it throws outright in Safari's private
      mode and under some embedded webviews, and a boot sequence is not worth
-     taking the head script down over. On a throw the sequence simply plays. */
-  var BOOT_CAP = 900;
+     taking the head script down over. On a throw the sequence simply plays.
+
+     The cap is 5400ms because the terminal runs to 4900 and the page's own
+     arrival stages finish at 5210. It is a backstop, not the schedule: the
+     CSS lifts the overlay on its own, and this only guarantees an end if a
+     stage never runs at all. Any key, tap, or wheel ends it immediately, and
+     the hint on screen says so — five seconds is a long time to hold someone
+     who came to read a CV. */
+  var BOOT_CAP = 5400;
 
   function endBoot() {
     if (!root.classList.contains('boot')) return;
@@ -264,6 +271,79 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
+/**
+ * Boot terminal.
+ *
+ * Server-rendered into the document rather than mounted by a component, and
+ * hidden by CSS unless `html.boot` is present. Two consequences worth stating:
+ * it is on screen at first paint rather than one hydration late, and if the
+ * bundle never arrives the class is never set and the overlay is simply never
+ * displayed — the page behind it is already complete.
+ *
+ * Every timing is a fixed offset from the same origin, so the sequence is
+ * identical on every load. Nothing here is measured, sampled, or randomised.
+ *
+ * The figures are real: 107 kB is the actual first-load budget this repo
+ * builds to. A boot screen that lies about the thing it is booting would be a
+ * strange choice on a portfolio whose whole argument is measurement.
+ */
+const BOOT_COMMAND = "deploy --target=production";
+
+const BOOT_LINES = [
+  { at: 1900, key: "compile", val: "next 15 · typescript · tailwind" },
+  { at: 2350, key: "bundle", val: "107 kB first load js" },
+  { at: 2800, key: "export", val: "static · prerendered" },
+  { at: 3250, key: "upload", val: "github pages" },
+  { at: 3700, key: "verify", val: "aa contrast · reduced-motion paths" },
+];
+
+function BootTerminal() {
+  return (
+    // aria-hidden because none of this is content: a screen reader should get
+    // the page, not a dramatisation of a deploy. It is never focusable, so it
+    // cannot trap keyboard navigation while it is up.
+    <div className="boot-term" aria-hidden="true" data-print="hide">
+      <div className="boot-term-body">
+        <p className="boot-prompt">
+          <span className="boot-sigil">$</span>{" "}
+          <span
+            className="boot-cmd"
+            style={{
+              // Both derived from the string, so the character count and the
+              // step count cannot drift apart when the command is edited.
+              ["--cmd-len" as string]: BOOT_COMMAND.length,
+              animationTimingFunction: `steps(${BOOT_COMMAND.length}, end)`,
+            }}
+          >
+            {BOOT_COMMAND}
+          </span>
+          <span className="boot-caret" />
+        </p>
+
+        <dl className="boot-out">
+          {BOOT_LINES.map((l) => (
+            <div
+              key={l.key}
+              className="boot-line"
+              style={{ animationDelay: `${l.at}ms` }}
+            >
+              <dt className="boot-key">{l.key}</dt>
+              <dd className="boot-val">{l.val}</dd>
+              <dd className="boot-ok">ok</dd>
+            </div>
+          ))}
+        </dl>
+
+        <p className="boot-line boot-ready" style={{ animationDelay: "4150ms" }}>
+          <span className="boot-tick">✓</span> ready — igor-vuta.github.io/portfolio
+        </p>
+
+        <p className="boot-skip">press any key to skip</p>
+      </div>
+    </div>
+  );
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
@@ -286,6 +366,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
       </head>
       <body>
+        <BootTerminal />
         <a href="#main" className="skip ctl ctl-primary">
           Skip to content
         </a>
