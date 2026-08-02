@@ -240,9 +240,15 @@ document.documentElement.classList.add('js');
      amplitude damps to zero on arrival, handed to the Web Animations API,
      so the compositor runs the flight and no JS executes per frame.
 
-     Deliberately not delayed: external links. They open in a new tab,
-     focus leaves immediately, and holding the gesture to play an animation
-     nobody is looking at only risks the popup blocker. */
+     External links hold their tab until the ghost lands. The first version
+     let them navigate immediately on the theory that delaying a new tab
+     risks the popup blocker — and the result was that the flight always
+     played in a tab the user had just left, which is the same as no flight
+     at all. The blocker risk is real but bounded: browsers honour
+     window.open for several seconds of transient user activation after a
+     genuine click, and the flight takes half of one. If a blocker eats it
+     anyway, the fallback navigates in place — a same-tab landing beats a
+     control that swallowed the click. */
   var T_MS = 520, T_AMP = 40, T_TOP = 28, T_END_SCALE = 0.1;
 
   function hashOf(s) {
@@ -317,7 +323,20 @@ document.documentElement.classList.add('js');
     var anchor = href.charAt(0) === '#' && href.length > 1;
     var target = anchor ? document.getElementById(href.slice(1)) : null;
 
-    if (!target) { trail(el, href || el.textContent || 'ctl'); return; }
+    if (!target) {
+      trail(el, href || el.textContent || 'ctl');
+      // Only http(s) links into a new tab are held for the flight. mailto
+      // and plain buttons keep their own timing — delaying a mail client or
+      // an in-place action buys nothing and can only break them.
+      if (/^https?:/i.test(href) && el.getAttribute('target') === '_blank') {
+        e.preventDefault();
+        setTimeout(function () {
+          var w = window.open(href, '_blank', 'noopener,noreferrer');
+          if (!w) location.assign(href);
+        }, T_MS - 40);
+      }
+      return;
+    }
 
     // Ours to time. scrollIntoView rather than assigning location.hash: the
     // hash does nothing when it already matches, so a second press of the
