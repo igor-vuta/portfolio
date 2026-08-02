@@ -186,6 +186,28 @@
   --text-tag: 0.6875rem;
   --text-tag--line-height: 1;
 
+  /* ── Grid field ──────────────────────────────────────────────────────────
+     The background ruling. Both cells are integer multiples of --spacing
+     (0.25rem), so the grid and the layout are measured in the same unit and
+     content lands on the lines rather than near them:
+
+       minor  1rem   =  4 × spacing
+       major  4rem   = 16 × spacing
+
+     --grid-gain is the only value that moves. It is written once per frame
+     from scroll velocity by the loop in the document head, and multiplies
+     both line opacities together — so the field brightens as a whole and the
+     minor/major ratio stays fixed. Rest is 1; hard scrolling reaches 2.6.
+
+     Declared here with its resting value so the field is fully specified
+     without scripting: no JS means gain stays 1, which is a legitimate
+     static state rather than a degraded one. */
+  --grid-minor: 1rem;
+  --grid-major: 4rem;
+  --grid-gain: 1;
+  --grid-minor-alpha: 0.022;
+  --grid-major-alpha: 0.055;
+
   /* ── Motion ──────────────────────────────────────────────────────────────
      One easing curve, three durations. Mechanical: fast out of rest, settles
      without bounce. Nothing on this page overshoots. */
@@ -221,8 +243,14 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-body {
+/* The page ground sits on <html>, not <body>, so that body::before can hold
+   the grid field at z-index -1 and still be visible. Painted on body, the
+   background would cover its own pseudo-element. */
+html {
   background-color: var(--color-ground);
+}
+
+body {
   color: var(--color-ink);
   font-family: var(--font-sans);
 
@@ -241,6 +269,52 @@ body {
 
   /* Long words in project blurbs and URLs must never widen the page. */
   overflow-wrap: break-word;
+}
+
+/* ── Grid field ──────────────────────────────────────────────────────────────
+   Four repeating gradients: major and minor, each ruled in both axes. Fixed
+   to the viewport rather than the document, so it reads as the surface the
+   page is laid on instead of a texture that scrolls with it.
+
+   Both alphas are multiplied by --grid-gain, so the whole field brightens
+   together and the minor/major relationship is fixed by construction — the
+   scroll loop cannot desaturate one against the other no matter what it
+   writes. The transition is a floor, not the animation: the loop already
+   updates per frame, and this only smooths the final settle back to rest.
+
+   No canvas, no element, no library — one pseudo-element and one custom
+   property. It cannot fall out of sync with the DOM because it isn't in it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  --minor-line: rgb(31 30 29 / calc(var(--grid-minor-alpha) * var(--grid-gain)));
+  --major-line: rgb(31 30 29 / calc(var(--grid-major-alpha) * var(--grid-gain)));
+
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--major-line) 0 1px,
+      transparent 1px var(--grid-major)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--major-line) 0 1px,
+      transparent 1px var(--grid-major)
+    ),
+    repeating-linear-gradient(
+      to right,
+      var(--minor-line) 0 1px,
+      transparent 1px var(--grid-minor)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--minor-line) 0 1px,
+      transparent 1px var(--grid-minor)
+    );
 }
 
 /* The offset above lives on the scroll container and covers every jump. This
@@ -686,6 +760,12 @@ body {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+
+    /* The scroll loop never attaches under reduced motion, so gain would
+       already hold at rest. Pinned here as well so the field cannot be left
+       bright if the preference is switched on mid-session, after the loop
+       has already written a value to the inline style. */
+    --grid-gain: 1 !important;
   }
 
   .js .reveal,
@@ -740,6 +820,12 @@ body {
 /* ── Forced colours ──────────────────────────────────────────────────────────
    The user's palette wins; our job is to keep structure legible without it. */
 @media (forced-colors: active) {
+  /* The user's palette has no room for a decorative ruling, and forced-colors
+     would resolve the hairlines to CanvasText — a solid grid over everything. */
+  body::before {
+    display: none;
+  }
+
   .panel,
   .well,
   .ctl {
@@ -775,10 +861,17 @@ body {
     scroll-margin-top: 0;
   }
 
+  html,
   body {
     background: #fff;
     color: #000;
     font-size: 10.5pt;
+  }
+
+  /* The grid field is screen furniture and would print as a grey wash across
+     every page — and on some drivers, as a solid block. */
+  body::before {
+    display: none;
   }
 
   /* Anything whose only job is on-screen navigation. */

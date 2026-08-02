@@ -28,6 +28,106 @@ const plexMono = IBM_Plex_Mono({
 
 const SITE = "https://igor-vuta.github.io/portfolio";
 
+/**
+ * Head script. Runs synchronously before first paint, and does two jobs.
+ *
+ * 1. Sets `.js`, the gate every content-hiding rule is behind.
+ * 2. Drives --grid-gain from scroll velocity.
+ *
+ * The grid loop lives here rather than in a client component for three
+ * reasons, in order of weight:
+ *
+ *  - It must be reading scroll before hydration. A component mounted after
+ *    the bundle parses would miss the first flick of the wheel, which on a
+ *    long page is exactly when the field should respond.
+ *  - It touches one custom property on one element and never reads the DOM.
+ *    Wrapping that in React would mean an effect, a ref, and a re-render
+ *    budget for something that must not re-render at all.
+ *  - Inline bytes are HTML, not a bundle chunk. The whole loop costs nothing
+ *    against First Load JS, and the page has 3 kB of headroom.
+ *
+ * The gain function is deterministic — gain is a pure function of the scroll
+ * delta, the frame delta, and four fixed constants. The same scroll produces
+ * the same field on every load. No randomness, no time-of-day term, no state
+ * carried across sessions.
+ */
+const HEAD_SCRIPT = `
+document.documentElement.classList.add('js');
+(function () {
+  var root = document.documentElement;
+  var wide = matchMedia('(min-width: 768px)');
+  var still = matchMedia('(prefers-reduced-motion: reduce)');
+
+  // Calibrated against real frame deltas, not guessed. At 60fps an ordinary
+  // wheel scroll moves 20-60px per frame and a hard fling 150-250px, so VMAX
+  // is set where a fling saturates and everything below it stays on the ramp:
+  //
+  //   20px/frame -> 1.18    60px/frame -> 1.54    150px/frame -> 2.20
+  //
+  // The first calibration used VMAX 3, which saturated at 60px/frame — the
+  // field sat pinned at peak for all normal scrolling and read as a binary
+  // on/off rather than a velocity readout.
+  var REST = 1;      // resting gain — the value the CSS already declares
+  var PEAK = 2.2;    // gain at or above VMAX
+  var VMAX = 8;      // px per ms treated as full deflection
+  var DECAY = 0.88;  // per-frame fall-off toward rest
+  var TAIL = 200;    // ms the loop keeps running after the last scroll event
+
+  var gain = REST, lastY = 0, lastT = 0, lastScroll = 0, raf = 0, live = false;
+
+  function frame(now) {
+    var dt = now - lastT;
+    if (dt <= 0) { raf = requestAnimationFrame(frame); return; }
+
+    var y = window.scrollY;
+    var target = REST + (PEAK - REST) * Math.min(1, Math.abs(y - lastY) / dt / VMAX);
+    lastY = y; lastT = now;
+
+    // Rise immediately to the measured value, fall only at DECAY. Braking
+    // hard should not snap the field off — but the fall is a fixed ratio,
+    // not an easing over wall-clock time, so it stays frame-rate honest.
+    gain = Math.max(target, REST + (gain - REST) * DECAY);
+    root.style.setProperty('--grid-gain', gain.toFixed(3));
+
+    if (gain - REST > 0.004 || now - lastScroll < TAIL) {
+      raf = requestAnimationFrame(frame);
+    } else {
+      live = false;
+      root.style.removeProperty('--grid-gain');
+    }
+  }
+
+  function onScroll() {
+    lastScroll = performance.now();
+    if (live) return;
+    live = true;
+    lastY = window.scrollY;
+    lastT = lastScroll;
+    raf = requestAnimationFrame(frame);
+  }
+
+  var on = false;
+  function sync() {
+    var want = wide.matches && !still.matches;
+    if (want === on) return;
+    on = want;
+    if (want) {
+      addEventListener('scroll', onScroll, { passive: true });
+    } else {
+      removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+      live = false;
+      // Back to the declared resting value, not a stale bright frame.
+      root.style.removeProperty('--grid-gain');
+    }
+  }
+
+  sync();
+  wide.addEventListener('change', sync);
+  still.addEventListener('change', sync);
+})();
+`;
+
 export const metadata: Metadata = {
   // Without metadataBase, Next emits relative OG/Twitter URLs, which every
   // scraper resolves against the wrong origin — so link previews silently
@@ -98,17 +198,11 @@ export default function RootLayout({
     >
       <head>
         {/*
-          Sets `.js` on <html> before first paint. Everything that hides content
-          for animation is gated behind this class, so if the bundle fails to
-          load, is blocked, or scripting is disabled, the page renders in full
-          rather than blank. Inline and synchronous by design — deferring it
-          would reintroduce the flash it exists to prevent.
+          Inline and synchronous by design — see HEAD_SCRIPT above. Deferring
+          it would reintroduce the flash the `.js` gate exists to prevent, and
+          would leave the grid field blind for the first scroll of the page.
         */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `document.documentElement.classList.add('js')`,
-          }}
-        />
+        <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
       </head>
       <body>
         <a href="#main" className="skip ctl ctl-primary">
