@@ -248,12 +248,12 @@
 html {
   scroll-behavior: smooth;
 
-  /* Every fragment target clears the fixed header plus breathing room.
-     Declared once on the scroll container so a new anchor physically cannot
-     be added without inheriting the offset — an earlier build set
-     scroll-margin on an inner wrapper while the id sat on the section, so
-     every jump parked the heading underneath the header. */
-  scroll-padding-top: var(--anchor-offset);
+  /* No scroll-padding-top here, and that absence is load-bearing. The offset
+     lives on the anchored elements as scroll-margin-top (below), and the two
+     properties are additive per spec, not redundant — declaring both doubled
+     every jump to 176px of clearance. Measured, not theorised: instant
+     scrollIntoView landed at scrollY 707 where the design said 795. One
+     property owns the offset; the container stays out of it. */
 
   /* Anchor jumps and focus rings both key off this. */
   -webkit-text-size-adjust: 100%;
@@ -333,11 +333,11 @@ body::before {
     );
 }
 
-/* The offset above lives on the scroll container and covers every jump. This
-   restates it on the anchored elements themselves — the same elements that
-   carry the `id`, never an inner wrapper — so the two can never be separated
-   again by a refactor that moves the id somewhere new. Selecting on [id]
-   rather than a class means an anchor cannot be added without the offset. */
+/* The one and only anchor offset, on the same elements that carry the `id` —
+   never an inner wrapper — so a refactor that moves an id cannot separate the
+   two. Selecting on [id] rather than a class means an anchor cannot be added
+   without the offset. Do not "reinforce" this with scroll-padding-top on the
+   container: the properties sum, and the reinforcement is a doubling. */
 :where(section, footer, main)[id] {
   scroll-margin-top: var(--anchor-offset);
 }
@@ -977,6 +977,45 @@ html.boot .reveal.is-in {
   --ctl-bd: #7fd0ab;
 }
 
+/* ── Trail ───────────────────────────────────────────────────────────────────
+   The marks that run from a pressed control to the top edge of the page.
+   Squares rather than dots — a circle would be the only round thing on a
+   page whose whole geometry is milled edges.
+
+   Sits above the chrome but below the boot terminal, and never takes a
+   pointer event: it is drawn on top of the interface it is leaving. Nothing
+   here animates in CSS; the transforms come from the Web Animations API so
+   the path can be computed from where the control actually is. */
+.trail-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  pointer-events: none;
+}
+
+.trail-dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 6px;
+  height: 6px;
+  /* Centres the mark on the sampled point rather than hanging it off the
+     top-left corner, which would put the whole path 3px out. */
+  margin: -3px 0 0 -3px;
+  background: var(--color-clay);
+  border-radius: var(--radius-inset);
+  will-change: transform;
+}
+
+/* Reduced motion never creates the layer — the click handler returns before
+   it is built, and the link navigates natively. This is the safety net for a
+   preference switched on mid-flight, with a run already on screen. */
+@media (prefers-reduced-motion: reduce) {
+  .trail-layer {
+    display: none;
+  }
+}
+
 /* ── Position rail ───────────────────────────────────────────────────────────
    The section navigator. A mark per section; the active one extends and takes
    the accent. --color-lamp survives the ornament cull because .ctl-ok above
@@ -1200,12 +1239,8 @@ html.boot .reveal.is-in {
     margin: 16mm;
   }
 
-  html {
-    scroll-padding-top: 0;
-  }
-
   /* No fixed header on paper, so the offset would print as a gap above every
-     section. Reset alongside scroll-padding rather than instead of it. */
+     section. */
   :where(section, footer, main)[id] {
     scroll-margin-top: 0;
   }
