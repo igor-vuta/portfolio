@@ -108,34 +108,46 @@ document.documentElement.classList.add('js');
 
   startBoot();
 
-  // Calibrated against real frame deltas, not guessed. At 60fps an ordinary
-  // wheel scroll moves 20-60px per frame and a hard fling 150-250px, so VMAX
-  // is set where a fling saturates and everything below it stays on the ramp:
+  // Velocity is measured between scroll events, not between animation frames.
   //
-  //   20px/frame -> 1.18    60px/frame -> 1.54    150px/frame -> 2.20
+  // Measuring in the frame loop does not work: the scroll event fires after
+  // the position has already moved, so seeding from window.scrollY there
+  // makes the first frame's delta always zero. The field then decayed from a
+  // resting value it had never left and parked — it only ever responded when
+  // scrolling happened to continue across several frames, and a discrete jump
+  // (keyboard, scrollbar drag, instant-scroll mouse) produced nothing at all.
   //
-  // The first calibration used VMAX 3, which saturated at 60px/frame — the
-  // field sat pinned at peak for all normal scrolling and read as a binary
-  // on/off rather than a velocity readout.
+  // The event pair carries the real signal. dt is clamped at both ends: a
+  // floor because two events can land in the same frame and divide out to a
+  // spike, and a ceiling so the first scroll after a long pause is read as a
+  // movement rather than washed out by the idle time preceding it.
+  //
+  // Calibrated against real deltas. During continuous scrolling events fire
+  // about once a frame, so these are still per-frame figures:
+  //
+  //   20px -> 1.18    60px -> 1.54    150px -> 2.20
+  //
+  // An earlier calibration used VMAX 3, which saturated at 60px and pinned
+  // the field at peak for all ordinary scrolling.
   var REST = 1;      // resting gain — the value the CSS already declares
   var PEAK = 2.2;    // gain at or above VMAX
   var VMAX = 8;      // px per ms treated as full deflection
   var DECAY = 0.88;  // per-frame fall-off toward rest
   var TAIL = 200;    // ms the loop keeps running after the last scroll event
+  var DT_MIN = 8;    // ms floor — two events in one frame must not spike
+  var DT_MAX = 100;  // ms ceiling — a resumed scroll is movement, not idle
 
-  var gain = REST, lastY = 0, lastT = 0, lastScroll = 0, raf = 0, live = false;
+  var gain = REST, pending = 0;
+  var lastY = 0, lastEventT = 0, lastScroll = 0, raf = 0, live = false;
 
   function frame(now) {
-    var dt = now - lastT;
-    if (dt <= 0) { raf = requestAnimationFrame(frame); return; }
+    // Rise immediately to whatever the events measured since the last frame,
+    // fall only at DECAY. Braking hard should not snap the field off — and
+    // the fall is a fixed per-frame ratio rather than an easing over
+    // wall-clock time, so it stays frame-rate honest.
+    var target = REST + (PEAK - REST) * pending;
+    pending = 0;
 
-    var y = window.scrollY;
-    var target = REST + (PEAK - REST) * Math.min(1, Math.abs(y - lastY) / dt / VMAX);
-    lastY = y; lastT = now;
-
-    // Rise immediately to the measured value, fall only at DECAY. Braking
-    // hard should not snap the field off — but the fall is a fixed ratio,
-    // not an easing over wall-clock time, so it stays frame-rate honest.
     gain = Math.max(target, REST + (gain - REST) * DECAY);
     root.style.setProperty('--grid-gain', gain.toFixed(3));
 
@@ -148,11 +160,23 @@ document.documentElement.classList.add('js');
   }
 
   function onScroll() {
-    lastScroll = performance.now();
+    var now = performance.now();
+    var y = window.scrollY;
+
+    if (lastEventT) {
+      var dt = Math.min(Math.max(now - lastEventT, DT_MIN), DT_MAX);
+      var n = Math.min(1, Math.abs(y - lastY) / dt / VMAX);
+      // Frames can span several events; the loop should see the fastest of
+      // them rather than whichever happened to land last.
+      if (n > pending) pending = n;
+    }
+
+    lastY = y;
+    lastEventT = now;
+    lastScroll = now;
+
     if (live) return;
     live = true;
-    lastY = window.scrollY;
-    lastT = lastScroll;
     raf = requestAnimationFrame(frame);
   }
 
@@ -167,6 +191,13 @@ document.documentElement.classList.add('js');
       removeEventListener('scroll', onScroll);
       cancelAnimationFrame(raf);
       live = false;
+      gain = REST;
+      // Drop the measurement baseline too. Kept, it would pair a position
+      // from before the viewport changed with a timestamp from after it, and
+      // the first event on re-attach would measure a jump that never
+      // happened — a bright flash on crossing the breakpoint.
+      pending = 0;
+      lastEventT = 0;
       // Back to the declared resting value, not a stale bright frame.
       root.style.removeProperty('--grid-gain');
     }
