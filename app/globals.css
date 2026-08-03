@@ -1,39 +1,422 @@
 @import "tailwindcss";
 
-@theme {
-  --color-oat: #f0eee6;
-  --color-card: #faf9f5;
-  --color-ink: #1f1e1d;
-  --color-fog: #6e6b64;
-  --color-line: #dedbd1;
-  --color-clay: #c15f3c;
-  --color-coal: #191919;
-  --color-cream: #f5f3ec;
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM
+   ───────────────────────────────────────────────────────────────────────────
+   Working rule: nothing reaches a component that isn't defined here first.
+   No raw hex, no ad-hoc radius, no one-off duration in JSX. If a value is
+   needed twice it becomes a token; if it's needed once it still becomes a
+   token, because "once" is how drift starts.
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+   Layers, in order of authority:
+     1. TOKENS      the vocabulary
+     2. BASE        document-level behaviour
+     3. TYPE        the two typefaces and their jobs
+     4. SURFACE     elevation: ground → panel → well
+     5. CONTROL     every interactive element, full state matrix
+     6. INSTRUMENT  data graphics
+     7. CONDITIONS  reduced-motion, forced-colors, no-JS, print, coarse input
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══ 1. TOKENS ═══════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Surfaces ────────────────────────────────────────────────────────────
+     A three-step elevation model, warm neutral. Ground is the chassis the
+     page sits on; panel is raised and holds content; well is recessed and
+     holds readouts. Nothing is elevated twice — a panel never sits on a
+     panel, because in real gear that never happens either. */
+  --color-ground: #eceadf; /* page ground, one step darker than panels */
+  --color-oat: #f0eee6; /* legacy alias / secondary ground */
+  --color-panel: #faf9f5; /* raised working surface */
+  --color-well: #e5e2d6; /* recessed inset — readouts, insets, tags */
+  --color-cream: #f5f3ec; /* type on dark chassis */
+  --color-coal: #191919; /* dark chassis */
+  --color-coal-2: #242322; /* dark chassis, raised */
+
+  /* ── Ink ─────────────────────────────────────────────────────────────────
+     Measured against the *darkest* surface each tone sits on (--color-well,
+     #e5e2d6), not the lightest, because that's the case that actually fails.
+     Verified ratios, well / ground / panel:
+
+       ink    12.82  13.79  15.80   AA everywhere
+       fog     4.55   4.89   5.60   AA everywhere — the floor for any label
+       mute    2.80   3.01   3.44   FAILS AA: aria-hidden decoration ONLY
+
+     mute cannot be darkened into compliance without collapsing into fog
+     (the solver lands on #66635c against fog's #67645d), so instead it is
+     confined by rule: if a tone carries meaning, it is fog or ink. mute is
+     permitted only on marks already hidden from assistive tech — after the
+     ornament cull that leaves just the position rail. */
+  --color-ink: #1f1e1d;
+  --color-fog: #67645d;
+  --color-mute: #7a766d;
+
+  /* ── Structure ───────────────────────────────────────────────────────────
+     Two hairline weights only. line separates; line-2 emphasises and draws
+     axis spines. With the tick scales gone these rules carry all the
+     separation on the page, so a third weight would just be indecision. */
+  --color-line: #dcd9ce;
+  --color-line-2: #c6c2b4;
+
+  /* ── Signal ──────────────────────────────────────────────────────────────
+     One accent, used exclusively for state and wayfinding — never to
+     decorate. If clay appears, something is interactive, active, or live.
+
+     Both values are the solved minimum that clears AA on all three light
+     surfaces; the first pass (#b3502c / #2d7a5a) measured 3.95 and 4.00 on
+     --color-well and would have failed for the small silkscreen labels that
+     use them. Verified well / ground / panel:
+
+       clay   4.57  4.91  5.63
+       lamp   4.51  4.85  5.56
+
+     clay is far too dark to read on coal (3.43), so the dark chassis uses
+     clay-soft instead — 7.44 — wired up in the .on-coal rules below. */
+  --color-clay: #a34928;
+  --color-clay-soft: #d99a80;
+  --color-clay-wash: rgba(163, 73, 40, 0.09);
+  --color-lamp: #2a7153;
+
+  /* ── Type ────────────────────────────────────────────────────────────────
+     Two cuts of one family. Sans carries prose; mono carries every label,
+     number, unit, and identifier. The split is semantic, not decorative:
+     if a value could be measured, it is set in mono. */
+  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, Menlo,
+    Consolas, "Liberation Mono", monospace;
+
+  /* ── Chassis ─────────────────────────────────────────────────────────────
+     The fixed header's height, declared once and consumed everywhere it
+     matters: the header itself, the travel indicator seated on its lower
+     edge, and the scroll offset every fragment jump has to clear.
+
+     Previously those three lived in three files — `h-14` in Nav, `top-14` in
+     ScrollProgress, and a hard-coded 5.5rem here — which is a drift waiting
+     to happen: change the header and two silent regressions ship with it.
+     --anchor-offset is derived, not restated, so it cannot fall out of step. */
+  --header-h: 3.5rem;
+  --anchor-offset: calc(var(--header-h) + 2rem);
+
+  /* ── Geometry ────────────────────────────────────────────────────────────
+     Squared. A 3px panel radius reads as a milled edge; anything rounder
+     reads as software. Pills are gone entirely. */
+  --radius-panel: 3px;
+  --radius-control: 2px;
+  --radius-inset: 2px;
+
+  /* ── Spacing ─────────────────────────────────────────────────────────────
+     One base unit; every gap on the page is an integer multiple of it. The
+     permitted steps are fixed, and deliberately sparse — a scale you can
+     violate isn't a scale:
+
+       1  0.25rem    within a control
+       2  0.5rem     between tightly-coupled items (tag lists)
+       3  0.75rem    control padding
+       4  1rem       between related blocks
+       6  1.5rem     page gutter, grid gap
+       8  2rem       between sub-sections
+       12 3rem       heading to body
+       16 4rem       between major blocks
+       20 5rem       section top padding
+       24 6rem       section bottom padding
+
+     Anything outside this list is a mistake, not a nuance. Tailwind derives
+     every spacing utility from --spacing, so `mt-6` here really is 6 × base. */
+  --spacing: 0.25rem;
+
+  /* ── Type scale ──────────────────────────────────────────────────────────
+     Seven steps, no continuous ramp, and nothing outside this list may appear
+     in a component. The band from `metric` down to `tag` is what actually
+     carries the page — display sizes are used five times in total.
+
+     Two rules hold across the whole scale:
+
+     Display tracking is a flat -0.03em rather than a per-step ramp. The old
+     -0.04 / -0.03 / -0.02 spread was an optical correction for a ramp that is
+     no longer there, and at these three sizes a single value reads as one
+     deliberate voice instead of three near-misses.
+
+     Line-height is 1.55 for prose and tightens as size drops, because short
+     strings do not need the leading that a 68ch paragraph does. Every step
+     carries its own, so a component never restates leading — which is what
+     the `leading-relaxed` / `leading-snug` overrides scattered through the
+     components were doing, silently overriding the scale they sat next to. */
+  --text-display-xl: 4.5rem;
+  --text-display-xl--line-height: 1.02;
+  --text-display-xl--letter-spacing: -0.03em;
+
+  --text-display-lg: 3rem;
+  --text-display-lg--line-height: 1.06;
+  --text-display-lg--letter-spacing: -0.03em;
+
+  --text-display-md: 2rem;
+  --text-display-md--line-height: 1.12;
+  --text-display-md--letter-spacing: -0.03em;
+
+  /* Counting readouts. Tighter than the old text-3xl (1.875rem) it replaces,
+     and tracked in slightly so a six-cell metric row reads as one instrument
+     rather than six loose numbers. */
+  --text-metric: 1.75rem;
+  --text-metric--line-height: 1;
+  --text-metric--letter-spacing: -0.02em;
+
+  /* Ledes only. 17px, down from 18 — still clearly above body, no longer
+     drifting toward a display size. */
+  --text-body-lg: 1.0625rem;
+  --text-body-lg--line-height: 1.5;
+
+  /* The default. 15px, not 16. */
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.55;
+
+  /* Supporting prose: card bodies, list items, captions. Replaces Tailwind's
+     text-sm (14px) one step down. */
+  --text-detail: 0.8125rem;
+  --text-detail--line-height: 1.5;
+
+  /* Notes and footnotes. Replaces text-xs at the same size, with leading that
+     suits two lines rather than twenty. */
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.45;
+
+  /* Single-word chips in the stack and skills lists. Set solid — these are
+     never more than one line, so leading would only pad the box. */
+  --text-tag: 0.6875rem;
+  --text-tag--line-height: 1;
+
+  /* ── Grid field ──────────────────────────────────────────────────────────
+     The background ruling. Both cells are integer multiples of --spacing
+     (0.25rem), so the grid and the layout are measured in the same unit and
+     content lands on the lines rather than near them:
+
+       minor  1rem   =  4 × spacing
+       major  4rem   = 16 × spacing
+
+     --grid-gain is the only value that moves. It is written once per frame
+     from scroll velocity by the loop in the document head, and multiplies
+     both line opacities together — so the field brightens as a whole and the
+     minor/major ratio stays fixed. Rest is 1; hard scrolling reaches 2.6.
+
+     Declared here with its resting value so the field is fully specified
+     without scripting: no JS means gain stays 1, which is a legitimate
+     static state rather than a degraded one. */
+  --grid-minor: 1rem;
+  --grid-major: 4rem;
+  --grid-gain: 1;
+  --grid-minor-alpha: 0.022;
+  --grid-major-alpha: 0.055;
+
+  /* ── Motion ──────────────────────────────────────────────────────────────
+     Two curves, three durations. Nothing on this page overshoots.
+
+     --ease-entrance is an expo-out: almost all of the distance is covered in
+     the first third, then a long settle. Correct for something arriving from
+     off-screen, where the tail sells the deceleration.
+
+     --ease-sharp exists because that tail is wrong under a finger. A control
+     responds to a press that has already happened, so the motion should be
+     over rather than settling — the long expo tail reads as slack, as though
+     the button is catching up with the click. This curve leaves rest fast and
+     arrives flat, with no visible easing at the end.
+
+     --dur-tap is 120ms, up from 80. Below roughly 100ms a state change reads
+     as an instant swap and the travel is lost entirely; the press stopped
+     feeling like a key and started feeling like a repaint. 120ms is long
+     enough to be seen as movement and short enough to stay under the
+     threshold where a control feels like it is lagging the input. */
+  --ease-entrance: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-sharp: cubic-bezier(0.2, 0, 0, 1);
+  --dur-tap: 120ms;
+  --dur-state: 160ms;
+  --dur-enter: 300ms;
+
+  /* ── Elevation ───────────────────────────────────────────────────────────
+     Shadows are hairline-plus-diffusion, never soft blobs. Light is from
+     directly above, so the top edge catches and the bottom edge drops. */
+  --shadow-panel: 0 1px 0 rgba(31, 30, 29, 0.03),
+    0 1px 2px rgba(31, 30, 29, 0.04);
+  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
+    0 1px 2px rgba(31, 30, 29, 0.07), 0 2px 6px rgba(31, 30, 29, 0.05);
+  --shadow-well: inset 0 1px 2px rgba(31, 30, 29, 0.09),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.5);
 }
+
+/* ═══ 2. BASE ═════════════════════════════════════════════════════════════ */
 
 html {
   scroll-behavior: smooth;
+
+  /* No scroll-padding-top here, and that absence is load-bearing. The offset
+     lives on the anchored elements as scroll-margin-top (below), and the two
+     properties are additive per spec, not redundant — declaring both doubled
+     every jump to 176px of clearance. Measured, not theorised: instant
+     scrollIntoView landed at scrollY 707 where the design said 795. One
+     property owns the offset; the container stays out of it. */
+
+  /* Anchor jumps and focus rings both key off this. */
+  -webkit-text-size-adjust: 100%;
+}
+
+/* The page ground sits on <html>, not <body>, so that body::before can hold
+   the grid field at z-index -1 and still be visible. Painted on body, the
+   background would cover its own pseudo-element. */
+html {
+  background-color: var(--color-ground);
 }
 
 body {
-  background-color: var(--color-oat);
   color: var(--color-ink);
   font-family: var(--font-sans);
+
+  /* The document baseline, and the reason the page reads dense. --text-body
+     has been 15px since the token layer landed, but nothing applied it: the
+     body element inherited the browser's 16px, so every element that didn't
+     name a size explicitly was one step too large. Declared here, the scale
+     finally reaches the elements that don't ask for it. */
+  font-size: var(--text-body);
+  line-height: 1.55;
+
+  font-synthesis-weight: none;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+
+  /* Long words in project blurbs and URLs must never widen the page. */
+  overflow-wrap: break-word;
+}
+
+/* ── Grid field ──────────────────────────────────────────────────────────────
+   Four repeating gradients: major and minor, each ruled in both axes. Fixed
+   to the viewport rather than the document, so it reads as the surface the
+   page is laid on instead of a texture that scrolls with it.
+
+   Both alphas are multiplied by --grid-gain, so the whole field brightens
+   together and the minor/major relationship is fixed by construction — the
+   scroll loop cannot desaturate one against the other no matter what it
+   writes. The transition is a floor, not the animation: the loop already
+   updates per frame, and this only smooths the final settle back to rest.
+
+   No canvas, no element, no library — one pseudo-element and one custom
+   property. It cannot fall out of sync with the DOM because it isn't in it. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  --minor-line: rgb(31 30 29 / calc(var(--grid-minor-alpha) * var(--grid-gain)));
+  --major-line: rgb(31 30 29 / calc(var(--grid-major-alpha) * var(--grid-gain)));
+
+  background-image:
+    repeating-linear-gradient(
+      to right,
+      var(--major-line) 0 1px,
+      transparent 1px var(--grid-major)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--major-line) 0 1px,
+      transparent 1px var(--grid-major)
+    ),
+    repeating-linear-gradient(
+      to right,
+      var(--minor-line) 0 1px,
+      transparent 1px var(--grid-minor)
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--minor-line) 0 1px,
+      transparent 1px var(--grid-minor)
+    );
+}
+
+/* The one and only anchor offset, on the same elements that carry the `id` —
+   never an inner wrapper — so a refactor that moves an id cannot separate the
+   two. Selecting on [id] rather than a class means an anchor cannot be added
+   without the offset. Do not "reinforce" this with scroll-padding-top on the
+   container: the properties sum, and the reinforcement is a doubling. */
+:where(section, footer, main)[id] {
+  scroll-margin-top: var(--anchor-offset);
 }
 
 ::selection {
-  background: rgba(193, 95, 60, 0.22);
+  background: rgba(179, 80, 44, 0.18);
+  color: var(--color-ink);
+}
+
+/* Caret picks up the signal colour — a small thing, but it's the one part of
+   the interface the user is actively driving. */
+:where(input, textarea) {
+  caret-color: var(--color-clay);
+}
+
+/* Scrollbar, where the platform allows styling it. Sized to the hairlines. */
+@supports (scrollbar-width: thin) {
+  html {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line-2) transparent;
+  }
+}
+
+/* ── Focus ───────────────────────────────────────────────────────────────────
+   One ring, specified once, proven against all four surfaces the site uses
+   (ground, panel, well, coal). Offset keeps it clear of the control's own
+   border so it never reads as a hover state. */
+:where(a, button, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 3px;
+  border-radius: var(--radius-control);
+}
+
+.on-coal :where(a, button, summary, [tabindex]):focus-visible {
+  outline-color: var(--color-cream);
+}
+
+/* Skip link: present for keyboard users from the first Tab, absent otherwise.
+   Positioned, not display:none — it has to be focusable to be useful. */
+.skip {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 100;
+  transform: translateY(-160%);
+  transition: transform var(--dur-state) var(--ease-entrance);
+}
+
+.skip:focus-visible {
+  transform: translateY(0);
+}
+
+/* ── Reveal ──────────────────────────────────────────────────────────────────
+   Inverted from the previous build. Content is visible by default; hiding is
+   gated behind `.js`, set by a blocking inline script in <head>. Result: no
+   flash of unstyled content, and if the bundle fails to load or scripting is
+   off, the page renders in full rather than blank. */
+/* The gate alone only covers scripting being switched off. If scripting is
+   enabled but the bundle fails to load — CDN blocked, parse error, offline
+   after the HTML was cached — this inline script still runs, `.js` is still
+   applied, and nothing ever arrives to add `.is-in`. The component's own
+   timeout cannot help, because it lives in the bundle that failed.
+
+   So the hide carries its own expiry: a long-delayed copy of the same
+   animation reveals the element regardless. `.is-in` simply plays it sooner.
+   Worst case is a 6s wait; the failure mode is never a blank page. */
+.js .reveal {
+  opacity: 0;
+  animation: rise var(--dur-enter) var(--ease-entrance) 6s forwards;
+}
+
+.js .reveal.is-in {
+  animation: rise var(--dur-enter) var(--ease-entrance) forwards;
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -41,82 +424,714 @@ body {
   }
 }
 
-.reveal {
-  opacity: 0;
+/* Set on whatever the reveal observer had already marked at the moment the
+   boot sequence ended. Without it, dropping `.boot` re-enables the rule above
+   on elements that are already on screen, and their entrance animation
+   restarts from zero — a flash at the 900ms mark on exactly the content the
+   user is looking at. Applied per-element rather than as a document-level
+   flag, so reveals further down the page still animate normally afterwards.
+   Declared after the `.is-in` rule it has to beat; equal specificity, later
+   in source. */
+.js .reveal-settled,
+.js .reveal-settled.is-in {
+  opacity: 1;
+  animation: none;
+  transform: none;
 }
 
-.reveal.is-in {
-  animation: rise 0.65s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+/* ── Boot ────────────────────────────────────────────────────────────────────
+   Plays once per session on a fixed schedule, and is over inside 5.4s.
+
+     terminal   0 → 4900ms   deploy log types and streams, then lifts
+     grid    4500 → 4800ms   the field draws downward
+     rules   4650 → 4970ms   hairlines take their colour
+     type    4750 → 5210ms   content arrives
+
+   The page's own stages start under the terminal and finish just after it
+   fades, so the machine is already coming up as the overlay clears rather
+   than the two running back to back.
+
+   This is a held screen, and worth being honest about the trade: five seconds
+   is a long time to stand between someone and a CV they came to read. Three
+   things keep it from being a preloader in the damaging sense — the markup
+   behind it is complete and readable at first paint, every rule here hangs
+   off a class only JS sets, and any key, tap, or wheel drops the whole thing
+   instantly. Skipping does not cancel a load; it removes an animation from
+   content that already arrived.
+
+   Stages overlap by design. Strict sequencing reads as separate events; an
+   overlap reads as one system coming up.
+
+   Not staged: the position rail and the travel indicator. The indicator is
+   scaled to zero at the top of the page and the rail's detents are hairlines
+   belonging to the chassis rather than the content. */
+
+/* Hidden unless the boot class is set, which is what makes a failed bundle,
+   disabled scripting, or reduced motion all resolve to "no overlay" rather
+   than "overlay stuck on screen". Never `visibility` alone — this must be out
+   of the layout entirely when it is not playing. */
+.boot-term {
+  display: none;
 }
 
-/* ——— signature animations ——— */
+html.boot .boot-term {
+  display: flex;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  align-items: center;
+  padding: 1.5rem;
+  background: var(--color-coal);
+  color: var(--color-cream);
+  font-family: var(--font-mono);
+  font-size: var(--text-detail);
+  line-height: 1.7;
+  font-variant-numeric: tabular-nums;
 
-.hero-blob {
-  animation: blobFloat 16s ease-in-out infinite alternate;
-  transform-origin: 60% 40%;
+  /* Lifts itself. The JS cap is a backstop for a stage that never runs, not
+     the mechanism — so an overlay that somehow outlived its script still
+     clears on time. visibility in the end state keeps it off the hit-testing
+     surface once transparent. */
+  animation: termOut 400ms var(--ease-entrance) 4500ms forwards;
 }
 
-.hero-blob-2 {
-  animation: blobFloat 22s ease-in-out infinite alternate-reverse;
-  transform-origin: 40% 60%;
+@keyframes termOut {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
 }
 
-@keyframes blobFloat {
+.boot-term-body {
+  width: 100%;
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.boot-sigil {
+  color: var(--color-clay-soft);
+}
+
+/* The command types itself by revealing width in whole characters. steps()
+   over a monospace face is what makes it land on character boundaries rather
+   than sliding — and it is pure CSS, so it cannot drift from the schedule the
+   rest of the sequence runs on. The step count is set inline from the
+   string's own length. */
+.boot-cmd {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  animation: bootTypeCmd 1200ms 400ms forwards;
+}
+
+@keyframes bootTypeCmd {
+  to {
+    width: calc(var(--cmd-len) * 1ch);
+  }
+}
+
+.boot-caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 1em;
+  margin-left: 0.15em;
+  background: var(--color-clay-soft);
+  vertical-align: text-bottom;
+  animation: bootCaret 900ms steps(1, end) infinite;
+}
+
+/* steps(1) so it snaps between states — a caret that fades is a glow. */
+@keyframes bootCaret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.boot-out {
+  margin-top: 1.25rem;
+}
+
+/* No `opacity: 0` here, deliberately. These keyframes declare only `from`, so
+   the implicit `to` resolves to the element's own underlying value — and a
+   base of 0 makes every line animate from nothing to nothing. `both` already
+   holds the from-state through the delay, which is the only thing the base
+   declaration was there for. Cost an invisible deploy log to find. */
+.boot-line {
+  animation: bootLine 220ms var(--ease-entrance) both;
+}
+
+/* max-content rather than 1fr on the value column. With 1fr the column
+   absorbed all the slack and pushed the status markers to the far edge of a
+   42rem block, leaving each `ok` stranded a couple of hundred pixels from the
+   line it belongs to. Sized to the widest value, the three columns still
+   align down the log but read as one unit per row. */
+.boot-out .boot-line {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, max-content) auto;
+  gap: 0.75rem;
+}
+
+@keyframes bootLine {
   from {
-    transform: rotate(-4deg) translateY(0) scale(1);
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+.boot-key {
+  color: var(--color-clay-soft);
+}
+
+.boot-val {
+  margin: 0;
+  color: rgba(245, 243, 236, 0.72);
+}
+
+.boot-ok {
+  margin: 0;
+  color: #7fd0ab;
+}
+
+.boot-ready {
+  margin-top: 1.25rem;
+  color: var(--color-cream);
+}
+
+.boot-tick {
+  color: #7fd0ab;
+}
+
+.boot-skip {
+  margin-top: 2rem;
+  color: rgba(245, 243, 236, 0.42);
+  font-size: var(--text-micro);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  animation: bootLine 220ms var(--ease-entrance) 800ms both;
+}
+
+/* Narrow viewports drop the three-column log to two lines per entry rather
+   than crushing a 6rem label column into a phone. */
+@media (max-width: 30rem) {
+  .boot-out .boot-line {
+    grid-template-columns: 5rem 1fr;
+  }
+
+  .boot-ok {
+    display: none;
+  }
+}
+
+html.boot body::before {
+  animation: bootGrid 300ms var(--ease-entrance) 4500ms both;
+}
+
+@keyframes bootGrid {
+  from {
+    opacity: 0;
+    clip-path: inset(0 0 100% 0);
   }
   to {
-    transform: rotate(5deg) translateY(26px) scale(1.06);
+    opacity: 1;
+    clip-path: inset(0 0 0 0);
   }
 }
 
-.hl {
-  position: relative;
-  white-space: nowrap;
+/* Rules arrive by taking their colour, not by scaling — a hairline that grows
+   from a point is a graphic, a hairline that fades up is a rule appearing.
+   Each keyframe declares only `from`, so `to` resolves to whatever the
+   element's own border colour is and the two cannot fall out of step. */
+html.boot header {
+  animation: bootRuleBottom 320ms var(--ease-entrance) 4650ms both;
 }
 
-.hl-svg {
+html.boot main > section {
+  animation: bootRuleTop 320ms var(--ease-entrance) 4650ms both;
+}
+
+@keyframes bootRuleBottom {
+  from {
+    border-bottom-color: transparent;
+  }
+}
+
+@keyframes bootRuleTop {
+  from {
+    border-top-color: transparent;
+  }
+}
+
+html.boot main,
+html.boot header nav,
+html.boot footer {
+  animation: bootType 460ms var(--ease-entrance) 4750ms both;
+}
+
+@keyframes bootType {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* The reveal wrapper stands down for the duration. Both systems animate the
+   same content, and letting them overlap would stagger the hero twice on a
+   first load — once on the boot schedule, once on the observer's. Boot owns
+   the entrance; the observer owns everything after it. */
+html.boot .reveal,
+html.boot .reveal.is-in {
+  opacity: 1;
+  animation: none;
+  transform: none;
+}
+
+/* ═══ 3. TYPE ═════════════════════════════════════════════════════════════ */
+
+/* Silkscreen: the label vocabulary. Every label, section index, unit, axis
+   name, and legend on the page is set in this and nothing else. */
+.silk {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.silk-sm {
+  font-size: 0.625rem;
+  letter-spacing: 0.16em;
+}
+
+/* Readout: numerals that update, animate, or need to be compared down a
+   column. Tabular figures and slashed zero — a counting metric must not
+   reflow its own width mid-count. */
+/* Tracking deliberately not set here. `.readout` is unlayered and Tailwind's
+   utilities are not, so an unlayered letter-spacing on this class silently
+   outranks every `text-*` step it is combined with — the blanket -0.01em it
+   used to carry would have overridden the metric step's -0.02em on the one
+   element that step exists for. Size steps own tracking; this class owns the
+   face and the figures. */
+.readout {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums slashed-zero;
+  font-feature-settings: "tnum" 1, "zero" 1;
+}
+
+/* Display headings. Tight, unromantic, set in the sans.
+   Size, line-height, and tracking all come from the type scale via the
+   text-display-* utilities, so this only carries what the scale can't:
+   weight, and balanced line breaking. */
+.display {
+  font-weight: 600;
+  text-wrap: balance;
+}
+
+/* Visually hidden, still announced. Clipped rather than display:none, which
+   would take it out of the accessibility tree along with the layout.
+
+   Was hand-rolled as `absolute h-px w-px overflow-hidden [clip:...]` at three
+   call sites. That works on a span, whose box becomes block-level under
+   position:absolute — but not on a table: display:table sizes to min-content
+   and ignores the 1px width, so the chart's text-alternative table laid out
+   at its natural 908px and pushed the document 562px wide on a phone. The
+   whole page then rendered in the left third of the viewport.
+
+   Hence the wrapper rule below, and hence this being a class rather than a
+   pattern people retype: the failure was invisible on a desktop viewport and
+   silent in every build. */
+.sr-only {
   position: absolute;
-  left: -2%;
-  bottom: -0.12em;
-  width: 104%;
-  height: 0.22em;
-  overflow: visible;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
-.hl-svg path {
+/* Anything that cannot be shrunk — a table, a wide figure — goes *inside* an
+   .sr-only element rather than wearing the class itself. The clip on the
+   wrapper contains the overflow; the child is free to be its natural size. */
+.sr-only > * {
+  max-width: none;
+}
+
+/* Prose measure — capped so body text never runs past a comfortable line. */
+.measure {
+  max-width: 68ch;
+  text-wrap: pretty;
+}
+
+/* Inline links inside prose: underlined by default, because colour alone is
+   not an affordance. Offset so descenders stay legible. */
+.link {
+  color: var(--color-clay);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, var(--color-clay) 45%, transparent);
+  transition: text-decoration-color var(--dur-state) var(--ease-entrance);
+}
+
+.link:hover {
+  text-decoration-color: var(--color-clay);
+}
+
+/* clay measures 3.43 on coal — below AA. The dark chassis takes clay-soft
+   (7.44) so inline links stay readable there. */
+.on-coal .link {
+  color: var(--color-clay-soft);
+  text-decoration-color: color-mix(
+    in srgb,
+    var(--color-clay-soft) 50%,
+    transparent
+  );
+}
+
+.on-coal .link:hover {
+  text-decoration-color: var(--color-clay-soft);
+}
+
+/* ═══ 4. SURFACE ══════════════════════════════════════════════════════════ */
+
+.panel {
+  background: var(--color-panel);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-panel);
+}
+
+/* Interactive panels earn a hover state; static ones must not have one, so
+   this is opt-in rather than applied to `.panel` wholesale. */
+.panel-interactive {
+  transition: border-color var(--dur-state) var(--ease-entrance),
+    box-shadow var(--dur-state) var(--ease-entrance),
+    transform var(--dur-state) var(--ease-entrance);
+}
+
+.panel-interactive:hover {
+  border-color: var(--color-line-2);
+  box-shadow: var(--shadow-raised);
+}
+
+.panel-interactive:focus-within {
+  border-color: var(--color-clay);
+}
+
+/* Recessed. Holds readouts and tags — anything the page reports rather than
+   anything the user acts on. */
+.well {
+  background: var(--color-well);
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius-inset);
+  box-shadow: var(--shadow-well);
+}
+
+/* Tick scales, ventilation slots, and the indicator lamp were removed here.
+   They read as instrument ornament rather than instrument discipline, and the
+   brief is precision, not furniture. What remains carries information:
+   surfaces, hairlines, and the mono numerals. Separation is now done by the
+   hairline rules alone. */
+
+/* ═══ 5. CONTROL ══════════════════════════════════════════════════════════ */
+
+/* Every interactive element resolves to `.ctl`. Variants only re-point the
+   three custom properties, so a variant cannot accidentally ship without a
+   hover, active, disabled, or focus state — they're defined on the base. */
+.ctl {
+  --ctl-bg: transparent;
+  --ctl-fg: var(--color-ink);
+  --ctl-bd: var(--color-line-2);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6875rem 1.125rem;
+  min-height: 44px; /* pointer target floor, all inputs */
+  border: 1px solid var(--ctl-bd);
+  border-radius: var(--radius-control);
+  background: var(--ctl-bg);
+  color: var(--ctl-fg);
+  font-family: var(--font-sans);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+
+  /* Every control transition runs on the sharp curve. The identical
+     declaration on hover, active, and disabled is what makes a press feel
+     the same every time regardless of how the control was reached — there is
+     no per-state timing to drift, and nothing here is duration-scaled by
+     distance travelled. */
+  transition: background-color var(--dur-tap) var(--ease-sharp),
+    border-color var(--dur-tap) var(--ease-sharp),
+    color var(--dur-tap) var(--ease-sharp),
+    transform var(--dur-tap) var(--ease-sharp);
+}
+
+.ctl:hover {
+  --ctl-bd: var(--color-clay);
+  --ctl-fg: var(--color-clay);
+  --ctl-bg: var(--color-clay-wash);
+}
+
+/* Real travel on press. Small, fast, and it settles — a key, not a bounce. */
+.ctl:active {
+  transform: translateY(1px);
+}
+
+.ctl[aria-disabled="true"],
+.ctl:disabled {
+  --ctl-fg: var(--color-mute);
+  --ctl-bd: var(--color-line);
+  --ctl-bg: transparent;
+  cursor: not-allowed;
+}
+
+/* aria-disabled keeps the control focusable so a screen-reader user can find
+   it and hear why it's unavailable; pointer events are suppressed instead. */
+.ctl[aria-disabled="true"] {
+  pointer-events: none;
+}
+
+.ctl-primary {
+  --ctl-bg: var(--color-ink);
+  --ctl-fg: var(--color-cream);
+  --ctl-bd: var(--color-ink);
+}
+
+.ctl-primary:hover {
+  --ctl-bg: var(--color-clay);
+  --ctl-bd: var(--color-clay);
+  --ctl-fg: var(--color-cream);
+}
+
+/* Quiet variant for tertiary actions — no border until addressed. */
+.ctl-quiet {
+  --ctl-bd: transparent;
+  --ctl-fg: var(--color-fog);
+  padding-inline: 0.75rem;
+}
+
+.ctl-quiet:hover {
+  --ctl-bd: transparent;
+  --ctl-bg: transparent;
+  --ctl-fg: var(--color-ink);
+}
+
+.ctl-sm {
+  min-height: 36px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+}
+
+/* Success state for the copy control — announced in text, not colour alone. */
+.ctl-ok {
+  --ctl-bd: var(--color-lamp);
+  --ctl-fg: var(--color-lamp);
+  --ctl-bg: transparent;
+}
+
+.ctl-ok:hover {
+  --ctl-bd: var(--color-lamp);
+  --ctl-fg: var(--color-lamp);
+  --ctl-bg: transparent;
+}
+
+/* Controls on the dark chassis re-point the same properties. */
+.on-coal .ctl {
+  --ctl-fg: var(--color-cream);
+  --ctl-bd: rgba(245, 243, 236, 0.26);
+}
+
+.on-coal .ctl:hover {
+  --ctl-bd: var(--color-cream);
+  --ctl-bg: rgba(245, 243, 236, 0.08);
+  --ctl-fg: var(--color-cream);
+}
+
+.on-coal .ctl-primary {
+  --ctl-bg: var(--color-cream);
+  --ctl-fg: var(--color-coal);
+  --ctl-bd: var(--color-cream);
+}
+
+.on-coal .ctl-primary:hover {
+  --ctl-bg: var(--color-clay);
+  --ctl-fg: var(--color-cream);
+  --ctl-bd: var(--color-clay);
+}
+
+.on-coal .ctl-ok {
+  --ctl-fg: #7fd0ab;
+  --ctl-bd: #7fd0ab;
+}
+
+/* ── Trail ───────────────────────────────────────────────────────────────────
+   The ghost of a pressed control, mid-flight to the top of the page. It is a
+   clone of the real element and keeps the element's own classes, so almost
+   everything about its appearance is inherited — this rule only lifts it out
+   of the document and hands motion over to the Web Animations API, which
+   computes the path from where the control actually was.
+
+   Sits above the chrome but below the boot terminal, and never takes a
+   pointer event: it is drawn on top of the interface it is leaving. The
+   transition override kills the control's own hover/press transitions on the
+   clone — a ghost that re-runs its hover fade mid-flight shimmers. */
+.trail-ghost {
+  position: fixed;
+  z-index: 150;
+  margin: 0;
+  pointer-events: none;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+/* Reduced motion never creates the ghost — the click handler returns before
+   it is built, and the link navigates natively. This is the safety net for a
+   preference switched on mid-flight, with a copy already in the air. */
+@media (prefers-reduced-motion: reduce) {
+  .trail-ghost {
+    display: none;
+  }
+}
+
+/* ── Live preview ────────────────────────────────────────────────────────────
+   The in-page browser. Native <dialog> supplies the behaviour (top layer,
+   focus trap, Esc); this supplies the two shapes: a centred instrument panel
+   on desktop, a Telegram-style bottom sheet on phones. Interior chrome is
+   utility-styled in the component; only what a component cannot reach lives
+   here — the element's own box, the backdrop, and the entry motion. */
+.preview-sheet {
+  /* The UA stylesheet centres a <dialog> with margin:auto — and Tailwind's
+     preflight zeroes every margin, which silently pins the top layer to the
+     viewport's corner. Restated here because the reset outranks the UA. */
+  margin: auto;
+  width: min(1100px, 94vw);
+  height: min(84dvh, 900px);
+  padding: 0;
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-raised);
+  overflow: hidden;
+}
+
+.preview-sheet::backdrop {
+  background: rgba(25, 25, 25, 0.55);
+}
+
+.preview-sheet[open] {
+  animation: previewIn var(--dur-enter) var(--ease-entrance);
+}
+
+@keyframes previewIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Phone: full-width sheet seated on the bottom edge, dvh so the browser's
+   collapsing toolbars cannot push the header bar off screen. */
+@media (max-width: 47.9375rem) {
+  .preview-sheet {
+    width: 100vw;
+    max-width: 100vw;
+    height: 93dvh;
+    max-height: 93dvh;
+    margin: auto 0 0;
+    border-left: 0;
+    border-right: 0;
+    border-bottom: 0;
+    border-radius: 6px 6px 0 0;
+  }
+
+  .preview-sheet[open] {
+    animation: sheetUp var(--dur-enter) var(--ease-entrance);
+  }
+
+  @keyframes sheetUp {
+    from {
+      transform: translateY(100%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-sheet[open] {
+    animation: none;
+  }
+}
+
+/* ── Position rail ───────────────────────────────────────────────────────────
+   The section navigator. A mark per section; the active one extends and takes
+   the accent. --color-lamp survives the ornament cull because .ctl-ok above
+   still uses it to confirm a successful copy — that is state, not decoration. */
+.detent {
+  width: 10px;
+  height: 1px;
+  background: var(--color-line-2);
+  transition: width var(--dur-state) var(--ease-entrance),
+    height var(--dur-state) var(--ease-entrance),
+    background-color var(--dur-state) var(--ease-entrance);
+}
+
+.detent-active {
+  width: 20px;
+  height: 2px;
+  background: var(--color-clay);
+}
+
+.detent-group:hover .detent {
+  background: var(--color-ink);
+}
+
+/* ═══ 6. INSTRUMENT ═══════════════════════════════════════════════════════ */
+
+/* Plotted traces draw themselves once, on entry, then rest. */
+.trace {
   stroke-dasharray: 1;
   stroke-dashoffset: 1;
-  animation: drawLine 0.9s cubic-bezier(0.6, 0, 0.2, 1) 1s forwards;
 }
 
-@keyframes drawLine {
+/* 1.1s to match CountUp's run exactly. The two are the page's paired
+   signature moments and sit in the same section, so when the chart and the
+   metric row start together they should also finish together — at 1.3s the
+   trace was still drawing after every number had already settled. Timing
+   only; the draw itself is unchanged. */
+.trace-drawn {
+  animation: draw 1.1s cubic-bezier(0.5, 0, 0.3, 1) 0.15s forwards;
+}
+
+@keyframes draw {
   to {
     stroke-dashoffset: 0;
   }
 }
 
-.pareto-line {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-}
-
-.pareto-line-drawn {
-  animation: drawLine 1.4s cubic-bezier(0.5, 0, 0.3, 1) 0.2s forwards;
-}
-
-.pareto-dot {
+.plot-dot {
   opacity: 0;
-  transition: opacity 0.45s ease;
+  transition: opacity 0.4s var(--ease-entrance);
 }
 
-.pareto-dot-in {
+.plot-dot-in {
   opacity: 1;
 }
 
 .knee-ring {
-  opacity: 0;
-  animation: kneePulse 2.6s ease-in-out 1.6s infinite;
+  opacity: 0.55;
+  animation: kneePulse 2.8s cubic-bezier(0.4, 0, 0.6, 1) 1.4s infinite;
 }
 
 @keyframes kneePulse {
@@ -125,81 +1140,239 @@ body {
     opacity: 0.55;
   }
   50% {
-    opacity: 0.12;
+    opacity: 0.14;
   }
 }
 
-.live-dot {
-  position: relative;
-  display: inline-block;
-  width: 8px;
-  height: 8px;
-  border-radius: 9999px;
-  background: #34d399;
-}
+/* ═══ 7. CONDITIONS ═══════════════════════════════════════════════════════ */
 
-.live-dot::after {
-  content: "";
-  position: absolute;
-  inset: -4px;
-  border-radius: 9999px;
-  border: 1.5px solid #34d399;
-  animation: livePing 1.8s cubic-bezier(0, 0, 0.2, 1) infinite;
-}
-
-@keyframes livePing {
-  0% {
-    transform: scale(0.6);
-    opacity: 0.9;
+/* ── Coarse pointer ──────────────────────────────────────────────────────────
+   Hover states are meaningless on touch and cause sticky-hover artefacts, so
+   they're scoped to devices that can actually hover. Targets grow instead. */
+@media (hover: none) {
+  .ctl:hover {
+    --ctl-bd: var(--color-line-2);
+    --ctl-fg: var(--color-ink);
+    --ctl-bg: transparent;
   }
-  80%,
-  100% {
-    transform: scale(1.6);
-    opacity: 0;
+
+  .ctl-primary:hover {
+    --ctl-bg: var(--color-ink);
+    --ctl-bd: var(--color-ink);
+    --ctl-fg: var(--color-cream);
+  }
+
+  .panel-interactive:hover {
+    border-color: var(--color-line);
+    box-shadow: var(--shadow-panel);
   }
 }
 
-.btn-lift {
-  will-change: transform;
+@media (pointer: coarse) {
+  .ctl {
+    min-height: 48px;
+  }
 }
 
-.btn-lift:hover {
-  transform: translateY(-2px);
-}
-
-.btn-lift:active {
-  transform: translateY(0);
-}
-
+/* ── Reduced motion ──────────────────────────────────────────────────────────
+   Every animation declared above has an explicit resting state here. The
+   blanket rule at the end is the safety net, not the strategy. */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
-    opacity: 1;
-  }
-  .reveal.is-in {
-    animation: none;
-  }
   html {
     scroll-behavior: auto;
+
+    /* The scroll loop never attaches under reduced motion, so gain would
+       already hold at rest. Pinned here as well so the field cannot be left
+       bright if the preference is switched on mid-session, after the loop
+       has already written a value to the inline style. */
+    --grid-gain: 1 !important;
   }
-  .hero-blob,
-  .hero-blob-2,
-  .knee-ring,
-  .live-dot::after {
+
+  .js .reveal,
+  .js .reveal.is-in {
+    opacity: 1;
     animation: none;
+    transform: none;
   }
+
+  /* The boot class is never added under reduced motion, so these rules should
+     be unreachable. Declared anyway: the preference can be switched on while
+     the page is open, and the sequence must collapse to its end state rather
+     than freeze mid-stage.
+
+     The overlay is the one that matters. Every other stage frozen mid-way is
+     a cosmetic wrong; a full-screen terminal frozen mid-way is the site
+     replaced by a black rectangle, so it is removed outright rather than
+     animated to transparent. */
+  .boot-term,
+  html.boot .boot-term {
+    display: none !important;
+  }
+
+  html.boot body::before,
+  html.boot header,
+  html.boot main,
+  html.boot main > section,
+  html.boot header nav,
+  html.boot footer {
+    animation: none;
+    opacity: 1;
+    transform: none;
+    clip-path: none;
+  }
+
   .knee-ring {
+    animation: none;
     opacity: 0.55;
   }
-  .hl-svg path,
-  .pareto-line {
+
+  .trace,
+  .trace-drawn {
     stroke-dashoffset: 0;
     animation: none;
   }
-  .pareto-dot {
+
+  .plot-dot {
     opacity: 1;
     transition: none;
   }
-  .btn-lift:hover {
+
+  .ctl:active {
     transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ── No scripting ────────────────────────────────────────────────────────────
+   Belt and braces alongside the `.js` gate: if the class hook ever regresses,
+   this still guarantees content is not hidden. */
+@media (scripting: none) {
+  .reveal,
+  .js .reveal {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}
+
+/* ── Forced colours ──────────────────────────────────────────────────────────
+   The user's palette wins; our job is to keep structure legible without it. */
+@media (forced-colors: active) {
+  /* The user's palette has no room for a decorative ruling, and forced-colors
+     would resolve the hairlines to CanvasText — a solid grid over everything. */
+  body::before {
+    display: none;
+  }
+
+  .panel,
+  .well,
+  .ctl {
+    border: 1px solid CanvasText;
+  }
+
+  .detent-active {
+    background: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  :where(a, button, summary, [tabindex]):focus-visible {
+    outline: 2px solid Highlight;
+  }
+}
+
+/* ── Print ───────────────────────────────────────────────────────────────────
+   A portfolio gets printed and PDF'd by recruiters, so paper is a real output
+   target rather than an afterthought: interface chrome removed, dark fills
+   dropped, and every external link resolved to its destination in full. */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+
+  /* No fixed header on paper, so the offset would print as a gap above every
+     section. */
+  :where(section, footer, main)[id] {
+    scroll-margin-top: 0;
+  }
+
+  html,
+  body {
+    background: #fff;
+    color: #000;
+    font-size: 10.5pt;
+  }
+
+  /* The grid field is screen furniture and would print as a grey wash across
+     every page — and on some drivers, as a solid block. */
+  body::before {
+    display: none;
+  }
+
+  /* Belt and braces alongside data-print="hide": a print fired while the boot
+     terminal is up must not put a full-page black rectangle on paper. */
+  .boot-term,
+  html.boot .boot-term {
+    display: none !important;
+  }
+
+  /* Anything whose only job is on-screen navigation. */
+  [data-print="hide"] {
+    display: none !important;
+  }
+
+  .js .reveal,
+  .js .reveal.is-in {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .panel,
+  .well {
+    border: 1px solid #999;
+    background: #fff;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+
+  .on-coal,
+  .on-coal * {
+    background: #fff !important;
+    color: #000 !important;
+    border-color: #999 !important;
+  }
+
+  /* Resolve external destinations — a printed link with no URL is dead. */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-family: var(--font-mono);
+    font-size: 8pt;
+    color: #444;
+    word-break: break-all;
+  }
+
+  /* …except where the visible text already is the URL or address. */
+  a[data-print-url="skip"]::after {
+    content: "";
+  }
+
+  section,
+  article,
+  figure {
+    break-inside: avoid-page;
+  }
+
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
   }
 }
