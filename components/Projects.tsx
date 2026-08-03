@@ -44,7 +44,12 @@ export default function Projects() {
 
                   <div className="mt-6 flex flex-wrap gap-2 border-t border-line pt-5">
                     {p.liveUrl ? (
-                      <ExternalLink href={p.liveUrl} size="sm">
+                      <ExternalLink
+                        href={p.liveUrl}
+                        size="sm"
+                        preview
+                        previewLabel={p.name}
+                      >
                         Live
                       </ExternalLink>
                     ) : (

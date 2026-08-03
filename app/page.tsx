@@ -7,6 +7,7 @@ import Credentials from "@/components/Credentials";
 import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import SectionRail from "@/components/SectionRail";
+import LivePreview from "@/components/LivePreview";
 
 export default function Home() {
   return (
@@ -30,6 +31,10 @@ export default function Home() {
           expose the contentinfo landmark, so screen-reader users lose the
           standard jump to contact details. */}
       <Footer />
+
+      {/* In-page browser for data-preview links. Chrome, not content — it
+          lives outside <main> with the rest of the interface furniture. */}
+      <LivePreview />
     </>
   );
 }

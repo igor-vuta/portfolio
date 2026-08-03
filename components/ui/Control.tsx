@@ -83,6 +83,8 @@ export function ExternalLink({
   className,
   printUrl,
   lead,
+  preview,
+  previewLabel,
 }: {
   href: string;
   children: ReactNode;
@@ -92,6 +94,13 @@ export function ExternalLink({
   printUrl?: "skip";
   /** Rendered before the label — used for the live-status lamp. */
   lead?: ReactNode;
+  /**
+   * Opens in the in-page preview sheet instead of a new tab. The markup
+   * stays a plain _blank link — LivePreview intercepts by delegation, so
+   * without JS this degrades to exactly what it replaces.
+   */
+  preview?: boolean;
+  previewLabel?: string;
 }) {
   return (
     <a
@@ -100,6 +109,8 @@ export function ExternalLink({
       rel="noopener noreferrer"
       className={classes(variant, size, className)}
       data-print-url={printUrl}
+      data-preview={preview ? "" : undefined}
+      data-preview-label={preview ? previewLabel : undefined}
     >
       {lead}
       {children}

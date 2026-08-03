@@ -356,6 +356,14 @@ document.documentElement.classList.add('js');
     // up its own faceplate reads as a glitch. They navigate natively.
     if (el.closest('header')) return;
 
+    // Preview links belong to the LivePreview sheet, whose slide is its own
+    // arrival gesture. Flying a balloon AND opening a sheet is noise, and
+    // this handler's deferred window.open would punch a second, real tab
+    // through the preview. Before hydration the attribute still exists and
+    // this still returns — the link is then a plain new-tab link, which is
+    // the correct degraded behaviour, not a gap.
+    if (el.hasAttribute('data-preview')) return;
+
     var href = el.getAttribute('href') || '';
     var anchor = href.charAt(0) === '#' && href.length > 1;
     var target = anchor ? document.getElementById(href.slice(1)) : null;

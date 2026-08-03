@@ -110,6 +110,8 @@ export default function Flagship() {
           <ExternalLink
             href={flagship.liveUrl}
             variant="primary"
+            preview
+            previewLabel={flagship.name}
           >
             Live demo
           </ExternalLink>
