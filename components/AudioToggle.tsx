@@ -9,9 +9,11 @@ import { useEffect, useRef, useState } from "react";
  *  - Nothing loads until asked. The audio module (`lib/audio`) is dynamically
  *    imported inside the click handler, so neither the code nor an
  *    AudioContext exists before the first deliberate gesture.
- *  - Ineligible environments get nothing: under `prefers-reduced-motion` or
- *    below 768px the component renders null — no button, no listeners, no
- *    context. Same gate pattern as ScrollProgress.
+ *  - Under `prefers-reduced-motion` the component renders null — no button,
+ *    no listeners, no context. The width gate it once shared with the
+ *    scroll-linked systems is gone by owner decision (2026-08-03): sound is
+ *    not scroll-linked work, phones handle one oscillator graph without
+ *    breaking a sweat, and a phone listener was the request.
  *  - The choice survives reload via sessionStorage (guarded: it throws in
  *    Safari private mode). A restored "on" cannot autoplay — browsers require
  *    a gesture — so the button shows on and the first interaction anywhere
@@ -44,13 +46,12 @@ export default function AudioToggle() {
     if (wantOn.current) await engine.current.enable();
   };
 
-  // Eligibility gate. If the viewport narrows or reduced motion is switched on
-  // mid-session, sound is stopped and the control removed, not just hidden.
+  // Eligibility gate. If reduced motion is switched on mid-session, sound is
+  // stopped and the control removed, not just hidden.
   useEffect(() => {
-    const wide = window.matchMedia("(min-width: 768px)");
     const still = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
-      const ok = wide.matches && !still.matches;
+      const ok = !still.matches;
       setEligible(ok);
       if (!ok) {
         wantOn.current = false;
@@ -59,12 +60,8 @@ export default function AudioToggle() {
       }
     };
     sync();
-    wide.addEventListener("change", sync);
     still.addEventListener("change", sync);
-    return () => {
-      wide.removeEventListener("change", sync);
-      still.removeEventListener("change", sync);
-    };
+    return () => still.removeEventListener("change", sync);
   }, []);
 
   // Restore a persisted "on": show the state now, start sound on the first
@@ -170,8 +167,8 @@ export default function AudioToggle() {
         >
           <p className="silk-sm text-fog">Ambient sound</p>
           <p className="mt-2 text-detail text-fog">
-            A quiet generative layer — deterministic, no files, off anywhere
-            you scroll on a phone. Enable it?
+            A quiet generative layer — no files, no tracking, one tap to
+            silence. Enable it?
           </p>
           <div className="mt-3 flex gap-2">
             <button
