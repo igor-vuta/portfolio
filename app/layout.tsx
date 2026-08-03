@@ -237,13 +237,19 @@ document.documentElement.classList.add('js');
      the sanctioned exception. Duration 1.2-1.9s, drift, sway, jitter, and
      rotation are all drawn fresh each time, so no two releases match.
 
-     The shape is still a balloon's, not noise: one slow sway carries the
-     body, a smaller fast wobble roughens it, rotation follows the sway
-     like a pendant on a string, and the rise accelerates slightly the way
-     a balloon does once it is free. All of it is sampled into 40 keyframes
-     and handed to the Web Animations API, so the compositor runs the
-     flight and no JS executes per frame — random in parameters, still
-     zero-cost in motion.
+     The wander is structural, not cosmetic. The first balloon overlaid a
+     ±90px sway on a straight climb, and at viewport scale that still read
+     as a straight shot. Now the path itself is random: 3-5 waypoints drawn
+     from the full width of the viewport, threaded with a Catmull-Rom
+     spline so the excursions are swings rather than corners. Waypoint
+     heights are jiggled hard enough that they occasionally invert — the
+     balloon dips before climbing again, a gust rather than a glitch. The
+     ghost banks into its turns: rotation is derived from horizontal
+     velocity, so it leans the way it is swinging, like the card hanging
+     under the balloon. A small fast jitter roughens the spline on top.
+     All of it is sampled into 48 keyframes and handed to the Web
+     Animations API, so the compositor runs the flight and no JS executes
+     per frame — random in shape, still zero-cost in motion.
 
      External links hold their tab until three quarters of the flight has
      played, then open. Immediate navigation put the whole animation in a
@@ -255,18 +261,34 @@ document.documentElement.classList.add('js');
 
   function rnd(a, b) { return a + Math.random() * (b - a); }
 
+  // Catmull-Rom, one axis. b and c are the segment; a and d shape the
+  // tangents, which is what turns a chain of waypoints into one swing.
+  function cr(a, b, c, d, t) {
+    var t2 = t * t, t3 = t2 * t;
+    return 0.5 * (2 * b + (c - a) * t + (2 * a - 5 * b + 4 * c - d) * t2
+      + (3 * b - 3 * c + d - a) * t3);
+  }
+
   function trail(el) {
     var r = el.getBoundingClientRect();
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
 
-    var dur = rnd(1200, 1900);
-    // Endpoint: a drift from the release point, clamped inside 8-92% of the
-    // viewport so a balloon released near an edge doesn't leave the page.
-    var ex = Math.min(innerWidth * 0.92, Math.max(innerWidth * 0.08,
-      cx + rnd(-180, 180)));
-    var swayAmp = rnd(30, 72), swayHz = rnd(1.1, 2.1), swayPh = rnd(0, 6.283);
-    var jitAmp = rnd(8, 22), jitHz = rnd(2.8, 4.8), jitPh = rnd(0, 6.283);
-    var rotAmp = rnd(5, 13), rotPh = rnd(0, 6.283);
+    var dur = rnd(1000, 2000);
+    var span = cy - T_TOP;
+
+    // The route: release point, 3-5 waypoints anywhere across the width,
+    // exit anywhere across the top. Heights are jiggled hard enough that
+    // consecutive waypoints occasionally invert, which reads as the balloon
+    // dipping in a gust before it climbs again.
+    var pts = [[cx, cy]];
+    var n = 3 + Math.floor(rnd(0, 3));
+    for (var i = 1; i <= n; i++) {
+      var u = Math.max(0.06, Math.min(0.94, i / (n + 1) + rnd(-0.14, 0.14)));
+      pts.push([innerWidth * rnd(0.08, 0.92), cy - span * u]);
+    }
+    pts.push([innerWidth * rnd(0.08, 0.92), T_TOP]);
+
+    var jitAmp = rnd(5, 12), jitHz = rnd(2.8, 4.8), jitPh = rnd(0, 6.283);
 
     var ghost = el.cloneNode(true);
     ghost.removeAttribute('id');
@@ -281,19 +303,22 @@ document.documentElement.classList.add('js');
     ghost.style.height = r.height + 'px';
     document.body.appendChild(ghost);
 
-    var frames = [], STEPS = 40;
+    var frames = [], STEPS = 48, segs = pts.length - 1, prevX = cx, rot = 0;
     for (var s = 0; s <= STEPS; s++) {
       var t = s / STEPS;
-      // Rise accelerates slightly (t^1.15): slow lift-off, confident climb.
-      var rise = Math.pow(t, 1.15);
-      var x = cx + (ex - cx) * t
-        + Math.sin(t * swayHz * 6.283 + swayPh) * swayAmp * (1 - 0.35 * t)
+      var g = t * segs;
+      var seg = Math.min(Math.floor(g), segs - 1), u = g - seg;
+      var p0 = pts[Math.max(0, seg - 1)], p1 = pts[seg],
+          p2 = pts[seg + 1], p3 = pts[Math.min(segs, seg + 2)];
+      var x = cr(p0[0], p1[0], p2[0], p3[0], u)
         + Math.sin(t * jitHz * 6.283 + jitPh) * jitAmp;
-      var y = cy + (T_TOP - cy) * rise;
+      var y = cr(p0[1], p1[1], p2[1], p3[1], u);
       var sc = 1 - 0.85 * t;
-      // Rotation rides the sway's rhythm — a pendant under a balloon, not
-      // a tumble.
-      var rot = Math.sin(t * swayHz * 6.283 + rotPh) * rotAmp * (1 - 0.3 * t);
+      // Bank into the turn: lean follows horizontal velocity, smoothed so
+      // it swings rather than snaps. The card under the balloon, not a
+      // tumble.
+      rot = rot * 0.7 + Math.max(-16, Math.min(16, (x - prevX) * 0.45)) * 0.3;
+      prevX = x;
       frames.push({
         transform: 'translate3d(' + (x - cx).toFixed(1) + 'px,' + (y - cy).toFixed(1) + 'px,0)'
           + ' rotate(' + rot.toFixed(2) + 'deg) scale(' + sc.toFixed(3) + ')',

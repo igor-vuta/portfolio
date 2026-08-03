@@ -8,15 +8,16 @@ const nextConfig: NextConfig = {
   images: { unoptimized: true },
   trailingSlash: true,
 
-  // The build crashes intermittently in Next's out-of-process webpack worker:
-  // something hands the hasher undefined module content, the worker dies with
-  // no usable stack, and identical clean-tree builds pass or fail at random —
-  // a race, not a code problem (reproduced across two Node majors and a fresh
-  // npm ci; an earlier sha256 hashFunction "fix" here only changed the error
-  // message and its one green build was a coincidence). In-process webpack
-  // takes the racing IPC layer out entirely. Build time cost is negligible on
-  // a site this size.
-  experimental: { webpackBuildWorker: false },
+  // No build workarounds here, and two have already been tried and removed —
+  // a sha256 hashFunction and webpackBuildWorker: false. Neither helped,
+  // because the intermittent "hasher fed undefined content" crashes are not
+  // the toolchain's: they track WHERE the repo sits. This checkout lives in
+  // ~/Documents, which macOS syncs to iCloud, and files evicted mid-read
+  // during a build produce exactly these symptoms. Same tree, same Node,
+  // cloned to /tmp: three clean builds out of three. In place: pass/fail at
+  // random across two Node majors, a fresh npm ci, and both worker modes.
+  // If builds flake here again, judge the code from a clone outside the
+  // synced folder — or move the checkout out of ~/Documents.
 };
 
 export default nextConfig;
