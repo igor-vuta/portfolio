@@ -1025,8 +1025,17 @@ html.boot .dust {
   opacity: 0;
 }
 
-.mote {
+/* Wrapper/inner split: the inner .mote owns the CSS wander, the wrapper owns
+   the pointer-attraction transform written by the head script's loop. One
+   element cannot carry both — animation and script would fight over the same
+   transform property. */
+.mote-w {
   position: absolute;
+  will-change: transform;
+}
+
+.mote {
+  display: block;
   width: 2px;
   height: 2px;
   background: var(--color-ink);
@@ -1055,10 +1064,12 @@ html.boot .dust {
   }
 }
 
-/* One gate for every environment that should not pay for weather: phones,
-   reduced motion, paper, and forced colours. The spawn guard in the head
+/* One gate for every environment that should not pay for weather: reduced
+   motion, paper, and forced colours. Phones keep the field — it is
+   composited transforms, not scroll-linked work, and it was invisible on
+   exactly the screens most visitors bring. The spawn guard in the head
    script is the fast path; this is the guarantee. */
-@media (max-width: 47.9375rem), (prefers-reduced-motion: reduce), (forced-colors: active), print {
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
   .dust {
     display: none;
   }

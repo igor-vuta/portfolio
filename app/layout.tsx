@@ -226,24 +226,44 @@ document.documentElement.classList.add('js');
      rather than a component because it costs the bundle nothing and needs
      nothing from React — it is weather, not interface.
 
-     Same gates as every other ambient system: none below 768px, none
-     under reduced motion (CSS enforces both even if this spawns), hidden
-     for print and forced colours. During boot the field is held at zero
-     opacity and fades up as the terminal lifts. (rnd is declared once, in
-     the trail section below — function declarations hoist to this scope.) */
+     Phones get the field too, by owner decision (2026-08-03) — it is
+     composited transforms on 28 tiny layers, not scroll-linked work, and
+     it was invisible on exactly the screens most visitors bring. Reduced
+     motion still gets nothing, and print and forced colours hide it in
+     CSS. During boot the field is held at zero opacity and fades up as
+     the terminal lifts. (rnd is declared once, in the trail section below
+     — function declarations hoist to this scope.)
+
+     Each mote is a wrapper + inner pair on purpose: the inner element owns
+     the CSS wander (compositor, no JS ever), the wrapper owns a second
+     transform the pointer loop writes into. One element cannot carry both
+     — the animation and the loop would fight over the transform property.
+
+     The attraction is deliberately mild: within 260px of the pointer a
+     mote leans up to ~22px toward it, eased at 7% a frame, so the field
+     notices the cursor the way dust notices a hand — it drifts toward it,
+     it does not chase. The loop runs only while the pointer has moved in
+     the last two seconds or an offset is still settling; idle again, it
+     parks and the page costs nothing. Touch counts via pointermove, so on
+     a phone the field leans toward a dragging finger. */
+  var motes = [];
+
   function dust() {
-    if (!wide.matches || still.matches) return;
+    if (still.matches) return;
     if (document.getElementById('dust')) return;
     var host = document.createElement('div');
     host.id = 'dust';
     host.className = 'dust';
     host.setAttribute('aria-hidden', 'true');
     for (var i = 0; i < 28; i++) {
+      var wrap = document.createElement('span');
+      wrap.className = 'mote-w';
+      var lx = rnd(0, 100), ly = rnd(0, 100);
+      wrap.style.left = lx.toFixed(2) + '%';
+      wrap.style.top = ly.toFixed(2) + '%';
       var m = document.createElement('i');
       m.className = Math.random() < 0.12 ? 'mote mote-clay' : 'mote';
       var s = m.style;
-      s.left = rnd(0, 100).toFixed(2) + '%';
-      s.top = rnd(0, 100).toFixed(2) + '%';
       for (var w = 1; w <= 3; w++) {
         s.setProperty('--dx' + w, rnd(-70, 70).toFixed(0) + 'px');
         s.setProperty('--dy' + w, rnd(-70, 70).toFixed(0) + 'px');
@@ -251,19 +271,67 @@ document.documentElement.classList.add('js');
       s.setProperty('--dur', rnd(24, 64).toFixed(1) + 's');
       s.setProperty('--delay', (-rnd(0, 64)).toFixed(1) + 's');
       s.setProperty('--o', rnd(0.05, 0.15).toFixed(3));
-      host.appendChild(m);
+      wrap.appendChild(m);
+      host.appendChild(wrap);
+      motes.push({ el: wrap, lx: lx / 100, ly: ly / 100, ox: 0, oy: 0 });
     }
     document.body.appendChild(host);
   }
 
-  if (document.readyState === 'loading') {
-    addEventListener('DOMContentLoaded', dust);
-  } else {
-    dust();
+  var D_R = 260, D_PULL = 22, D_EASE = 0.07, D_IDLE = 2000;
+  var dpx = -1e4, dpy = -1e4, dLast = -1e4, dRaf = 0, dLive = false;
+
+  function dustFrame(now) {
+    var active = now - dLast < D_IDLE;
+    var settling = false;
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      var tx = 0, ty = 0;
+      if (active) {
+        var dx = dpx - m.lx * innerWidth, dy = dpy - m.ly * innerHeight;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d > 1 && d < D_R) {
+          var s = (1 - d / D_R);
+          s = s * s * D_PULL;
+          tx = dx / d * s;
+          ty = dy / d * s;
+        }
+      }
+      m.ox += (tx - m.ox) * D_EASE;
+      m.oy += (ty - m.oy) * D_EASE;
+      if (Math.abs(m.ox) > 0.3 || Math.abs(m.oy) > 0.3) settling = true;
+      m.el.style.transform =
+        'translate3d(' + m.ox.toFixed(1) + 'px,' + m.oy.toFixed(1) + 'px,0)';
+    }
+    if (active || settling) {
+      dRaf = requestAnimationFrame(dustFrame);
+    } else {
+      dLive = false;
+    }
   }
-  // A viewport that grows past the breakpoint mid-session gains the field;
-  // one that shrinks keeps it spawned but CSS hides it.
-  wide.addEventListener('change', dust);
+
+  function onPointer(e) {
+    dpx = e.clientX;
+    dpy = e.clientY;
+    dLast = performance.now();
+    if (!dLive && motes.length) {
+      dLive = true;
+      dRaf = requestAnimationFrame(dustFrame);
+    }
+  }
+
+  function dustStart() {
+    dust();
+    if (!still.matches) {
+      addEventListener('pointermove', onPointer, { passive: true });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    addEventListener('DOMContentLoaded', dustStart);
+  } else {
+    dustStart();
+  }
 
   /* ── Trail ────────────────────────────────────────────────────────────
      Press a control anywhere in the body and a copy of it lifts off,
