@@ -1034,18 +1034,22 @@ html.boot .dust {
   will-change: transform;
 }
 
+/* Each mote arrives with two palette voices (--c resting, --ce excited), a
+   size, and a base opacity, all inline from the spawner. --p is the eased
+   proximity the pointer loop writes on the wrapper: at 0 the mote rests in
+   its own colour; approaching 1 it crossfades to its excited colour, the
+   glow widens, and it brightens. currentColor carries the mixed value into
+   both the fill and the glow so they cannot drift apart. */
 .mote {
   display: block;
-  width: 2px;
-  height: 2px;
-  background: var(--color-ink);
-  opacity: var(--o, 0.1);
+  width: var(--s, 2px);
+  height: var(--s, 2px);
+  color: color-mix(in srgb, var(--ce, var(--c)) calc(var(--p, 0) * 100%), var(--c, var(--color-ink)));
+  background: currentColor;
+  box-shadow: 0 0 calc(3px + var(--p, 0) * 9px) 1px currentColor;
+  opacity: calc(var(--o, 0.25) + var(--p, 0) * 0.5);
   animation: mote var(--dur, 40s) linear var(--delay, 0s) infinite;
   will-change: transform;
-}
-
-.mote-clay {
-  background: var(--color-clay);
 }
 
 @keyframes mote {

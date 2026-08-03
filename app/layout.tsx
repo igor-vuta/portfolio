@@ -248,6 +248,13 @@ document.documentElement.classList.add('js');
      a phone the field leans toward a dragging finger. */
   var motes = [];
 
+  /* Every mote takes two colours from the system palette at spawn: --c is
+     its resting voice, --ce the one it shifts to as the pointer nears. The
+     crossfade itself is CSS (color-mix driven by --p); the loop only eases
+     the proximity number. Distribution leans coloured on purpose — at rest
+     the field read as one or two visible specks, which is not weather. */
+  var PAL = ['#1f1e1d', '#a34928', '#2a7153', '#d99a80'];
+
   function dust() {
     if (still.matches) return;
     if (document.getElementById('dust')) return;
@@ -262,7 +269,7 @@ document.documentElement.classList.add('js');
       wrap.style.left = lx.toFixed(2) + '%';
       wrap.style.top = ly.toFixed(2) + '%';
       var m = document.createElement('i');
-      m.className = Math.random() < 0.12 ? 'mote mote-clay' : 'mote';
+      m.className = 'mote';
       var s = m.style;
       for (var w = 1; w <= 3; w++) {
         s.setProperty('--dx' + w, rnd(-70, 70).toFixed(0) + 'px');
@@ -270,10 +277,15 @@ document.documentElement.classList.add('js');
       }
       s.setProperty('--dur', rnd(24, 64).toFixed(1) + 's');
       s.setProperty('--delay', (-rnd(0, 64)).toFixed(1) + 's');
-      s.setProperty('--o', rnd(0.05, 0.15).toFixed(3));
+      s.setProperty('--o', rnd(0.16, 0.4).toFixed(3));
+      s.setProperty('--s', (2 + Math.floor(rnd(0, 3))) + 'px');
+      var ci = Math.random() < 0.45 ? 0 : 1 + Math.floor(rnd(0, 3));
+      var ei = (ci + 1 + Math.floor(rnd(0, PAL.length - 1))) % PAL.length;
+      s.setProperty('--c', PAL[ci]);
+      s.setProperty('--ce', PAL[ei]);
       wrap.appendChild(m);
       host.appendChild(wrap);
-      motes.push({ el: wrap, lx: lx / 100, ly: ly / 100, ox: 0, oy: 0 });
+      motes.push({ el: wrap, lx: lx / 100, ly: ly / 100, ox: 0, oy: 0, p: 0 });
     }
     document.body.appendChild(host);
   }
@@ -286,22 +298,26 @@ document.documentElement.classList.add('js');
     var settling = false;
     for (var i = 0; i < motes.length; i++) {
       var m = motes[i];
-      var tx = 0, ty = 0;
+      var tx = 0, ty = 0, tp = 0;
       if (active) {
         var dx = dpx - m.lx * innerWidth, dy = dpy - m.ly * innerHeight;
         var d = Math.sqrt(dx * dx + dy * dy);
         if (d > 1 && d < D_R) {
-          var s = (1 - d / D_R);
-          s = s * s * D_PULL;
-          tx = dx / d * s;
-          ty = dy / d * s;
+          // One proximity number drives both reactions: tp scales the pull
+          // here and, written out as --p, drives the colour crossfade and
+          // glow in CSS. The two cannot disagree because there is one truth.
+          tp = (1 - d / D_R) * (1 - d / D_R);
+          tx = dx / d * tp * D_PULL;
+          ty = dy / d * tp * D_PULL;
         }
       }
       m.ox += (tx - m.ox) * D_EASE;
       m.oy += (ty - m.oy) * D_EASE;
-      if (Math.abs(m.ox) > 0.3 || Math.abs(m.oy) > 0.3) settling = true;
+      m.p += (tp - m.p) * 0.1;
+      if (Math.abs(m.ox) > 0.3 || Math.abs(m.oy) > 0.3 || m.p > 0.01) settling = true;
       m.el.style.transform =
         'translate3d(' + m.ox.toFixed(1) + 'px,' + m.oy.toFixed(1) + 'px,0)';
+      m.el.style.setProperty('--p', m.p.toFixed(3));
     }
     if (active || settling) {
       dRaf = requestAnimationFrame(dustFrame);
