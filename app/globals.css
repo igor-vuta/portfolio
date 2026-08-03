@@ -846,7 +846,15 @@ html.boot .reveal.is-in {
    three custom properties, so a variant cannot accidentally ship without a
    hover, active, disabled, or focus state — they're defined on the base. */
 .ctl {
-  --ctl-bg: transparent;
+  /* Not quite transparent. A fully hollow control read as an outline drawn
+     on the page rather than a thing sitting on it; this faint wash of the
+     panel colour gives it a body without giving it elevation. Declared as
+     its own token because the resting fill is needed twice — here, and in
+     the coarse-pointer block that resets hover state, which previously
+     reset to `transparent` and would have silently stripped the body on
+     every phone. */
+  --ctl-bg-rest: color-mix(in srgb, var(--color-panel) 72%, transparent);
+  --ctl-bg: var(--ctl-bg-rest);
   --ctl-fg: var(--color-ink);
   --ctl-bd: var(--color-line-2);
 
@@ -916,8 +924,12 @@ html.boot .reveal.is-in {
   --ctl-fg: var(--color-cream);
 }
 
-/* Quiet variant for tertiary actions — no border until addressed. */
+/* Quiet variant for tertiary actions — no border until addressed, and no
+   body either: quiet is the one variant that is deliberately just text.
+   Zeroing the rest token keeps the coarse-pointer reset consistent. */
 .ctl-quiet {
+  --ctl-bg-rest: transparent;
+  --ctl-bg: transparent;
   --ctl-bd: transparent;
   --ctl-fg: var(--color-fog);
   padding-inline: 0.75rem;
@@ -939,17 +951,20 @@ html.boot .reveal.is-in {
 .ctl-ok {
   --ctl-bd: var(--color-lamp);
   --ctl-fg: var(--color-lamp);
-  --ctl-bg: transparent;
+  --ctl-bg: var(--ctl-bg-rest);
 }
 
 .ctl-ok:hover {
   --ctl-bd: var(--color-lamp);
   --ctl-fg: var(--color-lamp);
-  --ctl-bg: transparent;
+  --ctl-bg: var(--ctl-bg-rest);
 }
 
-/* Controls on the dark chassis re-point the same properties. */
+/* Controls on the dark chassis re-point the same properties. The resting
+   fill flips to a faint cream so the body survives the surface change. */
 .on-coal .ctl {
+  --ctl-bg-rest: rgba(245, 243, 236, 0.07);
+  --ctl-bg: var(--ctl-bg-rest);
   --ctl-fg: var(--color-cream);
   --ctl-bd: rgba(245, 243, 236, 0.26);
 }
@@ -1226,7 +1241,9 @@ html.boot .dust {
   .ctl:hover {
     --ctl-bd: var(--color-line-2);
     --ctl-fg: var(--color-ink);
-    --ctl-bg: transparent;
+    /* Reset to the resting fill, not to transparent — resetting to
+       transparent would strip the control's body on every touch device. */
+    --ctl-bg: var(--ctl-bg-rest);
   }
 
   .ctl-primary:hover {
