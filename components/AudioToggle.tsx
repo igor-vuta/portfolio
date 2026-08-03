@@ -20,6 +20,7 @@ import { useEffect, useRef, useState } from "react";
  *    Reveal, so the audio layer stays fully detachable.
  */
 const KEY = "ambient-audio";
+const ASKED = "ambient-asked";
 const SECTIONS = ["top", "flagship", "projects", "credentials", "contact"];
 
 const store = (v: string) => {
@@ -31,6 +32,7 @@ const store = (v: string) => {
 export default function AudioToggle() {
   const [eligible, setEligible] = useState(false);
   const [on, setOn] = useState(false);
+  const [asking, setAsking] = useState(false);
   const engine = useRef<typeof import("@/lib/audio") | null>(null);
   // Written synchronously in every handler, unlike `on`. Guards the race where
   // the restored-"on" arming gesture is itself the click that turns sound off:
@@ -86,6 +88,46 @@ export default function AudioToggle() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eligible]);
 
+  // The offer. Asked exactly once per session, and timed to the moment the
+  // boot terminal lifts — mid-boot the question would sit on top of the
+  // arrival sequence, and later it would interrupt reading. Boot's end is
+  // observed via the html class rather than a timer so skip-by-keypress and
+  // the 5.4s cap both count, and via MutationObserver rather than the
+  // transition's end for the same reason the preview sheet watches
+  // attributes: mutation records ride microtasks and cannot be starved in a
+  // throttled tab. Never asked when a choice (or an ask) already happened
+  // this session, and never on ineligible viewports.
+  useEffect(() => {
+    if (!eligible) return;
+    let stored: string | null = null;
+    let asked: string | null = null;
+    try {
+      stored = sessionStorage.getItem(KEY);
+      asked = sessionStorage.getItem(ASKED);
+    } catch {}
+    if (stored !== null || asked !== null) return;
+
+    const root = document.documentElement;
+    const show = () => {
+      try {
+        sessionStorage.setItem(ASKED, "1");
+      } catch {}
+      setAsking(true);
+    };
+    if (!root.classList.contains("boot")) {
+      show();
+      return;
+    }
+    const mo = new MutationObserver(() => {
+      if (!root.classList.contains("boot")) {
+        mo.disconnect();
+        show();
+      }
+    });
+    mo.observe(root, { attributes: true, attributeFilter: ["class"] });
+    return () => mo.disconnect();
+  }, [eligible]);
+
   // One soft note per section entry, only while sound is on.
   useEffect(() => {
     if (!on || typeof IntersectionObserver === "undefined") return;
@@ -119,6 +161,46 @@ export default function AudioToggle() {
   };
 
   return (
+    <>
+      {asking && (
+        <aside
+          aria-label="Ambient sound offer"
+          data-print="hide"
+          className="panel fixed bottom-20 right-6 z-40 w-64 p-4"
+        >
+          <p className="silk-sm text-fog">Ambient sound</p>
+          <p className="mt-2 text-detail text-fog">
+            A quiet generative layer — deterministic, no files, off anywhere
+            you scroll on a phone. Enable it?
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              className="ctl ctl-primary ctl-sm"
+              onClick={() => {
+                setAsking(false);
+                // The click on this button is the user gesture the autoplay
+                // policy wants; toggle() routes through the same path as the
+                // speaker control so there is exactly one way sound starts.
+                void toggle();
+              }}
+            >
+              Enable
+            </button>
+            <button
+              type="button"
+              className="ctl ctl-quiet ctl-sm"
+              onClick={() => {
+                setAsking(false);
+                store("0");
+              }}
+            >
+              No thanks
+            </button>
+          </div>
+        </aside>
+      )}
+
     <button
       type="button"
       onClick={toggle}
@@ -156,5 +238,6 @@ export default function AudioToggle() {
         )}
       </svg>
     </button>
+    </>
   );
 }
