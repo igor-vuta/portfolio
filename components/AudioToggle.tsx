@@ -6,9 +6,13 @@ import { useEffect, useRef, useState } from "react";
  * Opt-in ambient sound toggle.
  *
  * The rules this component exists to enforce:
- *  - Nothing loads until asked. The audio module (`lib/audio`) is dynamically
- *    imported inside the click handler, so neither the code nor an
- *    AudioContext exists before the first deliberate gesture.
+ *  - No AudioContext exists before the first deliberate gesture. The module
+ *    code itself, though, preloads as soon as the control is eligible: iOS
+ *    Safari's transient activation does not survive a chunk fetch, so
+ *    importing inside the click handler meant the context was created after
+ *    the gesture expired — born suspended, resume() refused, silence. With
+ *    the module already resolved, `??=` skips the await and `enable()` runs
+ *    inside the same activation.
  *  - Under `prefers-reduced-motion` the component renders null — no button,
  *    no listeners, no context. The width gate it once shared with the
  *    scroll-linked systems is gone by owner decision (2026-08-03): sound is
@@ -46,6 +50,16 @@ export default function AudioToggle() {
     if (wantOn.current) await engine.current.enable();
   };
 
+  // Preload the engine code the moment the control can exist, so the enabling
+  // tap is never spent waiting on a network fetch (see header). Creating an
+  // AudioContext still waits for a gesture — this only warms the import.
+  useEffect(() => {
+    if (!eligible) return;
+    void import("@/lib/audio").then((m) => {
+      engine.current ??= m;
+    });
+  }, [eligible]);
+
   // Eligibility gate. If reduced motion is switched on mid-session, sound is
   // stopped and the control removed, not just hidden.
   useEffect(() => {
@@ -76,10 +90,12 @@ export default function AudioToggle() {
     wantOn.current = true;
     setOn(true);
     const arm = () => void start();
-    window.addEventListener("pointerdown", arm, { once: true });
+    // pointerup, not pointerdown: WebKit grants user activation on the
+    // release, so arming on the press could still leave resume() refused.
+    window.addEventListener("pointerup", arm, { once: true });
     window.addEventListener("keydown", arm, { once: true });
     return () => {
-      window.removeEventListener("pointerdown", arm);
+      window.removeEventListener("pointerup", arm);
       window.removeEventListener("keydown", arm);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

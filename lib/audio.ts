@@ -69,6 +69,11 @@ const onVisibility = () =>
   void (ctx && (document.hidden ? ctx.suspend() : timer !== undefined && ctx.resume()));
 
 export async function enable(): Promise<void> {
+  /* iOS routes Web Audio through the "ambient" session, which the hardware
+     ringer switch mutes; opting into "playback" (Safari/iOS 16.4+) lifts
+     that. Elsewhere navigator.audioSession is absent and this is a no-op. */
+  const nav = navigator as Navigator & { audioSession?: { type: string } };
+  if (nav.audioSession) nav.audioSession.type = "playback";
   ctx ??= build(); // reached only from a user-gesture handler
   clearTimeout(suspendTimer);
   await ctx.resume();
