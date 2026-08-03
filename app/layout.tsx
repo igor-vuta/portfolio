@@ -252,9 +252,15 @@ document.documentElement.classList.add('js');
 
      The loop parks when nothing is still converging: a resting cluster
      around a resting cursor costs nothing, exactly like an empty field.
-     Touch counts via pointermove, so a dragging finger collects dust and
-     a flick scatters it; lifting the finger leaves the cluster where it
-     was until the next touch or the wander carries it apart visually. */
+
+     Touch is deliberately the smaller gesture (owner spec, 2026-08-03):
+     a tap pulses the field — nearby motes lean toward the touch point and
+     take their excited colour for a moment, then ease back — but a finger
+     never collects. Capture is a cursor behaviour: a cursor is present
+     between gestures, so a swarm can follow it; a finger exists only
+     during the gesture, and a cluster glued to wherever it last lifted
+     reads as debris. pointerdown is listened to alongside pointermove
+     because a clean tap barely moves at all. */
   var motes = [];
 
   /* Every mote takes two colours from the system palette at spawn: --c is
@@ -310,6 +316,7 @@ document.documentElement.classList.add('js');
   var D_R = 260, D_PULL = 22, D_EASE = 0.07, D_IDLE = 2000;
   var CAP_R = 130, DROP_R = 240, D_VMAX = 2.6, FOLLOW = 0.12, COOL = 500;
   var dpx = -1e4, dpy = -1e4, dLast = -1e4, dRaf = 0, dLive = false;
+  var dTouch = false; // last input was a finger: pulse, never collect
 
   function releaseAll(now) {
     for (var i = 0; i < motes.length; i++) {
@@ -336,7 +343,7 @@ document.documentElement.classList.add('js');
           m.cap = false;
           m.cool = now + COOL;
         }
-      } else if (active && now > m.cool) {
+      } else if (active && !dTouch && now > m.cool) {
         var cx = dpx - (bx + m.ox), cy = dpy - (by + m.oy);
         if (Math.sqrt(cx * cx + cy * cy) < CAP_R) m.cap = true;
       }
@@ -386,6 +393,10 @@ document.documentElement.classList.add('js');
 
   function onPointer(e) {
     var now = performance.now();
+    dTouch = e.pointerType === 'touch';
+    // A finger sheds anything a mouse collected earlier on a hybrid
+    // device — a cluster cannot follow an input that is about to vanish.
+    if (dTouch) releaseAll(now);
     // A violent flick sheds the whole cluster at once, whatever the
     // per-mote distances say.
     if (dLast > 0) {
@@ -409,6 +420,9 @@ document.documentElement.classList.add('js');
     dust();
     if (!still.matches) {
       addEventListener('pointermove', onPointer, { passive: true });
+      // A clean tap barely moves; without this, phones would only ever
+      // reach the field through an accidental drag.
+      addEventListener('pointerdown', onPointer, { passive: true });
     }
   }
 
