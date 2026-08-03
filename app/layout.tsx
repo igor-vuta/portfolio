@@ -214,6 +214,57 @@ document.documentElement.classList.add('js');
   wide.addEventListener('change', sync);
   still.addEventListener('change', sync);
 
+  /* ── Dust ─────────────────────────────────────────────────────────────
+     Ambient motes drifting behind the content — the one place the design
+     rules explicitly permit randomness ("ambient background drift, never
+     in anything the user clicks"), so every load scatters differently.
+
+     28 two-pixel squares, each walking its own four-waypoint loop as one
+     CSS animation. All motion is transform on composited layers: after
+     spawn, no JS runs again, ever. The negative delay starts each mote
+     mid-loop, so the field never breathes in unison. Spawned from here
+     rather than a component because it costs the bundle nothing and needs
+     nothing from React — it is weather, not interface.
+
+     Same gates as every other ambient system: none below 768px, none
+     under reduced motion (CSS enforces both even if this spawns), hidden
+     for print and forced colours. During boot the field is held at zero
+     opacity and fades up as the terminal lifts. (rnd is declared once, in
+     the trail section below — function declarations hoist to this scope.) */
+  function dust() {
+    if (!wide.matches || still.matches) return;
+    if (document.getElementById('dust')) return;
+    var host = document.createElement('div');
+    host.id = 'dust';
+    host.className = 'dust';
+    host.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < 28; i++) {
+      var m = document.createElement('i');
+      m.className = Math.random() < 0.12 ? 'mote mote-clay' : 'mote';
+      var s = m.style;
+      s.left = rnd(0, 100).toFixed(2) + '%';
+      s.top = rnd(0, 100).toFixed(2) + '%';
+      for (var w = 1; w <= 3; w++) {
+        s.setProperty('--dx' + w, rnd(-70, 70).toFixed(0) + 'px');
+        s.setProperty('--dy' + w, rnd(-70, 70).toFixed(0) + 'px');
+      }
+      s.setProperty('--dur', rnd(24, 64).toFixed(1) + 's');
+      s.setProperty('--delay', (-rnd(0, 64)).toFixed(1) + 's');
+      s.setProperty('--o', rnd(0.05, 0.15).toFixed(3));
+      host.appendChild(m);
+    }
+    document.body.appendChild(host);
+  }
+
+  if (document.readyState === 'loading') {
+    addEventListener('DOMContentLoaded', dust);
+  } else {
+    dust();
+  }
+  // A viewport that grows past the breakpoint mid-session gains the field;
+  // one that shrinks keeps it spawned but CSS hides it.
+  wide.addEventListener('change', dust);
+
   /* ── Trail ────────────────────────────────────────────────────────────
      Press a control anywhere in the body and a copy of it lifts off,
      shrinks, and flies a serpentine path to the top of the page — the

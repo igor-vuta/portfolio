@@ -1006,6 +1006,64 @@ html.boot .reveal.is-in {
   }
 }
 
+/* ── Dust ────────────────────────────────────────────────────────────────────
+   Ambient motes, spawned by the head script. Squares, not circles — dust on
+   this page is still milled. Sits with the grid behind everything and never
+   takes a pointer event. Each mote's waypoints, duration, phase, and opacity
+   arrive as inline custom properties; this file only owns the shape of the
+   walk. Linear segments deliberately: eased drift reads as swimming, straight
+   segments read as particles in still air. */
+.dust {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 600ms var(--ease-entrance);
+}
+
+html.boot .dust {
+  opacity: 0;
+}
+
+.mote {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: var(--color-ink);
+  opacity: var(--o, 0.1);
+  animation: mote var(--dur, 40s) linear var(--delay, 0s) infinite;
+  will-change: transform;
+}
+
+.mote-clay {
+  background: var(--color-clay);
+}
+
+@keyframes mote {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(var(--dx1), var(--dy1), 0);
+  }
+  50% {
+    transform: translate3d(var(--dx2), var(--dy2), 0);
+  }
+  75% {
+    transform: translate3d(var(--dx3), var(--dy3), 0);
+  }
+}
+
+/* One gate for every environment that should not pay for weather: phones,
+   reduced motion, paper, and forced colours. The spawn guard in the head
+   script is the fast path; this is the guarantee. */
+@media (max-width: 47.9375rem), (prefers-reduced-motion: reduce), (forced-colors: active), print {
+  .dust {
+    display: none;
+  }
+}
+
 /* ── Live preview ────────────────────────────────────────────────────────────
    The in-page browser. Native <dialog> supplies the behaviour (top layer,
    focus trap, Esc); this supplies the two shapes: a centred instrument panel
