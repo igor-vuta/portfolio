@@ -126,7 +126,7 @@ export default function AudioToggle() {
       aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
       title={on ? "Ambient sound: on" : "Ambient sound: off"}
       data-print="hide"
-      className={`fixed bottom-5 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-full border transition-colors duration-200 ${
+      className={`fixed bottom-6 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-[2px] border transition-colors duration-200 ${
         on
           ? "border-clay bg-clay-wash text-clay"
           : "border-line bg-panel text-fog hover:border-line-2 hover:text-ink"
