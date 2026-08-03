@@ -239,13 +239,22 @@ document.documentElement.classList.add('js');
      transform the pointer loop writes into. One element cannot carry both
      — the animation and the loop would fight over the transform property.
 
-     The attraction is deliberately mild: within 260px of the pointer a
-     mote leans up to ~22px toward it, eased at 7% a frame, so the field
-     notices the cursor the way dust notices a hand — it drifts toward it,
-     it does not chase. The loop runs only while the pointer has moved in
-     the last two seconds or an offset is still settling; idle again, it
-     parks and the page costs nothing. Touch counts via pointermove, so on
-     a phone the field leans toward a dragging finger. */
+     The interaction has three verbs (owner spec, 2026-08-03): motes near
+     the pointer COLLECT — within 130px they are captured and glide to a
+     personal orbit point around the cursor, each mote keeping its own
+     angle and distance so the cluster reads as a swarm, never a stack.
+     Captured motes FOLLOW the pointer through an eased chase. And they
+     FALL OFF when outrun: the chase is deliberately slower than a fast
+     hand, so when the gap to a mote's orbit point exceeds 240px — or the
+     pointer jerks past 2.6 px/ms — the mote releases and eases home, with
+     a half-second cooldown before it can be caught again. Motes outside
+     capture range still get the old gentle lean.
+
+     The loop parks when nothing is still converging: a resting cluster
+     around a resting cursor costs nothing, exactly like an empty field.
+     Touch counts via pointermove, so a dragging finger collects dust and
+     a flick scatters it; lifting the finger leaves the cluster where it
+     was until the next touch or the wander carries it apart visually. */
   var motes = [];
 
   /* Every mote takes two colours from the system palette at spawn: --c is
@@ -285,36 +294,85 @@ document.documentElement.classList.add('js');
       s.setProperty('--ce', PAL[ei]);
       wrap.appendChild(m);
       host.appendChild(wrap);
-      motes.push({ el: wrap, lx: lx / 100, ly: ly / 100, ox: 0, oy: 0, p: 0 });
+      // Personal orbit point: where this mote sits relative to the cursor
+      // once caught. A swarm, never a stack.
+      var oa = rnd(0, 6.283), or_ = rnd(12, 48);
+      motes.push({
+        el: wrap, lx: lx / 100, ly: ly / 100,
+        ox: 0, oy: 0, p: 0,
+        obx: Math.cos(oa) * or_, oby: Math.sin(oa) * or_,
+        cap: false, cool: 0
+      });
     }
     document.body.appendChild(host);
   }
 
   var D_R = 260, D_PULL = 22, D_EASE = 0.07, D_IDLE = 2000;
+  var CAP_R = 130, DROP_R = 240, D_VMAX = 2.6, FOLLOW = 0.12, COOL = 500;
   var dpx = -1e4, dpy = -1e4, dLast = -1e4, dRaf = 0, dLive = false;
+
+  function releaseAll(now) {
+    for (var i = 0; i < motes.length; i++) {
+      if (motes[i].cap) {
+        motes[i].cap = false;
+        motes[i].cool = now + COOL;
+      }
+    }
+  }
 
   function dustFrame(now) {
     var active = now - dLast < D_IDLE;
     var settling = false;
     for (var i = 0; i < motes.length; i++) {
       var m = motes[i];
-      var tx = 0, ty = 0, tp = 0;
-      if (active) {
-        var dx = dpx - m.lx * innerWidth, dy = dpy - m.ly * innerHeight;
+      var bx = m.lx * innerWidth, by = m.ly * innerHeight;
+      var tx = 0, ty = 0, tp = 0, ease = D_EASE;
+
+      if (m.cap) {
+        // Falls off when outrun: the chase lags a fast hand by design, and
+        // once the orbit point is more than DROP_R ahead the grip breaks.
+        var gx = dpx + m.obx - (bx + m.ox), gy = dpy + m.oby - (by + m.oy);
+        if (Math.sqrt(gx * gx + gy * gy) > DROP_R) {
+          m.cap = false;
+          m.cool = now + COOL;
+        }
+      } else if (active && now > m.cool) {
+        var cx = dpx - (bx + m.ox), cy = dpy - (by + m.oy);
+        if (Math.sqrt(cx * cx + cy * cy) < CAP_R) m.cap = true;
+      }
+
+      if (m.cap) {
+        // Captured: chase the orbit point. Holds through pointer rest —
+        // collected dust stays collected until flicked off or outrun.
+        tx = dpx + m.obx - bx;
+        ty = dpy + m.oby - by;
+        tp = 1;
+        ease = FOLLOW;
+      } else if (active) {
+        // Free: the original gentle lean, one proximity number driving
+        // pull here and colour/glow in CSS via --p.
+        var dx = dpx - bx, dy = dpy - by;
         var d = Math.sqrt(dx * dx + dy * dy);
         if (d > 1 && d < D_R) {
-          // One proximity number drives both reactions: tp scales the pull
-          // here and, written out as --p, drives the colour crossfade and
-          // glow in CSS. The two cannot disagree because there is one truth.
           tp = (1 - d / D_R) * (1 - d / D_R);
           tx = dx / d * tp * D_PULL;
           ty = dy / d * tp * D_PULL;
         }
       }
-      m.ox += (tx - m.ox) * D_EASE;
-      m.oy += (ty - m.oy) * D_EASE;
+
+      m.ox += (tx - m.ox) * ease;
+      m.oy += (ty - m.oy) * ease;
       m.p += (tp - m.p) * 0.1;
-      if (Math.abs(m.ox) > 0.3 || Math.abs(m.oy) > 0.3 || m.p > 0.01) settling = true;
+      // Still converging on something — offset or colour — keeps the loop
+      // alive; a settled cluster around a resting cursor parks it, exactly
+      // like an empty field.
+      if (
+        Math.abs(tx - m.ox) > 0.3 ||
+        Math.abs(ty - m.oy) > 0.3 ||
+        Math.abs(tp - m.p) > 0.01
+      ) {
+        settling = true;
+      }
       m.el.style.transform =
         'translate3d(' + m.ox.toFixed(1) + 'px,' + m.oy.toFixed(1) + 'px,0)';
       m.el.style.setProperty('--p', m.p.toFixed(3));
@@ -327,9 +385,20 @@ document.documentElement.classList.add('js');
   }
 
   function onPointer(e) {
+    var now = performance.now();
+    // A violent flick sheds the whole cluster at once, whatever the
+    // per-mote distances say.
+    if (dLast > 0) {
+      var dt = Math.max(8, now - dLast);
+      var v = Math.sqrt(
+        (e.clientX - dpx) * (e.clientX - dpx) +
+        (e.clientY - dpy) * (e.clientY - dpy)
+      ) / dt;
+      if (v > D_VMAX) releaseAll(now);
+    }
     dpx = e.clientX;
     dpy = e.clientY;
-    dLast = performance.now();
+    dLast = now;
     if (!dLive && motes.length) {
       dLive = true;
       dRaf = requestAnimationFrame(dustFrame);
