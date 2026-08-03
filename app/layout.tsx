@@ -245,10 +245,12 @@ document.documentElement.classList.add('js');
      angle and distance so the cluster reads as a swarm, never a stack.
      Captured motes FOLLOW the pointer through an eased chase. And they
      FALL OFF when outrun: the chase is deliberately slower than a fast
-     hand, so when the gap to a mote's orbit point exceeds 240px — or the
-     pointer jerks past 2.6 px/ms — the mote releases and eases home, with
-     a half-second cooldown before it can be caught again. Motes outside
-     capture range still get the old gentle lean.
+     hand, so when the gap to a mote's orbit point grows too large — or
+     the pointer jerks fast enough — the grip breaks. A shed mote does not
+     walk home: its home rebases to wherever it was dropped and the wander
+     resumes from there, so every interaction permanently rearranges the
+     field. Motes outside capture range still get the gentle lean, which
+     is elastic — the lean does return, because it never left.
 
      The loop parks when nothing is still converging: a resting cluster
      around a resting cursor costs nothing, exactly like an empty field.
@@ -287,11 +289,11 @@ document.documentElement.classList.add('js');
       m.className = 'mote';
       var s = m.style;
       for (var w = 1; w <= 3; w++) {
-        s.setProperty('--dx' + w, rnd(-70, 70).toFixed(0) + 'px');
-        s.setProperty('--dy' + w, rnd(-70, 70).toFixed(0) + 'px');
+        s.setProperty('--dx' + w, rnd(-110, 110).toFixed(0) + 'px');
+        s.setProperty('--dy' + w, rnd(-110, 110).toFixed(0) + 'px');
       }
-      s.setProperty('--dur', rnd(24, 64).toFixed(1) + 's');
-      s.setProperty('--delay', (-rnd(0, 64)).toFixed(1) + 's');
+      s.setProperty('--dur', rnd(16, 44).toFixed(1) + 's');
+      s.setProperty('--delay', (-rnd(0, 44)).toFixed(1) + 's');
       s.setProperty('--o', rnd(0.16, 0.4).toFixed(3));
       s.setProperty('--s', (2 + Math.floor(rnd(0, 3))) + 'px');
       var ci = Math.random() < 0.45 ? 0 : 1 + Math.floor(rnd(0, 3));
@@ -302,7 +304,7 @@ document.documentElement.classList.add('js');
       host.appendChild(wrap);
       // Personal orbit point: where this mote sits relative to the cursor
       // once caught. A swarm, never a stack.
-      var oa = rnd(0, 6.283), or_ = rnd(12, 48);
+      var oa = rnd(0, 6.283), or_ = rnd(20, 70);
       motes.push({
         el: wrap, lx: lx / 100, ly: ly / 100,
         ox: 0, oy: 0, p: 0,
@@ -314,16 +316,38 @@ document.documentElement.classList.add('js');
   }
 
   var D_R = 260, D_PULL = 22, D_EASE = 0.07, D_IDLE = 2000;
-  var CAP_R = 130, DROP_R = 240, D_VMAX = 2.6, FOLLOW = 0.12, COOL = 500;
+  // Retuned looser after the first hands-on pass read as "too sticky"
+  // (owner, 2026-08-03): capture reaches less far, the grip breaks at a
+  // shorter gap and a slower flick, the chase lags more, the orbit ring is
+  // wider, and the cooldown is longer so a shed stays shed.
+  var CAP_R = 100, DROP_R = 170, D_VMAX = 1.8, FOLLOW = 0.09, COOL = 800;
   var dpx = -1e4, dpy = -1e4, dLast = -1e4, dRaf = 0, dLive = false;
   var dTouch = false; // last input was a finger: pulse, never collect
 
+  /* Strafe, don't return. A shed mote keeps the ground it gained: its home
+     rebases to wherever it was released — clamped just inside the viewport
+     so the field cannot bleed off screen — the offset zeroes against the
+     new home in the same write, and the wander simply resumes from there.
+     Nothing walks back to a spawn coordinate; the field is permanently
+     rearranged by every interaction, which is what makes it dust rather
+     than a spring system. */
+  function shed(m, now) {
+    var nx = Math.min(0.98, Math.max(0.02, m.lx + m.ox / innerWidth));
+    var ny = Math.min(0.98, Math.max(0.02, m.ly + m.oy / innerHeight));
+    m.lx = nx;
+    m.ly = ny;
+    m.el.style.left = (nx * 100).toFixed(2) + '%';
+    m.el.style.top = (ny * 100).toFixed(2) + '%';
+    m.ox = 0;
+    m.oy = 0;
+    m.el.style.transform = 'translate3d(0,0,0)';
+    m.cap = false;
+    m.cool = now + COOL;
+  }
+
   function releaseAll(now) {
     for (var i = 0; i < motes.length; i++) {
-      if (motes[i].cap) {
-        motes[i].cap = false;
-        motes[i].cool = now + COOL;
-      }
+      if (motes[i].cap) shed(motes[i], now);
     }
   }
 
@@ -340,8 +364,9 @@ document.documentElement.classList.add('js');
         // once the orbit point is more than DROP_R ahead the grip breaks.
         var gx = dpx + m.obx - (bx + m.ox), gy = dpy + m.oby - (by + m.oy);
         if (Math.sqrt(gx * gx + gy * gy) > DROP_R) {
-          m.cap = false;
-          m.cool = now + COOL;
+          shed(m, now);
+          bx = m.lx * innerWidth;
+          by = m.ly * innerHeight;
         }
       } else if (active && !dTouch && now > m.cool) {
         var cx = dpx - (bx + m.ox), cy = dpy - (by + m.oy);
