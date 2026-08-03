@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import SectionRail from "@/components/SectionRail";
 import LivePreview from "@/components/LivePreview";
+import AudioToggle from "@/components/AudioToggle";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <Nav />
       <ScrollProgress />
       <SectionRail />
+      <AudioToggle />
 
       <main id="main" tabIndex={-1}>
         <Hero />

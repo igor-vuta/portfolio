@@ -37,9 +37,18 @@ export default function Nav() {
           </span>
         </a>
 
-        {/* Scrollable on narrow viewports rather than removed. */}
+        {/* Scrollable on narrow viewports rather than removed.
+
+            w-max on the inner row is what makes the scroll actually reach
+            everything: with plain justify-end, links that no longer fit
+            overflow past the container's LEFT edge, and a scroll container
+            cannot scroll into the space before its origin — on a phone the
+            first links (Flagship, Projects) were simply gone. Sized to
+            max-content the row is exactly as wide as its links, so overflow
+            extends rightward from origin and every link is reachable;
+            min-w-full keeps justify-end meaningful when they all fit. */}
         <div className="scrollbar-none min-w-0 flex-1 overflow-x-auto [&::-webkit-scrollbar]:hidden">
-          <div className="flex items-center justify-end gap-0.5">
+          <div className="flex w-max min-w-full items-center justify-end gap-0.5">
             {links.map((l) => (
               <a
                 key={l.href}

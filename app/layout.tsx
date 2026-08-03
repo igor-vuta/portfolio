@@ -214,6 +214,249 @@ document.documentElement.classList.add('js');
   wide.addEventListener('change', sync);
   still.addEventListener('change', sync);
 
+  /* ── Dust ─────────────────────────────────────────────────────────────
+     Ambient motes drifting behind the content — the one place the design
+     rules explicitly permit randomness ("ambient background drift, never
+     in anything the user clicks"), so every load scatters differently.
+
+     28 two-pixel squares, each walking its own four-waypoint loop as one
+     CSS animation. All motion is transform on composited layers: after
+     spawn, no JS runs again, ever. The negative delay starts each mote
+     mid-loop, so the field never breathes in unison. Spawned from here
+     rather than a component because it costs the bundle nothing and needs
+     nothing from React — it is weather, not interface.
+
+     Phones get the field too, by owner decision (2026-08-03) — it is
+     composited transforms on 28 tiny layers, not scroll-linked work, and
+     it was invisible on exactly the screens most visitors bring. Reduced
+     motion still gets nothing, and print and forced colours hide it in
+     CSS. During boot the field is held at zero opacity and fades up as
+     the terminal lifts. (rnd is declared once, in the trail section below
+     — function declarations hoist to this scope.)
+
+     Each mote is a wrapper + inner pair on purpose: the inner element owns
+     the CSS wander (compositor, no JS ever), the wrapper owns a second
+     transform the pointer loop writes into. One element cannot carry both
+     — the animation and the loop would fight over the transform property.
+
+     The interaction has three verbs (owner spec, 2026-08-03): motes near
+     the pointer COLLECT — within 130px they are captured and glide to a
+     personal orbit point around the cursor, each mote keeping its own
+     angle and distance so the cluster reads as a swarm, never a stack.
+     Captured motes FOLLOW the pointer through an eased chase. And they
+     FALL OFF when outrun: the chase is deliberately slower than a fast
+     hand, so when the gap to a mote's orbit point grows too large — or
+     the pointer jerks fast enough — the grip breaks. A shed mote does not
+     walk home: its home rebases to wherever it was dropped and the wander
+     resumes from there, so every interaction permanently rearranges the
+     field. Motes outside capture range still get the gentle lean, which
+     is elastic — the lean does return, because it never left.
+
+     The loop parks when nothing is still converging: a resting cluster
+     around a resting cursor costs nothing, exactly like an empty field.
+
+     Touch is deliberately the smaller gesture (owner spec, 2026-08-03):
+     a tap pulses the field — nearby motes lean toward the touch point and
+     take their excited colour for a moment, then ease back — but a finger
+     never collects. Capture is a cursor behaviour: a cursor is present
+     between gestures, so a swarm can follow it; a finger exists only
+     during the gesture, and a cluster glued to wherever it last lifted
+     reads as debris. pointerdown is listened to alongside pointermove
+     because a clean tap barely moves at all. */
+  var motes = [];
+
+  /* Every mote takes two colours from the system palette at spawn: --c is
+     its resting voice, --ce the one it shifts to as the pointer nears. The
+     crossfade itself is CSS (color-mix driven by --p); the loop only eases
+     the proximity number. Distribution leans coloured on purpose — at rest
+     the field read as one or two visible specks, which is not weather. */
+  var PAL = ['#1f1e1d', '#a34928', '#2a7153', '#d99a80'];
+
+  function dust() {
+    if (still.matches) return;
+    if (document.getElementById('dust')) return;
+    var host = document.createElement('div');
+    host.id = 'dust';
+    host.className = 'dust';
+    host.setAttribute('aria-hidden', 'true');
+    for (var i = 0; i < 28; i++) {
+      var wrap = document.createElement('span');
+      wrap.className = 'mote-w';
+      var lx = rnd(0, 100), ly = rnd(0, 100);
+      wrap.style.left = lx.toFixed(2) + '%';
+      wrap.style.top = ly.toFixed(2) + '%';
+      var m = document.createElement('i');
+      m.className = 'mote';
+      var s = m.style;
+      for (var w = 1; w <= 3; w++) {
+        s.setProperty('--dx' + w, rnd(-110, 110).toFixed(0) + 'px');
+        s.setProperty('--dy' + w, rnd(-110, 110).toFixed(0) + 'px');
+      }
+      s.setProperty('--dur', rnd(16, 44).toFixed(1) + 's');
+      s.setProperty('--delay', (-rnd(0, 44)).toFixed(1) + 's');
+      s.setProperty('--o', rnd(0.16, 0.4).toFixed(3));
+      s.setProperty('--s', (2 + Math.floor(rnd(0, 3))) + 'px');
+      var ci = Math.random() < 0.45 ? 0 : 1 + Math.floor(rnd(0, 3));
+      var ei = (ci + 1 + Math.floor(rnd(0, PAL.length - 1))) % PAL.length;
+      s.setProperty('--c', PAL[ci]);
+      s.setProperty('--ce', PAL[ei]);
+      wrap.appendChild(m);
+      host.appendChild(wrap);
+      // Personal orbit point: where this mote sits relative to the cursor
+      // once caught. A swarm, never a stack.
+      var oa = rnd(0, 6.283), or_ = rnd(20, 70);
+      motes.push({
+        el: wrap, lx: lx / 100, ly: ly / 100,
+        ox: 0, oy: 0, p: 0,
+        obx: Math.cos(oa) * or_, oby: Math.sin(oa) * or_,
+        cap: false, cool: 0
+      });
+    }
+    document.body.appendChild(host);
+  }
+
+  var D_R = 260, D_PULL = 22, D_EASE = 0.07, D_IDLE = 2000;
+  // Retuned looser after the first hands-on pass read as "too sticky"
+  // (owner, 2026-08-03): capture reaches less far, the grip breaks at a
+  // shorter gap and a slower flick, the chase lags more, the orbit ring is
+  // wider, and the cooldown is longer so a shed stays shed.
+  var CAP_R = 100, DROP_R = 170, D_VMAX = 1.8, FOLLOW = 0.09, COOL = 800;
+  var dpx = -1e4, dpy = -1e4, dLast = -1e4, dRaf = 0, dLive = false;
+  var dTouch = false; // last input was a finger: pulse, never collect
+
+  /* Strafe, don't return. A shed mote keeps the ground it gained: its home
+     rebases to wherever it was released — clamped just inside the viewport
+     so the field cannot bleed off screen — the offset zeroes against the
+     new home in the same write, and the wander simply resumes from there.
+     Nothing walks back to a spawn coordinate; the field is permanently
+     rearranged by every interaction, which is what makes it dust rather
+     than a spring system. */
+  function shed(m, now) {
+    var nx = Math.min(0.98, Math.max(0.02, m.lx + m.ox / innerWidth));
+    var ny = Math.min(0.98, Math.max(0.02, m.ly + m.oy / innerHeight));
+    m.lx = nx;
+    m.ly = ny;
+    m.el.style.left = (nx * 100).toFixed(2) + '%';
+    m.el.style.top = (ny * 100).toFixed(2) + '%';
+    m.ox = 0;
+    m.oy = 0;
+    m.el.style.transform = 'translate3d(0,0,0)';
+    m.cap = false;
+    m.cool = now + COOL;
+  }
+
+  function releaseAll(now) {
+    for (var i = 0; i < motes.length; i++) {
+      if (motes[i].cap) shed(motes[i], now);
+    }
+  }
+
+  function dustFrame(now) {
+    var active = now - dLast < D_IDLE;
+    var settling = false;
+    for (var i = 0; i < motes.length; i++) {
+      var m = motes[i];
+      var bx = m.lx * innerWidth, by = m.ly * innerHeight;
+      var tx = 0, ty = 0, tp = 0, ease = D_EASE;
+
+      if (m.cap) {
+        // Falls off when outrun: the chase lags a fast hand by design, and
+        // once the orbit point is more than DROP_R ahead the grip breaks.
+        var gx = dpx + m.obx - (bx + m.ox), gy = dpy + m.oby - (by + m.oy);
+        if (Math.sqrt(gx * gx + gy * gy) > DROP_R) {
+          shed(m, now);
+          bx = m.lx * innerWidth;
+          by = m.ly * innerHeight;
+        }
+      } else if (active && !dTouch && now > m.cool) {
+        var cx = dpx - (bx + m.ox), cy = dpy - (by + m.oy);
+        if (Math.sqrt(cx * cx + cy * cy) < CAP_R) m.cap = true;
+      }
+
+      if (m.cap) {
+        // Captured: chase the orbit point. Holds through pointer rest —
+        // collected dust stays collected until flicked off or outrun.
+        tx = dpx + m.obx - bx;
+        ty = dpy + m.oby - by;
+        tp = 1;
+        ease = FOLLOW;
+      } else if (active) {
+        // Free: the original gentle lean, one proximity number driving
+        // pull here and colour/glow in CSS via --p.
+        var dx = dpx - bx, dy = dpy - by;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d > 1 && d < D_R) {
+          tp = (1 - d / D_R) * (1 - d / D_R);
+          tx = dx / d * tp * D_PULL;
+          ty = dy / d * tp * D_PULL;
+        }
+      }
+
+      m.ox += (tx - m.ox) * ease;
+      m.oy += (ty - m.oy) * ease;
+      m.p += (tp - m.p) * 0.1;
+      // Still converging on something — offset or colour — keeps the loop
+      // alive; a settled cluster around a resting cursor parks it, exactly
+      // like an empty field.
+      if (
+        Math.abs(tx - m.ox) > 0.3 ||
+        Math.abs(ty - m.oy) > 0.3 ||
+        Math.abs(tp - m.p) > 0.01
+      ) {
+        settling = true;
+      }
+      m.el.style.transform =
+        'translate3d(' + m.ox.toFixed(1) + 'px,' + m.oy.toFixed(1) + 'px,0)';
+      m.el.style.setProperty('--p', m.p.toFixed(3));
+    }
+    if (active || settling) {
+      dRaf = requestAnimationFrame(dustFrame);
+    } else {
+      dLive = false;
+    }
+  }
+
+  function onPointer(e) {
+    var now = performance.now();
+    dTouch = e.pointerType === 'touch';
+    // A finger sheds anything a mouse collected earlier on a hybrid
+    // device — a cluster cannot follow an input that is about to vanish.
+    if (dTouch) releaseAll(now);
+    // A violent flick sheds the whole cluster at once, whatever the
+    // per-mote distances say.
+    if (dLast > 0) {
+      var dt = Math.max(8, now - dLast);
+      var v = Math.sqrt(
+        (e.clientX - dpx) * (e.clientX - dpx) +
+        (e.clientY - dpy) * (e.clientY - dpy)
+      ) / dt;
+      if (v > D_VMAX) releaseAll(now);
+    }
+    dpx = e.clientX;
+    dpy = e.clientY;
+    dLast = now;
+    if (!dLive && motes.length) {
+      dLive = true;
+      dRaf = requestAnimationFrame(dustFrame);
+    }
+  }
+
+  function dustStart() {
+    dust();
+    if (!still.matches) {
+      addEventListener('pointermove', onPointer, { passive: true });
+      // A clean tap barely moves; without this, phones would only ever
+      // reach the field through an accidental drag.
+      addEventListener('pointerdown', onPointer, { passive: true });
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    addEventListener('DOMContentLoaded', dustStart);
+  } else {
+    dustStart();
+  }
+
   /* ── Trail ────────────────────────────────────────────────────────────
      Press a control anywhere in the body and a copy of it lifts off,
      shrinks, and flies a serpentine path to the top of the page — the

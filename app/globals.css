@@ -846,7 +846,15 @@ html.boot .reveal.is-in {
    three custom properties, so a variant cannot accidentally ship without a
    hover, active, disabled, or focus state — they're defined on the base. */
 .ctl {
-  --ctl-bg: transparent;
+  /* Not quite transparent. A fully hollow control read as an outline drawn
+     on the page rather than a thing sitting on it; this faint wash of the
+     panel colour gives it a body without giving it elevation. Declared as
+     its own token because the resting fill is needed twice — here, and in
+     the coarse-pointer block that resets hover state, which previously
+     reset to `transparent` and would have silently stripped the body on
+     every phone. */
+  --ctl-bg-rest: color-mix(in srgb, var(--color-panel) 72%, transparent);
+  --ctl-bg: var(--ctl-bg-rest);
   --ctl-fg: var(--color-ink);
   --ctl-bd: var(--color-line-2);
 
@@ -916,8 +924,12 @@ html.boot .reveal.is-in {
   --ctl-fg: var(--color-cream);
 }
 
-/* Quiet variant for tertiary actions — no border until addressed. */
+/* Quiet variant for tertiary actions — no border until addressed, and no
+   body either: quiet is the one variant that is deliberately just text.
+   Zeroing the rest token keeps the coarse-pointer reset consistent. */
 .ctl-quiet {
+  --ctl-bg-rest: transparent;
+  --ctl-bg: transparent;
   --ctl-bd: transparent;
   --ctl-fg: var(--color-fog);
   padding-inline: 0.75rem;
@@ -939,17 +951,20 @@ html.boot .reveal.is-in {
 .ctl-ok {
   --ctl-bd: var(--color-lamp);
   --ctl-fg: var(--color-lamp);
-  --ctl-bg: transparent;
+  --ctl-bg: var(--ctl-bg-rest);
 }
 
 .ctl-ok:hover {
   --ctl-bd: var(--color-lamp);
   --ctl-fg: var(--color-lamp);
-  --ctl-bg: transparent;
+  --ctl-bg: var(--ctl-bg-rest);
 }
 
-/* Controls on the dark chassis re-point the same properties. */
+/* Controls on the dark chassis re-point the same properties. The resting
+   fill flips to a faint cream so the body survives the surface change. */
 .on-coal .ctl {
+  --ctl-bg-rest: rgba(245, 243, 236, 0.07);
+  --ctl-bg: var(--ctl-bg-rest);
   --ctl-fg: var(--color-cream);
   --ctl-bd: rgba(245, 243, 236, 0.26);
 }
@@ -1002,6 +1017,79 @@ html.boot .reveal.is-in {
    preference switched on mid-flight, with a copy already in the air. */
 @media (prefers-reduced-motion: reduce) {
   .trail-ghost {
+    display: none;
+  }
+}
+
+/* ── Dust ────────────────────────────────────────────────────────────────────
+   Ambient motes, spawned by the head script. Squares, not circles — dust on
+   this page is still milled. Sits with the grid behind everything and never
+   takes a pointer event. Each mote's waypoints, duration, phase, and opacity
+   arrive as inline custom properties; this file only owns the shape of the
+   walk. Linear segments deliberately: eased drift reads as swimming, straight
+   segments read as particles in still air. */
+.dust {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  transition: opacity 600ms var(--ease-entrance);
+}
+
+html.boot .dust {
+  opacity: 0;
+}
+
+/* Wrapper/inner split: the inner .mote owns the CSS wander, the wrapper owns
+   the pointer-attraction transform written by the head script's loop. One
+   element cannot carry both — animation and script would fight over the same
+   transform property. */
+.mote-w {
+  position: absolute;
+  will-change: transform;
+}
+
+/* Each mote arrives with two palette voices (--c resting, --ce excited), a
+   size, and a base opacity, all inline from the spawner. --p is the eased
+   proximity the pointer loop writes on the wrapper: at 0 the mote rests in
+   its own colour; approaching 1 it crossfades to its excited colour, the
+   glow widens, and it brightens. currentColor carries the mixed value into
+   both the fill and the glow so they cannot drift apart. */
+.mote {
+  display: block;
+  width: var(--s, 2px);
+  height: var(--s, 2px);
+  color: color-mix(in srgb, var(--ce, var(--c)) calc(var(--p, 0) * 100%), var(--c, var(--color-ink)));
+  background: currentColor;
+  box-shadow: 0 0 calc(3px + var(--p, 0) * 9px) 1px currentColor;
+  opacity: calc(var(--o, 0.25) + var(--p, 0) * 0.5);
+  animation: mote var(--dur, 40s) linear var(--delay, 0s) infinite;
+  will-change: transform;
+}
+
+@keyframes mote {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  25% {
+    transform: translate3d(var(--dx1), var(--dy1), 0);
+  }
+  50% {
+    transform: translate3d(var(--dx2), var(--dy2), 0);
+  }
+  75% {
+    transform: translate3d(var(--dx3), var(--dy3), 0);
+  }
+}
+
+/* One gate for every environment that should not pay for weather: reduced
+   motion, paper, and forced colours. Phones keep the field — it is
+   composited transforms, not scroll-linked work, and it was invisible on
+   exactly the screens most visitors bring. The spawn guard in the head
+   script is the fast path; this is the guarantee. */
+@media (prefers-reduced-motion: reduce), (forced-colors: active), print {
+  .dust {
     display: none;
   }
 }
@@ -1153,7 +1241,9 @@ html.boot .reveal.is-in {
   .ctl:hover {
     --ctl-bd: var(--color-line-2);
     --ctl-fg: var(--color-ink);
-    --ctl-bg: transparent;
+    /* Reset to the resting fill, not to transparent — resetting to
+       transparent would strip the control's body on every touch device. */
+    --ctl-bg: var(--ctl-bg-rest);
   }
 
   .ctl-primary:hover {
