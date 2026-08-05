@@ -492,7 +492,7 @@ html.boot .boot-term {
      the mechanism — so an overlay that somehow outlived its script still
      clears on time. visibility in the end state keeps it off the hit-testing
      surface once transparent. */
-  animation: termOut 400ms var(--ease-entrance) 4500ms forwards;
+  animation: termOut 400ms var(--ease-entrance) 5500ms forwards;
 }
 
 @keyframes termOut {
@@ -625,7 +625,7 @@ html.boot .boot-term {
 }
 
 html.boot body::before {
-  animation: bootGrid 300ms var(--ease-entrance) 4500ms both;
+  animation: bootGrid 300ms var(--ease-entrance) 5500ms both;
 }
 
 @keyframes bootGrid {
@@ -644,11 +644,11 @@ html.boot body::before {
    Each keyframe declares only `from`, so `to` resolves to whatever the
    element's own border colour is and the two cannot fall out of step. */
 html.boot header {
-  animation: bootRuleBottom 320ms var(--ease-entrance) 4650ms both;
+  animation: bootRuleBottom 320ms var(--ease-entrance) 5650ms both;
 }
 
 html.boot main > section {
-  animation: bootRuleTop 320ms var(--ease-entrance) 4650ms both;
+  animation: bootRuleTop 320ms var(--ease-entrance) 5650ms both;
 }
 
 @keyframes bootRuleBottom {
@@ -666,7 +666,7 @@ html.boot main > section {
 html.boot main,
 html.boot header nav,
 html.boot footer {
-  animation: bootType 460ms var(--ease-entrance) 4750ms both;
+  animation: bootType 460ms var(--ease-entrance) 5750ms both;
 }
 
 @keyframes bootType {
