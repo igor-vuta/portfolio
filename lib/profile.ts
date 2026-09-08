@@ -63,11 +63,12 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    name: "DrivePro — Ride-Hailing App",
+    name: "Intelli-Factory",
     blurb:
-      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend — http, crypto and sqlite from the standard library only — with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
-    stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
-    repoUrl: "https://github.com/igor-vuta/DrivePro_2",
+      "Multi-objective supply-chain matching platform and my final-year project — covered in depth in the Flagship section above. An NSGA-II genetic algorithm on DEAP scores manufacturer–logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
+    stack: ["Next.js 14", "TypeScript", "FastAPI", "Python 3.12", "DEAP", "PostgreSQL"],
+    liveUrl: "https://intelli-factory-frontend.vercel.app/",
+    repoUrl: "https://github.com/igor-vuta/intelli-factory",
   },
   {
     name: "Todo Web App",
@@ -76,13 +77,6 @@ export const projects: Project[] = [
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
-  },
-  {
-    name: "Student Course Hub",
-    blurb:
-      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite — deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
-    stack: ["Deno", "Oak", "TypeScript", "SQLite", "Server-side rendering"],
-    repoUrl: "https://github.com/igor-vuta/student-course-hub",
   },
   {
     name: "Vue Folder Tree",
@@ -99,20 +93,6 @@ export const projects: Project[] = [
     stack: ["HTML5", "Sass", "jQuery", "Bootstrap grid", "Figma"],
     liveUrl: "https://igor-vuta.github.io/qubly-landing/",
     repoUrl: "https://github.com/igor-vuta/qubly-landing",
-  },
-  {
-    name: "Module Chooser",
-    blurb:
-      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool — one script fetches JavaFX and compiles with plain javac.",
-    stack: ["Java", "JavaFX", "MVC", "Object serialization"],
-    repoUrl: "https://github.com/igor-vuta/module-chooser-javafx",
-  },
-  {
-    name: "Stackroom",
-    blurb:
-      "Turns a folder of documents into a public, searchable archive — a Python service with Jinja-templated pages and a light JavaScript frontend.",
-    stack: ["Python", "Jinja", "JavaScript", "CSS"],
-    repoUrl: "https://github.com/igor-vuta/stackroom",
   },
   {
     name: "Drive Pro",
@@ -137,6 +117,34 @@ export const projects: Project[] = [
     stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
     liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
     repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
+  },
+  {
+    name: "DrivePro — Ride-Hailing App",
+    blurb:
+      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend — http, crypto and sqlite from the standard library only — with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
+    stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
+    repoUrl: "https://github.com/igor-vuta/DrivePro_2",
+  },
+  {
+    name: "Student Course Hub",
+    blurb:
+      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite — deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
+    stack: ["Deno", "Oak", "TypeScript", "SQLite", "Server-side rendering"],
+    repoUrl: "https://github.com/igor-vuta/student-course-hub",
+  },
+  {
+    name: "Module Chooser",
+    blurb:
+      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool — one script fetches JavaFX and compiles with plain javac.",
+    stack: ["Java", "JavaFX", "MVC", "Object serialization"],
+    repoUrl: "https://github.com/igor-vuta/module-chooser-javafx",
+  },
+  {
+    name: "Stackroom",
+    blurb:
+      "Turns a folder of documents into a public, searchable archive — a Python service with Jinja-templated pages and a light JavaScript frontend.",
+    stack: ["Python", "Jinja", "JavaScript", "CSS"],
+    repoUrl: "https://github.com/igor-vuta/stackroom",
   },
   {
     name: "Table CRM",

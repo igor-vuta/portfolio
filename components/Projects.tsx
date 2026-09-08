@@ -9,7 +9,7 @@ export default function Projects() {
       id="projects"
       eyebrow="Selected work"
       title="Projects"
-      lede="Twelve projects — ten with public source, six with a live deployment you can open right now."
+      lede="Thirteen projects, the seven you can open and try listed first. Eleven have public source."
     >
       <ul className="mt-12 grid gap-5 md:grid-cols-2">
         {/* The list item is the grid cell directly — `display: contents` would
