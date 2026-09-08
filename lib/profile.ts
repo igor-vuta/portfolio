@@ -154,15 +154,6 @@ export const projects: Project[] = [
 
 export const experience = [
   {
-    company: "Kovacs Group (agency) — on site at DPD",
-    role: "Warehouse Operative",
-    period: "Dec 2025 – Sep 2026",
-    points: [
-      "Parcel sorting, scanning and dispatch preparation against tight delivery deadlines in a high-volume logistics operation",
-      "Held accuracy and throughput across shifts while completing my final year and the Intelli-Factory project in parallel",
-    ],
-  },
-  {
     company: "Papa Gadget",
     role: "Software Developer — Telegram Bots & CRM Integration",
     period: "Feb 2024 – Sep 2024",
@@ -170,6 +161,15 @@ export const experience = [
       "Worked in a two-person development team on two Python Telegram bots against the RemOnline CRM, including a staff intake bot with login and a whitelist so only authorised staff could write",
       "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout",
       "Built automation scripts against REST APIs and JSON, and documented the processes so shop staff could support the tools themselves",
+    ],
+  },
+  {
+    company: "Kovacs Group (agency) — on site at DPD",
+    role: "Warehouse Operative",
+    period: "Dec 2025 – Sep 2026",
+    points: [
+      "Parcel sorting, scanning and dispatch preparation against tight delivery deadlines in a high-volume logistics operation",
+      "Held accuracy and throughput across shifts while completing my final year and the Intelli-Factory project in parallel",
     ],
   },
 ];
