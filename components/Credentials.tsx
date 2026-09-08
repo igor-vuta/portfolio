@@ -12,8 +12,8 @@ export default function Credentials() {
   return (
     <Section
       id="credentials"
-      eyebrow="Experience · Certifications · Skills"
-      title="Credentials"
+      eyebrow="Roles · Internships · Certifications · Skills"
+      title="Experience &amp; Credentials"
     >
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
         {experience.map((job) => (
@@ -37,7 +37,29 @@ export default function Credentials() {
           </Reveal>
         ))}
 
+        {/* Internships sit in the grid beside the roles above rather than as a
+            single line under the certificates. They are work history, and the
+            previous footnote treatment put them below an unrelated column. */}
         <Reveal delay={60}>
+          <LabelledPanel label="Internships" note={internships.note}>
+            <ul className="space-y-5">
+              {internships.items.map((it) => (
+                <li key={it.org}>
+                  <p className="text-detail font-medium text-clay">
+                    {it.org}
+                    <span className="ml-2 text-micro text-fog">
+                      {it.period}
+                    </span>
+                  </p>
+                  <p className="silk-sm mt-1 text-fog">{it.context}</p>
+                  <p className="mt-2 text-detail text-fog">{it.point}</p>
+                </li>
+              ))}
+            </ul>
+          </LabelledPanel>
+        </Reveal>
+
+        <Reveal delay={120}>
           <ul className="flex h-full flex-col gap-4">
             {certifications.map((c) => (
               <li key={c.name} className="panel flex-1 p-5">
@@ -74,10 +96,6 @@ export default function Credentials() {
           </ul>
         </Reveal>
       </div>
-
-      <Reveal>
-        <p className="mt-5 text-detail text-fog">{internships}</p>
-      </Reveal>
 
       {/* ── Skills matrix ──────────────────────────────────────────────────
           A definition list, because that is the actual relationship: each

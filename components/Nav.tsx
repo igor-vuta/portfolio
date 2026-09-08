@@ -4,7 +4,7 @@ import { ExternalLink } from "@/components/ui/Control";
 const links = [
   { href: "#flagship", label: "Flagship" },
   { href: "#projects", label: "Projects" },
-  { href: "#credentials", label: "Credentials" },
+  { href: "#credentials", label: "Experience" },
   { href: "#contact", label: "Contact" },
 ];
 

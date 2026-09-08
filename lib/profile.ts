@@ -174,8 +174,25 @@ export const experience = [
   },
 ];
 
-export const internships =
-  "Earlier: IT support internships at Kaspi Bank (fintech, Jun–Jul 2023) and Kazakhfilm (the national film studio of Kazakhstan, Sep–Oct 2023) — first-line support, JIRA ticket hygiene, and troubleshooting documentation.";
+export const internships = {
+  note: "2023",
+  items: [
+    {
+      org: "Kaspi Bank",
+      context: "Leading fintech ecosystem in Kazakhstan",
+      period: "Jun – Jul 2023",
+      point:
+        "First-line technical support for internal users, resolving software and hardware issues to deadline; JIRA ticket hygiene and written troubleshooting documentation.",
+    },
+    {
+      org: "Kazakhfilm",
+      context: "The national film studio of Kazakhstan",
+      period: "Sep – Oct 2023",
+      point:
+        "Account setup, device connectivity and CCTV support for staff; documented requests and incidents and kept the hardware and software inventory in order.",
+    },
+  ],
+};
 
 export const certifications = [
   {
