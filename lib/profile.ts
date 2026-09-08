@@ -4,11 +4,11 @@ export const identity = {
   stackLine: "Python · TypeScript · FastAPI · Next.js",
   location: "Leicester, UK",
   degree: "BSc (Hons) Computer Science, First-Class Honours — De Montfort University, 2026",
-  email: "igor_vuta@proton.me",
+  email: "igor.vuta.dev@gmail.com",
   github: "https://github.com/igor-vuta",
   linkedin: "https://www.linkedin.com/in/igor-vuta-b88017390",
   availability:
-    "Open to entry-level software / web developer roles · UK Graduate Route — full-time work rights, no sponsorship required",
+    "Available immediately for entry-level software / web developer roles · Full right to work in the UK — no sponsorship required",
   summary:
     "Computer Science graduate with commercial experience building Telegram bots and CRM integrations in Python, and a deployed, benchmarked full-stack platform as a final-year project. I care about clean code, measurable results, and security done properly.",
 };
@@ -63,36 +63,26 @@ export type Project = {
 
 export const projects: Project[] = [
   {
-    name: "Drive Pro",
+    name: "DrivePro — Ride-Hailing App",
     blurb:
-      "Public website for a family-run earthworks and heavy-equipment hire company in Almaty (200+ projects since 2018). Bilingual Russian/Kazakh, equipment catalogue, pricing tables, WhatsApp call-to-action.",
-    stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
-    liveUrl: "https://igor-vuta.github.io/drivePro-website/",
-    repoUrl: "https://github.com/igor-vuta/drivePro-website",
-  },
-  {
-    name: "Qubly Landing Page",
-    blurb:
-      "Pixel-perfect, responsive landing page implemented from a Figma design — spacing, typography, and breakpoints matched to spec.",
-    stack: ["HTML", "Sass", "JavaScript", "Bootstrap", "Figma"],
-    liveUrl: "https://igor-vuta.github.io/qubly-landing/",
-    repoUrl: "https://github.com/igor-vuta/qubly-landing",
-  },
-  {
-    name: "Currency Exchange Bot",
-    blurb:
-      "Button-only multilingual Telegram bot for live rates and conversions — no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
-    stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
-    liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
-    repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
+      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend — http, crypto and sqlite from the standard library only — with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
+    stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
+    repoUrl: "https://github.com/igor-vuta/DrivePro_2",
   },
   {
     name: "Todo Web App",
     blurb:
-      "Full-stack task-management app with JWT authentication, lists, groups, and role-based access — modular PHP backend, MySQL, vanilla JS (ESM) frontend, Dockerized and continuously deployed to Railway.",
-    stack: ["PHP 8.2", "MySQL", "JavaScript (ESM)", "JWT", "Docker"],
+      "Full-stack task manager with JWT authentication, shared group lists and role-based access — modular PHP 8 REST API over a hand-written five-table MySQL schema, vanilla JS frontend. Ships as a single Caddy container; its CI re-runs schema and seeds against a live MySQL service container to prove they are idempotent.",
+    stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
+  },
+  {
+    name: "Student Course Hub",
+    blurb:
+      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite — deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
+    stack: ["Deno", "Oak", "TypeScript", "SQLite", "Server-side rendering"],
+    repoUrl: "https://github.com/igor-vuta/student-course-hub",
   },
   {
     name: "Vue Folder Tree",
@@ -103,30 +93,89 @@ export const projects: Project[] = [
     repoUrl: "https://github.com/igor-vuta/vue-folder-tree",
   },
   {
+    name: "Qubly Landing Page",
+    blurb:
+      "Pixel-perfect, responsive landing page implemented from a Figma design — spacing, typography and breakpoints matched to spec. Hamburger navigation, a tabbed reviews component on data attributes, and smooth-scroll anchors, all hand-written against DOM events.",
+    stack: ["HTML5", "Sass", "jQuery", "Bootstrap grid", "Figma"],
+    liveUrl: "https://igor-vuta.github.io/qubly-landing/",
+    repoUrl: "https://github.com/igor-vuta/qubly-landing",
+  },
+  {
+    name: "Module Chooser",
+    blurb:
+      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool — one script fetches JavaFX and compiles with plain javac.",
+    stack: ["Java", "JavaFX", "MVC", "Object serialization"],
+    repoUrl: "https://github.com/igor-vuta/module-chooser-javafx",
+  },
+  {
+    name: "Stackroom",
+    blurb:
+      "Turns a folder of documents into a public, searchable archive — a Python service with Jinja-templated pages and a light JavaScript frontend.",
+    stack: ["Python", "Jinja", "JavaScript", "CSS"],
+    repoUrl: "https://github.com/igor-vuta/stackroom",
+  },
+  {
+    name: "Drive Pro",
+    blurb:
+      "Public website for a family-run earthworks and heavy-equipment hire company in Almaty (200+ projects since 2018). Bilingual Russian/Kazakh, equipment catalogue, pricing tables, WhatsApp call-to-action.",
+    stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
+    liveUrl: "https://igor-vuta.github.io/drivePro-website/",
+    repoUrl: "https://github.com/igor-vuta/drivePro-website",
+  },
+  {
     name: "React Starter Pro",
     blurb:
-      "Opinionated React 19 + Vite starter with the tedious parts already wired up: Tailwind CSS 4, ESLint, Prettier, Husky and lint-staged pre-commit hooks, and a GitHub Actions deploy pipeline.",
+      "Opinionated React 19 + Vite starter with the tedious parts already wired up: Tailwind CSS 4, ESLint, Prettier, Husky and lint-staged pre-commit hooks, and a GitHub Actions deploy pipeline. Published with a written rationale for every decision.",
     stack: ["React 19", "Vite", "Tailwind CSS 4", "ESLint", "GitHub Actions"],
     liveUrl: "https://igor-vuta.github.io/react-starter-pro/",
     repoUrl: "https://github.com/igor-vuta/react-starter-pro",
+  },
+  {
+    name: "Currency Exchange Bot",
+    blurb:
+      "Button-only multilingual Telegram bot for live rates and conversions — no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
+    stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
+    liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
+    repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
+  },
+  {
+    name: "Table CRM",
+    blurb:
+      "Photo-to-spreadsheet semi-automatic data entry: a tkinter desktop GUI that runs EasyOCR and OpenCV over grouped photos and exports the extracted rows to XLSX. Private repository — walkthrough on request.",
+    stack: ["Python", "tkinter", "EasyOCR", "OpenCV", "openpyxl"],
+  },
+  {
+    name: "Intro Skipper",
+    blurb:
+      "Chrome Manifest V3 browser extension that detects and auto-skips intros and outros on Netflix and Kinopoisk HD. Private repository — walkthrough on request.",
+    stack: ["JavaScript", "Chrome Manifest V3", "CSS"],
   },
 ];
 
 export const experience = [
   {
+    company: "Kovacs Group (agency) — on site at DPD",
+    role: "Warehouse Operative",
+    period: "Dec 2025 – Sep 2026",
+    points: [
+      "Parcel sorting, scanning and dispatch preparation against tight delivery deadlines in a high-volume logistics operation",
+      "Held accuracy and throughput across shifts while completing my final year and the Intelli-Factory project in parallel",
+    ],
+  },
+  {
     company: "Papa Gadget",
     role: "Software Developer — Telegram Bots & CRM Integration",
     period: "Feb 2024 – Sep 2024",
     points: [
-      "Designed and built Python Telegram bots and adapted the company CRM to the real workflow of a gadget-repair shop",
-      "Cut repetitive manual data entry by 30% by streamlining CRM workflows through the bots",
-      "Built automation scripts against REST APIs; documented processes for scalability",
+      "Worked in a two-person development team on two Python Telegram bots against the RemOnline CRM, including a staff intake bot with login and a whitelist so only authorised staff could write",
+      "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout",
+      "Built automation scripts against REST APIs and JSON, and documented the processes so shop staff could support the tools themselves",
     ],
   },
 ];
 
 export const internships =
-  "Earlier: IT support internships at Kaspi Bank (fintech) and Kazakhfilm (national film studio).";
+  "Earlier: IT support internships at Kaspi Bank (fintech, Jun–Jul 2023) and Kazakhfilm (the national film studio of Kazakhstan, Sep–Oct 2023) — first-line support, JIRA ticket hygiene, and troubleshooting documentation.";
 
 export const certifications = [
   {
@@ -150,15 +199,15 @@ export const certifications = [
 export const skills: { group: string; items: string[] }[] = [
   {
     group: "Languages",
-    items: ["TypeScript", "Python 3.12", "SQL", "JavaScript (ES6+)", "HTML5", "CSS3/SCSS"],
+    items: ["TypeScript", "Python 3.12", "SQL", "JavaScript (ES6+)", "HTML5", "CSS3/SCSS", "PHP 8", "Java"],
   },
   {
     group: "Frontend",
-    items: ["Next.js (App Router)", "React", "Tailwind CSS", "Zustand", "Recharts", "i18n", "Accessibility (WCAG)"],
+    items: ["Next.js (App Router)", "React", "Vue 3", "React Native (Expo)", "Tailwind CSS", "Zustand", "Recharts", "jQuery", "i18n", "Accessibility (WCAG)"],
   },
   {
     group: "Backend",
-    items: ["FastAPI", "Node.js", "Express", "REST / OpenAPI", "Prisma ORM", "PostgreSQL", "Redis (familiar)"],
+    items: ["FastAPI", "Node.js", "Express", "Deno / Oak", "REST / OpenAPI", "WebSockets", "Prisma ORM", "PostgreSQL", "MySQL", "SQLite", "Redis (familiar)"],
   },
   {
     group: "Algorithms",
@@ -166,6 +215,6 @@ export const skills: { group: string; items: string[] }[] = [
   },
   {
     group: "Testing & DevOps",
-    items: ["pytest · TDD", "Docker Compose", "Git & GitHub", "CI/CD basics", "Vercel · Render · Aiven", "OWASP practices"],
+    items: ["pytest · TDD", "Docker Compose", "Git & GitHub", "GitHub Actions CI", "Vercel · Render · Aiven", "OWASP practices", "Claude Code (daily)"],
   },
 ];
