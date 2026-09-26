@@ -4,3 +4,5 @@ out/
 *.tsbuildinfo
 next-env.d.ts
 .DS_Store
+design-references/
+.playwright-cli/

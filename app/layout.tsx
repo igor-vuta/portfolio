@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import Nav from "@/components/Nav";
+import Footer from "@/components/Footer";
+import ScrollProgress from "@/components/ScrollProgress";
+import LivePreview from "@/components/LivePreview";
+import Buoys from "@/components/Buoys";
+import Wake from "@/components/Wake";
+import TlDr, { TlDrWatch } from "@/components/TlDr";
+import { ogImage } from "@/lib/seo";
 
 /**
  * Two cuts of one family, self-hosted at build time.
@@ -568,12 +576,12 @@ export const metadata: Metadata = {
   // render with no image and a broken canonical.
   metadataBase: new URL(SITE),
   title: {
-    default: "Igor Vuta — Software Developer",
-    template: "%s — Igor Vuta",
+    default: "Igor Vuta, Software Developer",
+    template: "%s | Igor Vuta",
   },
   description:
     "Software developer in Leicester, UK. Python · TypeScript · FastAPI · Next.js. Builder of Intelli-Factory, a deployed multi-objective supply-chain optimization platform.",
-  applicationName: "Igor Vuta — Portfolio",
+  applicationName: "Igor Vuta, Portfolio",
   authors: [{ name: "Igor Vuta", url: SITE }],
   creator: "Igor Vuta",
   keywords: [
@@ -591,17 +599,19 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: SITE,
+    images: [ogImage],
     siteName: "Igor Vuta",
     locale: "en_GB",
-    title: "Igor Vuta — Software Developer",
+    title: "Igor Vuta, Software Developer",
     description:
-      "Python · TypeScript · FastAPI · Next.js. Builder of Intelli-Factory — a deployed, benchmarked multi-objective optimization platform.",
+      "Python · TypeScript · FastAPI · Next.js. Builder of Intelli-Factory, a deployed, benchmarked multi-objective optimization platform.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Igor Vuta — Software Developer",
+    images: [ogImage.url],
+    title: "Igor Vuta, Software Developer",
     description:
-      "Python · TypeScript · FastAPI · Next.js. Builder of Intelli-Factory — a deployed, benchmarked multi-objective optimization platform.",
+      "Python · TypeScript · FastAPI · Next.js. Builder of Intelli-Factory, a deployed, benchmarked multi-objective optimization platform.",
   },
   robots: {
     index: true,
@@ -629,7 +639,7 @@ export const viewport: Viewport = {
  * Every timing is a fixed offset from the same origin, so the sequence is
  * identical on every load. Nothing here is measured, sampled, or randomised.
  *
- * The figures are real: 111 kB is the actual first-load budget this repo
+ * The figures are real: 109 kB is the actual first-load budget this repo
  * builds to. A boot screen that lies about the thing it is booting would be a
  * strange choice on a portfolio whose whole argument is measurement.
  */
@@ -637,7 +647,7 @@ const BOOT_COMMAND = "deploy --target=production";
 
 const BOOT_LINES = [
   { at: 1900, key: "compile", val: "next 15 · typescript · tailwind" },
-  { at: 2550, key: "bundle", val: "111 kB first load js" },
+  { at: 2550, key: "bundle", val: "109 kB first load js" },
   { at: 3200, key: "export", val: "static · prerendered" },
   { at: 3850, key: "upload", val: "github pages" },
   { at: 4500, key: "verify", val: "aa contrast · reduced-motion paths" },
@@ -715,7 +725,38 @@ export default function RootLayout({
         <a href="#main" className="skip ctl ctl-primary">
           Skip to content
         </a>
-        {children}
+
+        {/* Every branch of the site shares the water, the header, and the
+            contact block, so moving between pages reads as moving through
+            one place rather than leaving it. */}
+        <div className="rays" aria-hidden="true" data-print="hide" />
+        <div className="abyss" aria-hidden="true" data-print="hide" />
+
+        {/* Chrome sits outside <main> so the skip link genuinely skips it:
+            landing inside a <main> that still contained the nav would defeat
+            the purpose of the link. */}
+        <Nav />
+        <ScrollProgress />
+
+        <main id="main" tabIndex={-1}>
+          {children}
+        </main>
+
+        {/* Outside <main> deliberately: a <footer> nested inside <main> does
+            not expose the contentinfo landmark, so screen-reader users lose
+            the standard jump to contact details. */}
+        <Footer />
+
+        {/* The 60-second version: opened from the header, or offered once
+            when a reader races to the bottom. */}
+        <TlDr />
+        <TlDrWatch />
+
+        {/* Interface furniture that renders nothing until used: the in-page
+            browser, drag-to-move for floating blocks, and the pointer wake. */}
+        <LivePreview />
+        <Buoys />
+        <Wake />
       </body>
     </html>
   );

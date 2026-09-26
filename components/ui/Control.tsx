@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    CONTROLS
@@ -59,6 +60,68 @@ export function AnchorLink({
     <a href={href} className={classes(variant, size, className)}>
       {children}
       <Glyph d="down" />
+    </a>
+  );
+}
+
+/**
+ * A link to another page of this site: a branch. Client-side navigation
+ * through next/link, which also applies the base path, and a forward arrow
+ * so it reads as "continue", distinct from ↓ (this page) and ↗ (elsewhere).
+ */
+export function PageLink({
+  href,
+  children,
+  variant = "default",
+  size = "md",
+  className,
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: Variant;
+  size?: Size;
+  className?: string;
+}) {
+  return (
+    <Link href={href} className={classes(variant, size, className)}>
+      {children}
+      <span aria-hidden="true" className="text-[0.9em] leading-none opacity-70">
+        →
+      </span>
+    </Link>
+  );
+}
+
+/**
+ * A file to download, served by this site (the CV). `download` saves it
+ * rather than navigating, and the format and length are said up front so
+ * nobody is surprised by a file.
+ */
+export function DownloadLink({
+  href,
+  children,
+  variant = "default",
+  size = "md",
+  className,
+}: {
+  href: string;
+  children: ReactNode;
+  variant?: Variant;
+  size?: Size;
+  className?: string;
+}) {
+  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  return (
+    <a
+      href={`${base}${href}`}
+      download
+      className={classes(variant, size, className)}
+      data-print-url="skip"
+    >
+      {children}
+      <span aria-hidden="true" className="text-[0.9em] leading-none opacity-70">
+        ↓
+      </span>
     </a>
   );
 }

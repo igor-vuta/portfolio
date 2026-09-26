@@ -296,6 +296,11 @@ body {
 
   /* Long words in project blurbs and URLs must never widen the page. */
   overflow-wrap: break-word;
+
+  /* The coverflow track bleeds to the viewport edges. clip, not hidden:
+     hidden would make body a scroll container and break every sticky and
+     scroll-timeline on the page. */
+  overflow-x: clip;
 }
 
 /* ── Water ───────────────────────────────────────────────────────────────────
@@ -312,7 +317,9 @@ body::before,
 body::after {
   content: "";
   position: fixed;
-  z-index: -1;
+  /* -2: the depth layers (rays, abyss) sit at -1, above the water and
+     below everything else, including the bubbles and the wake. */
+  z-index: -2;
   pointer-events: none;
   /* Relative, so the bundler fingerprints it and applies the base path. */
   background-image: url("./water-caustics.png");
@@ -621,7 +628,9 @@ html.boot .boot-term {
 
 .boot-skip {
   margin-top: 2rem;
-  color: rgba(245, 243, 236, 0.42);
+  /* fog, 7.46 on the boot's coal. The old 42% cream failed AA, and the one
+     line that tells a stuck reader how to leave must be readable. */
+  color: var(--color-fog);
   font-size: var(--text-micro);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -797,6 +806,12 @@ html.boot .reveal.is-in {
 
 .link:hover {
   text-decoration-color: var(--color-clay);
+}
+
+/* A button that reads as an inline link (the footer's TL;DR line): the
+   reset gives buttons an arrow cursor, which would undercut the link look. */
+button.link {
+  cursor: pointer;
 }
 
 /* ═══ 4. SURFACE ══════════════════════════════════════════════════════════ */
@@ -1674,8 +1689,21 @@ html.buoy-drag * {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  [data-buoy="drift"] {
+  [data-buoy="drift"],
+  .bob {
     animation: buoy-bob 7s ease-in-out infinite alternate;
+  }
+
+  /* Carousel cards float too, but are not buoys: in a carousel a mouse drag
+     scrolls the track, so they must not also be picked up. */
+  .carousel-slide:nth-child(3n + 2) .bob {
+    animation-delay: -2.6s;
+    animation-duration: 8.2s;
+  }
+
+  .carousel-slide:nth-child(3n + 3) .bob {
+    animation-delay: -5.1s;
+    animation-duration: 6.4s;
   }
 
   /* Staggered phases so neighbours never rise together. A block is usually
@@ -1788,6 +1816,659 @@ html.buoy-drag * {
   }
 }
 
+/* ═══ 5d. THE DESCENT ═════════════════════════════════════════════════════
+   The page's plot. Reading down is a dive: Surface (the stage), Shallows
+   (the flagship), The current (projects), Logbook (experience), Seabed
+   (contact). Three things carry it, and all three are driven by the root
+   scroll timeline, so none of them runs script per frame:
+
+     .rays     light shafts from the surface, swaying, fading out over the
+               first fifth of the page.
+     .abyss    the water darkening with depth: one overlay whose opacity
+               climbs as the page scrolls.
+     .gauge    the instrument on the right: a marker diving down a line,
+               with a live depth readout.
+
+   Where scroll timelines are unsupported, the rays hold still at the top,
+   the water keeps its surface colour, and the gauge shows only its chapter
+   marks: a calmer page, never a broken one. */
+
+/* Shafts of light, angled like sun through a moving surface. Screen-blended
+   so they only ever lighten the water. */
+.rays {
+  position: fixed;
+  inset: 0 -10% auto;
+  z-index: -1;
+  height: 95vh;
+  pointer-events: none;
+  opacity: 0.5;
+  background: repeating-linear-gradient(
+    102deg,
+    transparent 0 7%,
+    rgb(143 193 201 / 0.07) 9%,
+    transparent 13% 21%,
+    rgb(143 193 201 / 0.045) 23%,
+    transparent 26% 34%
+  );
+  mask-image: linear-gradient(to bottom, #000, transparent 85%);
+  mix-blend-mode: screen;
+  transform-origin: 50% 0;
+}
+
+.abyss {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 110%, rgb(1 4 6 / 0.6), transparent 70%),
+    rgb(2 7 10);
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .rays {
+    animation: rays-sway 14s ease-in-out infinite alternate;
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  .rays {
+    animation:
+      rays-sway 14s ease-in-out infinite alternate,
+      rays-fade linear both;
+    animation-timeline: auto, scroll(root);
+    animation-range: normal, 0% 22%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rays {
+      animation: rays-fade linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0% 22%;
+    }
+  }
+
+  .abyss {
+    animation: abyss linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes rays-sway {
+  from {
+    transform: skewX(-4deg) translateX(-2%);
+  }
+  to {
+    transform: skewX(4deg) translateX(2%);
+  }
+}
+
+@keyframes rays-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Deepens slowly through the middle and faster toward the floor, so the
+   seabed reads as properly dark while the projects stay in clear water. */
+@keyframes abyss {
+  0% {
+    opacity: 0;
+  }
+  45% {
+    opacity: 0.22;
+  }
+  100% {
+    opacity: 0.62;
+  }
+}
+
+/* ── Header travel bar ──────────────────────────────────────────────────── */
+.scroll-progress {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (min-width: 48rem) {
+    .scroll-progress {
+      display: block;
+      position: fixed;
+      inset: var(--header-h) 0 auto;
+      z-index: 40;
+      height: 1px;
+      background: var(--color-clay);
+      transform-origin: 0 50%;
+      animation: grow-x linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+/* ── Depth gauge ─────────────────────────────────────────────────────────── */
+
+/* A registered integer, so the readout can animate through whole metres and
+   be printed with a counter. */
+@property --depth {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.gauge {
+  display: none;
+}
+
+@media (min-width: 90rem) {
+  .gauge {
+    display: block;
+    position: fixed;
+    top: 50%;
+    right: 1.5rem;
+    z-index: 40;
+    height: 46vh;
+    translate: 0 -50%;
+  }
+}
+
+.gauge-track {
+  position: relative;
+  height: 100%;
+  border-right: 1px solid var(--color-line-2);
+}
+
+/* Marks are ticks with a wide invisible hit area. Their labels stay hidden
+   until the gauge is hovered, when it opens into a jump list. */
+.gauge-mark {
+  position: absolute;
+  top: calc(var(--at, 0) * 100%);
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: 0.25rem 1.25rem 0.25rem 1rem;
+  translate: 0 -50%;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.gauge-mark::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  right: -1px;
+  width: 0.625rem;
+  height: 1px;
+  background: var(--color-line-2);
+  transition: width var(--dur-state) var(--ease-entrance),
+    background-color var(--dur-state) var(--ease-entrance);
+}
+
+.gauge-label,
+.gauge-depth {
+  opacity: 0;
+  transition: opacity var(--dur-state) var(--ease-entrance);
+}
+
+.gauge-label {
+  font-size: var(--text-micro);
+  font-weight: 500;
+  color: var(--color-fog);
+}
+
+.gauge-depth {
+  font-size: 0.625rem;
+  color: var(--color-mute);
+}
+
+.gauge:hover .gauge-label,
+.gauge:hover .gauge-depth {
+  opacity: 1;
+}
+
+.gauge-mark:hover .gauge-label {
+  color: var(--color-ink);
+}
+
+.gauge-mark.is-active::after {
+  width: 1.25rem;
+  background: var(--color-clay);
+}
+
+/* While the list is open, the diver's own label steps aside. */
+.gauge:hover .gauge-readout {
+  opacity: 0;
+}
+
+/* The diver: a lantern-coloured point travelling the line, carrying the
+   live depth and the chapter it is in. */
+.gauge-marker {
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .gauge-marker {
+    display: block;
+    position: absolute;
+    top: 0;
+    right: -0.3125rem;
+    width: 0.5625rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--color-clay);
+    box-shadow: 0 0 0.75rem rgb(227 143 108 / 0.55);
+    translate: 0 -50%;
+    animation: gauge-dive linear both;
+    animation-timeline: scroll(root);
+  }
+
+  .gauge-readout {
+    position: absolute;
+    top: 50%;
+    right: 1.25rem;
+    translate: 0 -50%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.125rem;
+    padding: 0.375rem 0.5rem;
+    border-radius: var(--radius-panel);
+    /* A patch of water behind the label: the diver passes over full-bleed
+       carousels and wide panels, and must stay legible over any of them. */
+    background: rgb(10 23 28 / 0.86);
+    box-shadow: 0 0 0 1px rgb(238 243 242 / 0.06);
+    white-space: nowrap;
+    transition: opacity var(--dur-state) var(--ease-entrance);
+  }
+
+  .gauge-count {
+    font-size: var(--text-detail);
+    color: var(--color-clay);
+    /* calc(), not the bare variable: Safari animates --depth as a plain
+       number (31.99…) despite the <integer> syntax, and a fractional value
+       is invalid for counter-reset, which froze the readout at 0. In an
+       integer context calc() rounds, so every engine gets whole metres. */
+    counter-reset: depth calc(var(--depth));
+    animation: gauge-count linear both;
+    animation-timeline: scroll(root);
+  }
+
+  .gauge-count::before {
+    content: counter(depth) " m";
+  }
+
+  .gauge-chapter {
+    font-size: var(--text-micro);
+    color: var(--color-fog);
+  }
+}
+
+@keyframes gauge-dive {
+  to {
+    transform: translateY(46vh);
+  }
+}
+
+@keyframes gauge-count {
+  from {
+    --depth: 0;
+  }
+  to {
+    --depth: 64;
+  }
+}
+
+/* ═══ 5e. CAROUSELS ═══════════════════════════════════════════════════════
+   Carousel.tsx supplies behaviour; this supplies the two looks. Both are
+   native scrollers with scroll-snap, and both read each slide's position
+   from a view timeline on the inline axis, so the response to position is
+   compositor work and needs no script.
+
+     coverflow   the current: full-bleed, centred snaps, side slides turned
+                 away and set back, the centre one square to the reader.
+     log         the logbook: inside the column, start snaps, flat slides
+                 that fade only where the track clips them. */
+
+.carousel {
+  timeline-scope: --carousel;
+  margin-top: 3.5rem;
+}
+
+.carousel-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+.carousel-progress {
+  position: relative;
+  flex: 1;
+  max-width: 16rem;
+  height: 1px;
+  background: var(--color-line-2);
+  overflow: hidden;
+}
+
+.carousel-progress span {
+  position: absolute;
+  inset: 0;
+  background: var(--color-clay);
+  transform-origin: 0 50%;
+  transform: scaleX(0.15);
+}
+
+@supports (animation-timeline: scroll()) {
+  .carousel-progress span {
+    transform: none;
+    animation: carousel-progress linear both;
+    animation-timeline: --carousel;
+  }
+}
+
+@keyframes carousel-progress {
+  from {
+    transform: scaleX(0.08);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.carousel-track {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.25rem;
+  padding-block: 2rem 2.5rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-timeline: --carousel inline;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .carousel-track {
+    cursor: grab;
+  }
+
+  .carousel-track :where(a, button) {
+    cursor: pointer;
+  }
+}
+
+/* Snap would fight the hand during a mouse drag; it returns on release and
+   settles the slide the throw carried to. */
+.carousel-track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  user-select: none;
+}
+
+.carousel-slide {
+  flex: none;
+  display: flex;
+}
+
+.carousel-slide > * {
+  width: 100%;
+}
+
+/* ── The current (coverflow) ───────────────────────────────────────────────
+   Apple's highlights pattern: the first slide starts on the column's left
+   edge and the track runs off the right side of the screen, so the row
+   reads as "there is more this way" instead of a lone card in a void.
+   Slides only turn as they enter at the right or leave at the left; any
+   slide fully in view is square to the reader, flat, and sharp. */
+.carousel-coverflow {
+  --slide-w: clamp(17rem, 30vw, 25rem);
+  /* The content column's left edge, measured from the viewport. */
+  --column-edge: max(1.5rem, calc((100vw - 72rem) / 2 + 1.5rem));
+  margin-top: 6rem;
+}
+
+.carousel-coverflow .carousel-track {
+  margin-inline: calc(50% - 50vw);
+  padding-inline: var(--column-edge);
+  scroll-padding-inline: var(--column-edge);
+  /* Soft edges: slides dissolve at the screen's sides rather than being cut,
+     and the depth gauge on the right keeps clear water to sit on. */
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 2.5rem,
+    #000 calc(100% - 9rem),
+    transparent
+  );
+}
+
+.carousel-coverflow .carousel-slide {
+  width: var(--slide-w);
+  scroll-snap-align: start;
+}
+
+.carousel-progress-below {
+  margin-top: 0.5rem;
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    /* On the slide, not the card: the card inside carries the float, and
+       two animation declarations on one element do not combine. */
+    .carousel-coverflow .carousel-slide {
+      animation: coverflow linear both;
+      animation-timeline: view(inline);
+    }
+  }
+}
+
+/* The flat middle is exactly `none`: a rotated layer is resampled on the
+   GPU, so only slides turned away at the edges are allowed to soften. */
+@keyframes coverflow {
+  0% {
+    opacity: 0.3;
+    transform: perspective(90rem) rotateY(28deg) scale(0.88);
+  }
+  22%,
+  78% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0.3;
+    transform: perspective(90rem) rotateY(-28deg) scale(0.88);
+  }
+}
+
+/* Keyboard focus on a track rings its cards. The track itself is full-bleed,
+   so an outline on it drew a clay rule straight across the page. */
+.carousel-track:focus-visible {
+  outline: none;
+}
+
+.carousel-track:focus-visible .carousel-slide > * {
+  outline: 2px solid var(--color-clay);
+  outline-offset: 4px;
+}
+
+/* ── The logbook ─────────────────────────────────────────────────────────── */
+.carousel-log {
+  --slide-w: clamp(17rem, 30vw, 22.5rem);
+}
+
+.carousel-log .carousel-slide {
+  width: var(--slide-w);
+  scroll-snap-align: start;
+}
+
+@supports (animation-timeline: view()) {
+  .carousel-log .carousel-slide {
+    animation: log-edge linear both;
+    animation-timeline: view(inline);
+  }
+}
+
+/* Only the edges move: a slide half out of the track dims, and one fully in
+   view is at full strength. */
+@keyframes log-edge {
+  0% {
+    opacity: 0.3;
+  }
+  22%,
+  78% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.3;
+  }
+}
+
+/* The branch being read: marked in the header the same way everywhere. */
+.nav-link[aria-current="page"] {
+  --ctl-fg: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-clay);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 0.5em;
+}
+
+.menu-link[aria-current="page"] {
+  color: var(--color-clay);
+}
+
+/* ── TL;DR ─────────────────────────────────────────────────────────────────
+   The 60-second card: a popover in the top layer, centred on the screen and
+   rising out of the water as it opens. Its body scrolls if the facts
+   outgrow a small screen. */
+.tldr {
+  inset: 0;
+  width: min(44rem, calc(100vw - 2rem));
+  height: fit-content;
+  max-height: calc(100dvh - 2rem);
+  margin: auto;
+  padding: 1.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+  color: var(--color-ink);
+  box-shadow:
+    inset 0 1px 0 rgb(238 243 242 / 0.08),
+    0 2.5rem 5rem -1rem rgb(2 8 11 / 0.95);
+}
+
+@media (min-width: 48rem) {
+  .tldr {
+    padding: 2rem;
+  }
+}
+
+/* Why it opened: racing down the page, or asked for from the footer. */
+.tldr:not([data-reason="fast"]) .tldr-fast,
+.tldr[data-reason="fast"] .tldr-calm {
+  display: none;
+}
+
+.tldr::backdrop {
+  background: rgb(2 8 11 / 0.5);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tldr:popover-open {
+    animation: tldr-rise 420ms var(--ease-entrance);
+  }
+}
+
+@keyframes tldr-rise {
+  from {
+    opacity: 0;
+    transform: translateY(1.5rem);
+  }
+}
+
+/* ── Relay doors ─────────────────────────────────────────────────────────── */
+.door {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 13rem;
+  padding: 1.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-panel);
+  color: var(--color-ink);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    border-color var(--dur-state) var(--ease-entrance),
+    translate var(--dur-state) var(--ease-entrance),
+    box-shadow var(--dur-state) var(--ease-entrance);
+}
+
+.door:hover {
+  border-color: var(--color-clay);
+  box-shadow: var(--shadow-raised);
+  translate: 0 -0.25rem;
+}
+
+.door:active {
+  translate: 0 0;
+}
+
+.door-accent {
+  border-color: rgb(227 143 108 / 0.45);
+  background:
+    radial-gradient(120% 90% at 0% 0%, var(--color-clay-wash), transparent 60%),
+    var(--color-panel);
+}
+
+.door-kicker {
+  font-size: var(--text-detail);
+  font-weight: 500;
+  color: var(--color-clay);
+}
+
+.door-title {
+  margin-top: 0.5rem;
+  font-size: var(--text-body-lg);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.door-body {
+  flex: 1;
+  margin-top: 0.5rem;
+  font-size: var(--text-detail);
+  line-height: 1.5;
+  color: var(--color-fog);
+}
+
+.door-go {
+  margin-top: 1.25rem;
+  font-size: var(--text-detail);
+  font-weight: 500;
+  color: var(--color-fog);
+  transition: color var(--dur-state) var(--ease-entrance);
+}
+
+.door:hover .door-go {
+  color: var(--color-clay);
+}
+
 /* ── Menu sheet ──────────────────────────────────────────────────────────────
    The phone menu, a native [popover] in the top layer. It drops from under
    the header rather than covering it, so the name and the controls it was
@@ -1845,7 +2526,7 @@ html.buoy-drag * {
    MotionToggle's class. Every self-running loop stops where it is: the water,
    the bubbles, the bobbing blocks and cards. Scroll-driven motion is not in
    this list on purpose; it only moves when the reader scrolls. */
-html.motion-paused :is(.mote, [data-buoy], .stage-card-body, .knee-ring),
+html.motion-paused :is(.mote, [data-buoy], .bob, .stage-card-body, .knee-ring, .rays),
 html.motion-paused body::before,
 html.motion-paused body::after {
   animation-play-state: paused;
@@ -2098,8 +2779,27 @@ html.motion-paused body::after {
   }
 
   .stage-orbit,
-  .device-shadow {
+  .device-shadow,
+  .rays,
+  .abyss,
+  .carousel-bar {
     display: none !important;
+  }
+
+  /* On paper a carousel is just its list, every slide in view. */
+  .carousel-track {
+    flex-wrap: wrap;
+    overflow: visible;
+    margin-inline: 0 !important;
+    padding: 0 !important;
+  }
+
+  .carousel-slide,
+  .carousel-slide > * {
+    width: auto !important;
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
   }
 
   .stage-scene {
