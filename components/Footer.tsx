@@ -1,6 +1,6 @@
 import Reveal from "@/components/Reveal";
 import CopyEmail from "@/components/CopyEmail";
-import { ExternalLink } from "@/components/ui/Control";
+import { DownloadLink, ExternalLink } from "@/components/ui/Control";
 import { identity } from "@/lib/profile";
 
 export default function Footer() {
@@ -39,6 +39,7 @@ export default function Footer() {
               {identity.email}
             </a>
             <CopyEmail email={identity.email} />
+            <DownloadLink href={identity.cv}>Download CV</DownloadLink>
             <ExternalLink href={identity.github}>GitHub</ExternalLink>
             <ExternalLink href={identity.linkedin}>LinkedIn</ExternalLink>
           </div>
@@ -49,6 +50,14 @@ export default function Footer() {
         <div className="mt-20 flex flex-col justify-between gap-4 border-t border-line pt-6 text-micro text-fog sm:flex-row">
           <p className="readout">
             © {new Date().getFullYear()} {identity.name} · {identity.location}
+          </p>
+          {/* The one manual way to the TL;DR, kept quiet on purpose: it is
+              mostly a reward for readers who race down the page. */}
+          <p>
+            In a hurry?{" "}
+            <button type="button" popoverTarget="tldr" className="link">
+              Read the TL;DR
+            </button>
           </p>
           <p>
             Built with Next.js, TypeScript and Tailwind CSS, statically

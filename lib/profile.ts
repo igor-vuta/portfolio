@@ -11,6 +11,9 @@ export const identity = {
     "Available immediately for entry-level software / web developer roles. Full right to work in the UK, no sponsorship required",
   summary:
     "Computer Science graduate with commercial experience building Telegram bots and CRM integrations in Python, and a deployed, benchmarked full-stack platform as a final-year project. I care about clean code, measurable results, and security done properly.",
+  // Compiled from the general CV in the auto repo (pdflatex, one page) and
+  // served from public/. Update both together when the CV changes.
+  cv: "/cv/Igor_Vuta_CV.pdf",
   // The hero's one line. `summary` is the full version; this is what fits in a
   // first viewport alongside the device without pushing the CTA below the fold.
   pitch:
@@ -71,11 +74,11 @@ export const projects: Project[] = [
   {
     name: "Intelli-Factory",
     blurb:
-      "Multi-objective supply-chain matching platform and my final-year project, covered in depth in the Flagship section above. An NSGA-II genetic algorithm on DEAP scores manufacturer-logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
+      "Multi-objective supply-chain matching platform and my final-year project, covered in depth in its own case study. An NSGA-II genetic algorithm on DEAP scores manufacturer-logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
     stack: ["Next.js 14", "TypeScript", "FastAPI", "Python 3.12", "DEAP", "PostgreSQL"],
     liveUrl: "https://intelli-factory-frontend.vercel.app/",
     repoUrl: "https://github.com/igor-vuta/intelli-factory",
-    shot: "/projects/intelli-factory.jpg",
+    shot: "/projects/intelli-factory.webp",
   },
   {
     name: "Todo Web App",
@@ -84,7 +87,7 @@ export const projects: Project[] = [
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
-    shot: "/projects/todo.jpg",
+    shot: "/projects/todo.webp",
   },
   {
     name: "Vue Folder Tree",
@@ -93,7 +96,7 @@ export const projects: Project[] = [
     stack: ["Vue 3", "Vite", "Accessibility (ARIA)", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/vue-folder-tree/",
     repoUrl: "https://github.com/igor-vuta/vue-folder-tree",
-    shot: "/projects/vue-folder-tree.jpg",
+    shot: "/projects/vue-folder-tree.webp",
   },
   {
     name: "Qubly Landing Page",
@@ -102,7 +105,7 @@ export const projects: Project[] = [
     stack: ["HTML5", "Sass", "jQuery", "Bootstrap grid", "Figma"],
     liveUrl: "https://igor-vuta.github.io/qubly-landing/",
     repoUrl: "https://github.com/igor-vuta/qubly-landing",
-    shot: "/projects/qubly.jpg",
+    shot: "/projects/qubly.webp",
   },
   {
     name: "Drive Pro",
@@ -111,7 +114,7 @@ export const projects: Project[] = [
     stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/drivePro-website/",
     repoUrl: "https://github.com/igor-vuta/drivePro-website",
-    shot: "/projects/drive-pro.jpg",
+    shot: "/projects/drive-pro.webp",
   },
   {
     name: "React Starter Pro",
@@ -120,7 +123,7 @@ export const projects: Project[] = [
     stack: ["React 19", "Vite", "Tailwind CSS 4", "ESLint", "GitHub Actions"],
     liveUrl: "https://igor-vuta.github.io/react-starter-pro/",
     repoUrl: "https://github.com/igor-vuta/react-starter-pro",
-    shot: "/projects/react-starter-pro.jpg",
+    shot: "/projects/react-starter-pro.webp",
   },
   {
     name: "Currency Exchange Bot",
@@ -129,7 +132,7 @@ export const projects: Project[] = [
     stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
     liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
     repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
-    shot: "/projects/currency-bot.jpg",
+    shot: "/projects/currency-bot.webp",
   },
   {
     name: "DrivePro Ride-Hailing App",
