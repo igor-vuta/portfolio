@@ -1,10 +1,16 @@
 import type { NextConfig } from "next";
 
+// Declared once and handed to the app as well: next/image is unoptimized under
+// static export, and a plain <img src="/projects/…"> is NOT rewritten with the
+// base path — it would 404 on GitHub Pages while working fine nowhere else.
+const basePath = "/portfolio";
+
 const nextConfig: NextConfig = {
   output: "export",
   distDir: "out",
-  basePath: "/portfolio",
-  assetPrefix: "/portfolio/",
+  basePath,
+  assetPrefix: `${basePath}/`,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   images: { unoptimized: true },
   trailingSlash: true,
 

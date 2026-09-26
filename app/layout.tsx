@@ -32,30 +32,18 @@ const SITE = "https://igor-vuta.github.io/portfolio";
  * Head script. Runs synchronously before first paint, and does two jobs.
  *
  * 1. Sets `.js`, the gate every content-hiding rule is behind.
- * 2. Drives --grid-gain from scroll velocity.
+ * 2. Spawns the ambient bubbles and wires the click trail.
  *
- * The grid loop lives here rather than in a client component for three
- * reasons, in order of weight:
- *
- *  - It must be reading scroll before hydration. A component mounted after
- *    the bundle parses would miss the first flick of the wheel, which on a
- *    long page is exactly when the field should respond.
- *  - It touches one custom property on one element and never reads the DOM.
- *    Wrapping that in React would mean an effect, a ref, and a re-render
- *    budget for something that must not re-render at all.
- *  - Inline bytes are HTML, not a bundle chunk. The whole loop costs nothing
- *    against First Load JS, and the page has 3 kB of headroom.
- *
- * The gain function is deterministic — gain is a pure function of the scroll
- * delta, the frame delta, and four fixed constants. The same scroll produces
- * the same field on every load. No randomness, no time-of-day term, no state
- * carried across sessions.
+ * Both live here rather than in client components because inline bytes are
+ * HTML, not a bundle chunk: they cost nothing against First Load JS, and
+ * they are running before hydration. Neither writes anything per frame
+ * while scrolling; the bubbles move on CSS animations and only the pointer
+ * loop touches their wrappers, one element each.
  */
 const HEAD_SCRIPT = `
 document.documentElement.classList.add('js');
 (function () {
   var root = document.documentElement;
-  var wide = matchMedia('(min-width: 768px)');
   var still = matchMedia('(prefers-reduced-motion: reduce)');
 
   /* ── Boot ─────────────────────────────────────────────────────────────
@@ -115,104 +103,12 @@ document.documentElement.classList.add('js');
 
   startBoot();
 
-  // Velocity is measured between scroll events, not between animation frames.
-  //
-  // Measuring in the frame loop does not work: the scroll event fires after
-  // the position has already moved, so seeding from window.scrollY there
-  // makes the first frame's delta always zero. The field then decayed from a
-  // resting value it had never left and parked — it only ever responded when
-  // scrolling happened to continue across several frames, and a discrete jump
-  // (keyboard, scrollbar drag, instant-scroll mouse) produced nothing at all.
-  //
-  // The event pair carries the real signal. dt is clamped at both ends: a
-  // floor because two events can land in the same frame and divide out to a
-  // spike, and a ceiling so the first scroll after a long pause is read as a
-  // movement rather than washed out by the idle time preceding it.
-  //
-  // Calibrated against real deltas. During continuous scrolling events fire
-  // about once a frame, so these are still per-frame figures:
-  //
-  //   20px -> 1.18    60px -> 1.54    150px -> 2.20
-  //
-  // An earlier calibration used VMAX 3, which saturated at 60px and pinned
-  // the field at peak for all ordinary scrolling.
-  var REST = 1;      // resting gain — the value the CSS already declares
-  var PEAK = 2.2;    // gain at or above VMAX
-  var VMAX = 8;      // px per ms treated as full deflection
-  var DECAY = 0.88;  // per-frame fall-off toward rest
-  var TAIL = 200;    // ms the loop keeps running after the last scroll event
-  var DT_MIN = 8;    // ms floor — two events in one frame must not spike
-  var DT_MAX = 100;  // ms ceiling — a resumed scroll is movement, not idle
-
-  var gain = REST, pending = 0;
-  var lastY = 0, lastEventT = 0, lastScroll = 0, raf = 0, live = false;
-
-  function frame(now) {
-    // Rise immediately to whatever the events measured since the last frame,
-    // fall only at DECAY. Braking hard should not snap the field off — and
-    // the fall is a fixed per-frame ratio rather than an easing over
-    // wall-clock time, so it stays frame-rate honest.
-    var target = REST + (PEAK - REST) * pending;
-    pending = 0;
-
-    gain = Math.max(target, REST + (gain - REST) * DECAY);
-    root.style.setProperty('--grid-gain', gain.toFixed(3));
-
-    if (gain - REST > 0.004 || now - lastScroll < TAIL) {
-      raf = requestAnimationFrame(frame);
-    } else {
-      live = false;
-      root.style.removeProperty('--grid-gain');
-    }
-  }
-
-  function onScroll() {
-    var now = performance.now();
-    var y = window.scrollY;
-
-    if (lastEventT) {
-      var dt = Math.min(Math.max(now - lastEventT, DT_MIN), DT_MAX);
-      var n = Math.min(1, Math.abs(y - lastY) / dt / VMAX);
-      // Frames can span several events; the loop should see the fastest of
-      // them rather than whichever happened to land last.
-      if (n > pending) pending = n;
-    }
-
-    lastY = y;
-    lastEventT = now;
-    lastScroll = now;
-
-    if (live) return;
-    live = true;
-    raf = requestAnimationFrame(frame);
-  }
-
-  var on = false;
-  function sync() {
-    var want = wide.matches && !still.matches;
-    if (want === on) return;
-    on = want;
-    if (want) {
-      addEventListener('scroll', onScroll, { passive: true });
-    } else {
-      removeEventListener('scroll', onScroll);
-      cancelAnimationFrame(raf);
-      live = false;
-      gain = REST;
-      // Drop the measurement baseline too. Kept, it would pair a position
-      // from before the viewport changed with a timestamp from after it, and
-      // the first event on re-attach would measure a jump that never
-      // happened — a bright flash on crossing the breakpoint.
-      pending = 0;
-      lastEventT = 0;
-      // Back to the declared resting value, not a stale bright frame.
-      root.style.removeProperty('--grid-gain');
-    }
-  }
-
-  sync();
-  wide.addEventListener('change', sync);
-  still.addEventListener('change', sync);
+  /* The scroll-velocity grid that used to live here is gone. It wrote a
+     custom property on <html> every scroll frame, and because custom
+     properties inherit, each write restyled the entire document: measured
+     at 182 full recalculations (264 ms) across a one-second scroll, which
+     is what made the pinned stage stutter. The water layer that replaced
+     the grid moves on the compositor and needs no script at all. */
 
   /* ── Dust ─────────────────────────────────────────────────────────────
      Ambient motes drifting behind the content — the one place the design
@@ -270,7 +166,10 @@ document.documentElement.classList.add('js');
      crossfade itself is CSS (color-mix driven by --p); the loop only eases
      the proximity number. Distribution leans coloured on purpose — at rest
      the field read as one or two visible specks, which is not weather. */
-  var PAL = ['#1f1e1d', '#a34928', '#2a7153', '#d99a80'];
+  // Bubbles and lit particles in the water: mostly pale sea-light, some
+  // warmed by the lantern accent. The page is dark now, so the old ink voice
+  // (#1f1e1d) would have been invisible.
+  var PAL = ['#cfe3e6', '#8fc1c9', '#e38f6c', '#f2b596'];
 
   function dust() {
     if (still.matches) return;
@@ -584,6 +483,18 @@ document.documentElement.classList.add('js');
     return dur;
   }
 
+  // The phone menu is a native popover, which does not close on its own
+  // when one of its in-page links is followed. Close it here so the section
+  // the reader chose is not left under the sheet. Before the trail handler,
+  // which returns early for anything inside the header.
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest ? e.target.closest('[popover] a[href^="#"]') : null;
+    if (a) {
+      var p = a.closest('[popover]');
+      if (p && p.hidePopover) p.hidePopover();
+    }
+  });
+
   document.addEventListener('click', function (e) {
     // Every early return here is a case where the browser must be left to do
     // its own thing: reduced motion, a modified click the user expects to
@@ -598,6 +509,9 @@ document.documentElement.classList.add('js');
     // Header controls sit on the top edge already; a copy flying two pixels
     // up its own faceplate reads as a glitch. They navigate natively.
     if (el.closest('header')) return;
+    // Opt-out for controls whose whole job is less motion: pressing
+    // "pause motion" must not launch a balloon.
+    if (el.hasAttribute('data-no-trail')) return;
 
     // Preview links belong to the LivePreview sheet, whose slide is its own
     // arrival gesture. Flying a balloon AND opening a sheet is noise, and
@@ -697,10 +611,10 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  // Matches --color-ground so mobile browser chrome blends with the page
+  // Matches --color-ground so mobile browser chrome blends with the water
   // instead of drawing a seam above it.
-  themeColor: "#eceadf",
-  colorScheme: "light",
+  themeColor: "#0a171c",
+  colorScheme: "dark",
 };
 
 /**
@@ -715,7 +629,7 @@ export const viewport: Viewport = {
  * Every timing is a fixed offset from the same origin, so the sequence is
  * identical on every load. Nothing here is measured, sampled, or randomised.
  *
- * The figures are real: 109 kB is the actual first-load budget this repo
+ * The figures are real: 111 kB is the actual first-load budget this repo
  * builds to. A boot screen that lies about the thing it is booting would be a
  * strange choice on a portfolio whose whole argument is measurement.
  */
@@ -723,7 +637,7 @@ const BOOT_COMMAND = "deploy --target=production";
 
 const BOOT_LINES = [
   { at: 1900, key: "compile", val: "next 15 · typescript · tailwind" },
-  { at: 2550, key: "bundle", val: "109 kB first load js" },
+  { at: 2550, key: "bundle", val: "111 kB first load js" },
   { at: 3200, key: "export", val: "static · prerendered" },
   { at: 3850, key: "upload", val: "github pages" },
   { at: 4500, key: "verify", val: "aa contrast · reduced-motion paths" },
@@ -791,9 +705,8 @@ export default function RootLayout({
     >
       <head>
         {/*
-          Inline and synchronous by design — see HEAD_SCRIPT above. Deferring
-          it would reintroduce the flash the `.js` gate exists to prevent, and
-          would leave the grid field blind for the first scroll of the page.
+          Inline and synchronous by design, see HEAD_SCRIPT above. Deferring
+          it would reintroduce the flash the `.js` gate exists to prevent.
         */}
         <script dangerouslySetInnerHTML={{ __html: HEAD_SCRIPT }} />
       </head>

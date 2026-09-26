@@ -8,20 +8,23 @@ export default function Footer() {
     <footer
       id="contact"
       aria-labelledby="contact-title"
-      className="on-coal bg-coal text-cream"
+      className="text-cream"
     >
-      <div className="mx-auto max-w-6xl px-6 pb-16 pt-20">
+      <div className="mx-auto max-w-6xl px-6 pb-16 pt-24">
         <Reveal>
-          <div className="border-b border-cream/15 pb-4">
-            <p className="silk text-clay-soft">Contact</p>
-          </div>
+          {/* The last block on the water, floating like the rest. */}
+          <div data-buoy="drift" className="panel p-8 sm:p-12">
+          <p className="text-body-lg font-medium text-fog">Contact</p>
 
-          <h2 id="contact-title" className="display mt-8 text-display-md sm:text-display-lg">
+          <h2
+            id="contact-title"
+            className="display mt-3 text-display-lg text-ink sm:text-display-xl"
+          >
             Let&apos;s build something.
           </h2>
 
-          <p className="measure mt-5 text-cream/70">
-            {identity.availability}. The fastest way to reach me is email — I
+          <p className="measure mt-6 text-body-lg text-fog">
+            {identity.availability}. The fastest way to reach me is email; I
             reply quickly.
           </p>
 
@@ -39,15 +42,16 @@ export default function Footer() {
             <ExternalLink href={identity.github}>GitHub</ExternalLink>
             <ExternalLink href={identity.linkedin}>LinkedIn</ExternalLink>
           </div>
+          </div>
         </Reveal>
 
         {/* ── Chassis plate ───────────────────────────────────────────────── */}
-        <div className="mt-20 flex flex-col justify-between gap-4 border-t border-cream/15 pt-6 text-micro text-cream/55 sm:flex-row">
+        <div className="mt-20 flex flex-col justify-between gap-4 border-t border-line pt-6 text-micro text-fog sm:flex-row">
           <p className="readout">
             © {new Date().getFullYear()} {identity.name} · {identity.location}
           </p>
           <p>
-            Built with Next.js, TypeScript &amp; Tailwind CSS — statically
+            Built with Next.js, TypeScript and Tailwind CSS, statically
             exported.{" "}
             <a
               href="https://github.com/igor-vuta/portfolio"

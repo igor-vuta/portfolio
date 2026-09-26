@@ -8,7 +8,8 @@ import Footer from "@/components/Footer";
 import ScrollProgress from "@/components/ScrollProgress";
 import SectionRail from "@/components/SectionRail";
 import LivePreview from "@/components/LivePreview";
-import AudioToggle from "@/components/AudioToggle";
+import Buoys from "@/components/Buoys";
+import Wake from "@/components/Wake";
 
 export default function Home() {
   return (
@@ -19,7 +20,6 @@ export default function Home() {
       <Nav />
       <ScrollProgress />
       <SectionRail />
-      <AudioToggle />
 
       <main id="main" tabIndex={-1}>
         <Hero />
@@ -37,6 +37,12 @@ export default function Home() {
       {/* In-page browser for data-preview links. Chrome, not content — it
           lives outside <main> with the rest of the interface furniture. */}
       <LivePreview />
+
+      {/* Drag-to-move for every [data-buoy] block. Renders nothing. */}
+      <Buoys />
+
+      {/* Rings on the water behind the pointer. Renders nothing. */}
+      <Wake />
     </>
   );
 }

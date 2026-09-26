@@ -13,7 +13,7 @@ import Reveal from "@/components/Reveal";
    so naming a class here is enough to generate it — the previous version of
    this paragraph shipped a dead scroll-margin rule for exactly that reason.
 
-   Padding is drawn from the spacing scale: pt-20 (5rem) / pb-24 (6rem).
+   Padding is the top of the spacing scale, 6rem each way.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 export default function Section({
@@ -22,36 +22,32 @@ export default function Section({
   title,
   lede,
   children,
-  first = false,
 }: {
   id: string;
+  /** A quiet sentence-case line above the title, Apple-style: it names the
+      topic in plain words. Deliberately not an uppercase tracked label. */
   eyebrow: string;
   title: string;
   lede?: string;
   children: ReactNode;
-  first?: boolean;
 }) {
   return (
-    <section
-      id={id}
-      aria-labelledby={`${id}-title`}
-      className={first ? "" : "border-t border-line"}
-    >
-      <div className="mx-auto max-w-6xl px-6 pb-24 pt-20">
+    <section id={id} aria-labelledby={`${id}-title`}>
+      {/* No rule between sections: on water, the space between blocks is the
+          separator. Six units top and bottom, the largest step on the scale. */}
+      <div className="mx-auto max-w-6xl px-6 py-24">
         <Reveal>
-          <div className="border-b border-line pb-4">
-            <p className="silk text-clay">{eyebrow}</p>
-          </div>
+          <p className="text-body-lg font-medium text-fog">{eyebrow}</p>
 
           <h2
             id={`${id}-title`}
-            className="display mt-8 text-display-md sm:text-display-lg"
+            className="display mt-3 text-display-lg text-ink sm:text-display-xl"
           >
             {title}
           </h2>
 
           {lede && (
-            <p className="measure mt-4 text-body-lg text-fog">{lede}</p>
+            <p className="measure mt-6 text-body-lg text-fog">{lede}</p>
           )}
         </Reveal>
 
@@ -72,21 +68,27 @@ export function LabelledPanel({
   children,
   className = "",
   interactive = false,
+  buoy,
 }: {
   label: string;
   note?: string;
   children: ReactNode;
   className?: string;
   interactive?: boolean;
+  /** Floats on the water: bobs, and can be dragged with a mouse. */
+  buoy?: "drift";
 }) {
   return (
     <div
+      data-buoy={buoy}
       className={`panel ${interactive ? "panel-interactive" : ""} ${className}`}
     >
       <div className="flex items-baseline justify-between gap-4 border-b border-line px-6 py-3">
-        <p className="silk text-fog">{label}</p>
+        {/* Sentence case, set as a heading-weight line rather than a mono
+            label: the panel's name is its title, and reads like one. */}
+        <p className="text-body font-semibold text-ink">{label}</p>
         {note && (
-          <p className="silk-sm readout shrink-0 text-fog">{note}</p>
+          <p className="readout shrink-0 text-micro text-fog">{note}</p>
         )}
       </div>
       <div className="p-6">{children}</div>

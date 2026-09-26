@@ -3,29 +3,33 @@ export const identity = {
   role: "Software Developer",
   stackLine: "Python · TypeScript · FastAPI · Next.js",
   location: "Leicester, UK",
-  degree: "BSc (Hons) Computer Science, First-Class Honours — De Montfort University, 2026",
+  degree: "BSc (Hons) Computer Science, First-Class Honours, De Montfort University, 2026",
   email: "igor.vuta.dev@gmail.com",
   github: "https://github.com/igor-vuta",
   linkedin: "https://www.linkedin.com/in/igor-vuta-b88017390",
   availability:
-    "Available immediately for entry-level software / web developer roles · Full right to work in the UK — no sponsorship required",
+    "Available immediately for entry-level software / web developer roles. Full right to work in the UK, no sponsorship required",
   summary:
     "Computer Science graduate with commercial experience building Telegram bots and CRM integrations in Python, and a deployed, benchmarked full-stack platform as a final-year project. I care about clean code, measurable results, and security done properly.",
+  // The hero's one line. `summary` is the full version; this is what fits in a
+  // first viewport alongside the device without pushing the CTA below the fold.
+  pitch:
+    "Python and TypeScript developer with commercial experience and a deployed, benchmarked full-stack platform.",
 };
 
 export const flagship = {
   name: "Intelli-Factory",
-  eyebrow: "Flagship project — BSc Final Year Project",
+  eyebrow: "Flagship project, BSc final-year project",
   tagline: "A multi-objective optimization platform for supply-chain matching",
   liveUrl: "https://intelli-factory-frontend.vercel.app/",
   apiDocsUrl: "https://intelli-factory-api.onrender.com/docs",
   repoUrl: "https://github.com/igor-vuta/intelli-factory",
   description:
-    "A B2B2C platform that matches customer requests with manufacturer–logistics pairs across the “supply-chain trilemma”: cost, delivery time, and reliability. Four user roles, a nine-state request lifecycle enforced by explicit state machines, three-party contract signing, and an admin UI for comparing optimization strategies live.",
+    "A B2B2C platform that matches customer requests with manufacturer-logistics pairs across the “supply-chain trilemma”: cost, delivery time, and reliability. Four user roles, a nine-state request lifecycle enforced by explicit state machines, three-party contract signing, and an admin UI for comparing optimization strategies live.",
   pillars: [
     {
       title: "Optimization engine",
-      body: "NSGA-II-style genetic algorithm built on DEAP (population 100, 80 generations) plus a fast weighted strategy and a greedy baseline — producing Pareto-optimal sets with knee-point selection.",
+      body: "NSGA-II-style genetic algorithm built on DEAP (population 100, 80 generations) plus a fast weighted strategy and a greedy baseline, producing Pareto-optimal sets with knee-point selection.",
     },
     {
       title: "Production platform",
@@ -59,40 +63,46 @@ export type Project = {
   stack: string[];
   liveUrl?: string;
   repoUrl?: string;
+  /** Captured from the live deployment, under public/. Only live projects have one. */
+  shot?: string;
 };
 
 export const projects: Project[] = [
   {
     name: "Intelli-Factory",
     blurb:
-      "Multi-objective supply-chain matching platform and my final-year project — covered in depth in the Flagship section above. An NSGA-II genetic algorithm on DEAP scores manufacturer–logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
+      "Multi-objective supply-chain matching platform and my final-year project, covered in depth in the Flagship section above. An NSGA-II genetic algorithm on DEAP scores manufacturer-logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
     stack: ["Next.js 14", "TypeScript", "FastAPI", "Python 3.12", "DEAP", "PostgreSQL"],
     liveUrl: "https://intelli-factory-frontend.vercel.app/",
     repoUrl: "https://github.com/igor-vuta/intelli-factory",
+    shot: "/projects/intelli-factory.jpg",
   },
   {
     name: "Todo Web App",
     blurb:
-      "Full-stack task manager with JWT authentication, shared group lists and role-based access — modular PHP 8 REST API over a hand-written five-table MySQL schema, vanilla JS frontend. Ships as a single Caddy container; its CI re-runs schema and seeds against a live MySQL service container to prove they are idempotent.",
+      "Full-stack task manager with JWT authentication, shared group lists and role-based access: a modular PHP 8 REST API over a hand-written five-table MySQL schema, vanilla JS frontend. Ships as a single Caddy container; its CI re-runs schema and seeds against a live MySQL service container to prove they are idempotent.",
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
+    shot: "/projects/todo.jpg",
   },
   {
     name: "Vue Folder Tree",
     blurb:
-      "Recursive folder-tree component for Vue 3 with animated expand/collapse, full keyboard navigation, ARIA roles for screen readers, and optional checkboxes — zero runtime dependencies.",
+      "Recursive folder-tree component for Vue 3 with animated expand/collapse, full keyboard navigation, ARIA roles for screen readers, and optional checkboxes. Zero runtime dependencies.",
     stack: ["Vue 3", "Vite", "Accessibility (ARIA)", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/vue-folder-tree/",
     repoUrl: "https://github.com/igor-vuta/vue-folder-tree",
+    shot: "/projects/vue-folder-tree.jpg",
   },
   {
     name: "Qubly Landing Page",
     blurb:
-      "Pixel-perfect, responsive landing page implemented from a Figma design — spacing, typography and breakpoints matched to spec. Hamburger navigation, a tabbed reviews component on data attributes, and smooth-scroll anchors, all hand-written against DOM events.",
+      "Pixel-perfect, responsive landing page implemented from a Figma design, with spacing, typography and breakpoints matched to spec. Hamburger navigation, a tabbed reviews component on data attributes, and smooth-scroll anchors, all hand-written against DOM events.",
     stack: ["HTML5", "Sass", "jQuery", "Bootstrap grid", "Figma"],
     liveUrl: "https://igor-vuta.github.io/qubly-landing/",
     repoUrl: "https://github.com/igor-vuta/qubly-landing",
+    shot: "/projects/qubly.jpg",
   },
   {
     name: "Drive Pro",
@@ -101,6 +111,7 @@ export const projects: Project[] = [
     stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/drivePro-website/",
     repoUrl: "https://github.com/igor-vuta/drivePro-website",
+    shot: "/projects/drive-pro.jpg",
   },
   {
     name: "React Starter Pro",
@@ -109,53 +120,55 @@ export const projects: Project[] = [
     stack: ["React 19", "Vite", "Tailwind CSS 4", "ESLint", "GitHub Actions"],
     liveUrl: "https://igor-vuta.github.io/react-starter-pro/",
     repoUrl: "https://github.com/igor-vuta/react-starter-pro",
+    shot: "/projects/react-starter-pro.jpg",
   },
   {
     name: "Currency Exchange Bot",
     blurb:
-      "Button-only multilingual Telegram bot for live rates and conversions — no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
+      "Button-only multilingual Telegram bot for live rates and conversions, with no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
     stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
     liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
     repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
+    shot: "/projects/currency-bot.jpg",
   },
   {
-    name: "DrivePro — Ride-Hailing App",
+    name: "DrivePro Ride-Hailing App",
     blurb:
-      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend — http, crypto and sqlite from the standard library only — with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
+      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend (http, crypto and sqlite from the standard library only) with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
     stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
     repoUrl: "https://github.com/igor-vuta/DrivePro_2",
   },
   {
     name: "Student Course Hub",
     blurb:
-      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite — deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
+      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite, with deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
     stack: ["Deno", "Oak", "TypeScript", "SQLite", "Server-side rendering"],
     repoUrl: "https://github.com/igor-vuta/student-course-hub",
   },
   {
     name: "Module Chooser",
     blurb:
-      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool — one script fetches JavaFX and compiles with plain javac.",
+      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool: one script fetches JavaFX and compiles with plain javac.",
     stack: ["Java", "JavaFX", "MVC", "Object serialization"],
     repoUrl: "https://github.com/igor-vuta/module-chooser-javafx",
   },
   {
     name: "Stackroom",
     blurb:
-      "Turns a folder of documents into a public, searchable archive — a Python service with Jinja-templated pages and a light JavaScript frontend.",
+      "Turns a folder of documents into a public, searchable archive: a Python service with Jinja-templated pages and a light JavaScript frontend.",
     stack: ["Python", "Jinja", "JavaScript", "CSS"],
     repoUrl: "https://github.com/igor-vuta/stackroom",
   },
   {
     name: "Table CRM",
     blurb:
-      "Photo-to-spreadsheet semi-automatic data entry: a tkinter desktop GUI that runs EasyOCR and OpenCV over grouped photos and exports the extracted rows to XLSX. Private repository — walkthrough on request.",
+      "Photo-to-spreadsheet semi-automatic data entry: a tkinter desktop GUI that runs EasyOCR and OpenCV over grouped photos and exports the extracted rows to XLSX. Private repository, walkthrough on request.",
     stack: ["Python", "tkinter", "EasyOCR", "OpenCV", "openpyxl"],
   },
   {
     name: "Intro Skipper",
     blurb:
-      "Chrome Manifest V3 browser extension that detects and auto-skips intros and outros on Netflix and Kinopoisk HD. Private repository — walkthrough on request.",
+      "Chrome Manifest V3 browser extension that detects and auto-skips intros and outros on Netflix and Kinopoisk HD. Private repository, walkthrough on request.",
     stack: ["JavaScript", "Chrome Manifest V3", "CSS"],
   },
 ];
@@ -163,8 +176,8 @@ export const projects: Project[] = [
 export const experience = [
   {
     company: "Papa Gadget",
-    role: "Software Developer — Telegram Bots & CRM Integration",
-    period: "Feb 2024 – Sep 2024",
+    role: "Software Developer, Telegram Bots & CRM Integration",
+    period: "Feb 2024 - Sep 2024",
     points: [
       "Worked in a two-person development team on two Python Telegram bots against the RemOnline CRM, including a staff intake bot with login and a whitelist so only authorised staff could write",
       "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout",
@@ -172,9 +185,9 @@ export const experience = [
     ],
   },
   {
-    company: "Kovacs Group (agency) — on site at DPD",
+    company: "Kovacs Group (agency), on site at DPD",
     role: "Warehouse Operative",
-    period: "Dec 2025 – Sep 2026",
+    period: "Dec 2025 - Sep 2026",
     points: [
       "Parcel sorting, scanning and dispatch preparation against tight delivery deadlines in a high-volume logistics operation",
       "Held accuracy and throughput across shifts while completing my final year and the Intelli-Factory project in parallel",
@@ -188,14 +201,14 @@ export const internships = {
     {
       org: "Kaspi Bank",
       context: "Leading fintech ecosystem in Kazakhstan",
-      period: "Jun – Jul 2023",
+      period: "Jun - Jul 2023",
       point:
         "First-line technical support for internal users, resolving software and hardware issues to deadline; JIRA ticket hygiene and written troubleshooting documentation.",
     },
     {
       org: "Kazakhfilm",
       context: "The national film studio of Kazakhstan",
-      period: "Sep – Oct 2023",
+      period: "Sep - Oct 2023",
       point:
         "Account setup, device connectivity and CCTV support for staff; documented requests and incidents and kept the hardware and software inventory in order.",
     },

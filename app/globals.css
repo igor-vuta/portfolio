@@ -22,61 +22,69 @@
 
 @theme {
   /* ── Surfaces ────────────────────────────────────────────────────────────
-     A three-step elevation model, warm neutral. Ground is the chassis the
-     page sits on; panel is raised and holds content; well is recessed and
-     holds readouts. Nothing is elevated twice — a panel never sits on a
-     panel, because in real gear that never happens either. */
-  --color-ground: #eceadf; /* page ground, one step darker than panels */
-  --color-oat: #f0eee6; /* legacy alias / secondary ground */
-  --color-panel: #faf9f5; /* raised working surface */
-  --color-well: #e5e2d6; /* recessed inset — readouts, insets, tags */
-  --color-cream: #f5f3ec; /* type on dark chassis */
-  --color-coal: #191919; /* dark chassis */
-  --color-coal-2: #242322; /* dark chassis, raised */
+     Deep water. The page is a set of blocks floating on a dark sea: ground
+     is the water itself (painted under the caustic layer), panel is a block
+     floating on it, well is recessed into a block. Nothing is elevated twice:
+     a panel never sits on a panel.
+
+     One cool family throughout. The previous warm paper and warm coal are
+     both gone; mixing warm and cool neutrals on one page reads as two sites.
+     Panels are opaque on purpose: translucency would need backdrop-filter to
+     stay legible over moving light, and a blurred panel re-blurs every frame
+     the water under it moves. */
+  --color-ground: #0a171c; /* the water */
+  --color-oat: #0d1b21; /* legacy alias / secondary ground */
+  --color-panel: #11232a; /* a floating block */
+  --color-well: #0d1c22; /* recessed inset: readouts, tags */
+  --color-cream: #eef3f2; /* type on the deepest surfaces */
+  --color-coal: #071116; /* deepest water: footer, boot, preview backdrop */
+  --color-coal-2: #11232a; /* raised on the deepest water (= panel) */
+
+  /* ── Hardware ────────────────────────────────────────────────────────────
+     The stage's tablet only. Bezel glass, and the two ends of the brushed
+     edge gradient. Nothing else on the page is a physical object, so nothing
+     else may use these. */
+  --color-bezel: #05090b;
+  --color-alloy: #8f9ea2;
+  --color-alloy-dark: #243238;
 
   /* ── Ink ─────────────────────────────────────────────────────────────────
-     Measured against the *darkest* surface each tone sits on (--color-well,
-     #e5e2d6), not the lightest, because that's the case that actually fails.
-     Verified ratios, well / ground / panel:
+     Measured against every surface. Verified ratios, coal / ground / well /
+     panel:
 
-       ink    12.82  13.79  15.80   AA everywhere
-       fog     4.55   4.89   5.60   AA everywhere — the floor for any label
-       mute    2.80   3.01   3.44   FAILS AA: aria-hidden decoration ONLY
+       ink    16.20  15.47  14.78  13.74   AA everywhere
+       fog     7.46   7.13   6.81   6.33   AA everywhere, the floor for labels
+       mute    3.81   3.64   3.47   3.23   FAILS AA: aria-hidden decoration ONLY
 
-     mute cannot be darkened into compliance without collapsing into fog
-     (the solver lands on #66635c against fog's #67645d), so instead it is
-     confined by rule: if a tone carries meaning, it is fog or ink. mute is
-     permitted only on marks already hidden from assistive tech — after the
-     ornament cull that leaves just the position rail. */
-  --color-ink: #1f1e1d;
-  --color-fog: #67645d;
-  --color-mute: #7a766d;
+     fog even clears 4.95 on a hairline, so a label can never be lost on a
+     rule. mute stays confined by rule: if a tone carries meaning, it is fog
+     or ink. */
+  --color-ink: #e6eeee;
+  --color-fog: #8fa6ab;
+  --color-mute: #5d7378;
 
   /* ── Structure ───────────────────────────────────────────────────────────
      Two hairline weights only. line separates; line-2 emphasises and draws
-     axis spines. With the tick scales gone these rules carry all the
-     separation on the page, so a third weight would just be indecision. */
-  --color-line: #dcd9ce;
-  --color-line-2: #c6c2b4;
+     axis spines. */
+  --color-line: #1f363f;
+  --color-line-2: #2e4c56;
 
   /* ── Signal ──────────────────────────────────────────────────────────────
-     One accent, used exclusively for state and wayfinding — never to
-     decorate. If clay appears, something is interactive, active, or live.
+     One accent, and the only warm colour on the page: a lantern on dark
+     water. Used for state and wayfinding, never to decorate. Verified coal /
+     ground / well / panel:
 
-     Both values are the solved minimum that clears AA on all three light
-     surfaces; the first pass (#b3502c / #2d7a5a) measured 3.95 and 4.00 on
-     --color-well and would have failed for the small silkscreen labels that
-     use them. Verified well / ground / panel:
+       clay       7.64  7.30  6.97  6.48
+       clay-soft 10.74 10.26  9.80  9.11
+       lamp       8.92  8.52  8.14  7.57
 
-       clay   4.57  4.91  5.63
-       lamp   4.51  4.85  5.56
-
-     clay is far too dark to read on coal (3.43), so the dark chassis uses
-     clay-soft instead — 7.44 — wired up in the .on-coal rules below. */
-  --color-clay: #a34928;
-  --color-clay-soft: #d99a80;
-  --color-clay-wash: rgba(163, 73, 40, 0.09);
-  --color-lamp: #2a7153;
+     The .on-coal overrides that existed to rescue clay on the old dark footer
+     are gone: every surface is dark now, so every surface takes the same
+     rules. clay-soft remains for emphasis inside display type. */
+  --color-clay: #e38f6c;
+  --color-clay-soft: #f2b596;
+  --color-clay-wash: rgb(227 143 108 / 0.12);
+  --color-lamp: #5cc49a;
 
   /* ── Type ────────────────────────────────────────────────────────────────
      Two cuts of one family. Sans carries prose; mono carries every label,
@@ -186,27 +194,17 @@
   --text-tag: 0.6875rem;
   --text-tag--line-height: 1;
 
-  /* ── Grid field ──────────────────────────────────────────────────────────
-     The background ruling. Both cells are integer multiples of --spacing
-     (0.25rem), so the grid and the layout are measured in the same unit and
-     content lands on the lines rather than near them:
-
-       minor  1rem   =  4 × spacing
-       major  4rem   = 16 × spacing
-
-     --grid-gain is the only value that moves. It is written once per frame
-     from scroll velocity by the loop in the document head, and multiplies
-     both line opacities together — so the field brightens as a whole and the
-     minor/major ratio stays fixed. Rest is 1; hard scrolling reaches 2.6.
-
-     Declared here with its resting value so the field is fully specified
-     without scripting: no JS means gain stays 1, which is a legitimate
-     static state rather than a degraded one. */
-  --grid-minor: 1rem;
-  --grid-major: 4rem;
-  --grid-gain: 1;
-  --grid-minor-alpha: 0.022;
-  --grid-major-alpha: 0.055;
+  /* ── Water ─────────────────────────────────────────────────────────────
+     Two sheets of the same caustic texture (public/water-caustics.png, a
+     tileable 512px light-filament map) drifting in different directions at
+     different scales. Where the filaments cross they brighten, which is what
+     makes it read as light moving through a surface rather than a pattern
+     sliding past. Each sheet travels exactly one tile per loop, so the loop
+     has no seam. */
+  --water-tile-a: 512px;
+  --water-tile-b: 832px;
+  --water-alpha-a: 0.04;
+  --water-alpha-b: 0.028;
 
   /* ── Motion ──────────────────────────────────────────────────────────────
      Two curves, three durations. Nothing on this page overshoots.
@@ -233,14 +231,17 @@
   --dur-enter: 300ms;
 
   /* ── Elevation ───────────────────────────────────────────────────────────
-     Shadows are hairline-plus-diffusion, never soft blobs. Light is from
-     directly above, so the top edge catches and the bottom edge drops. */
-  --shadow-panel: 0 1px 0 rgba(31, 30, 29, 0.03),
-    0 1px 2px rgba(31, 30, 29, 0.04);
-  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.7) inset,
-    0 1px 2px rgba(31, 30, 29, 0.07), 0 2px 6px rgba(31, 30, 29, 0.05);
-  --shadow-well: inset 0 1px 2px rgba(31, 30, 29, 0.09),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+     Everything that floats casts onto the water, so shadows are long, soft
+     and tinted to the deep water rather than black: a block's shadow is the
+     water under it getting darker. The inset top edge is the sky catching
+     the block's upper lip. Wells are pressed into a block, so they only
+     darken inward. */
+  --shadow-panel: inset 0 1px 0 rgb(238 243 242 / 0.06),
+    0 0.25rem 0.75rem rgb(2 8 11 / 0.35),
+    0 1.75rem 3.5rem -1rem rgb(2 8 11 / 0.85);
+  --shadow-raised: inset 0 1px 0 rgb(238 243 242 / 0.08),
+    0 2rem 3.5rem -1.5rem rgb(2 8 11 / 0.9);
+  --shadow-well: inset 0 1px 2px rgb(2 8 11 / 0.5);
 }
 
 /* ═══ 2. BASE ═════════════════════════════════════════════════════════════ */
@@ -259,11 +260,21 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
-/* The page ground sits on <html>, not <body>, so that body::before can hold
-   the grid field at z-index -1 and still be visible. Painted on body, the
-   background would cover its own pseudo-element. */
+/* The water sits on <html>, not <body>, so that body's pseudo-elements can
+   hold the caustic sheets at z-index -1 and still be visible. The gradient is
+   the light from above: brighter near the surface, falling off with depth.
+   Fixed, so the page scrolls across the water instead of dragging it along,
+   which is the whole effect: the blocks float, the sea stays. */
 html {
-  background-color: var(--color-ground);
+  background:
+    radial-gradient(
+        120% 60% at 50% -10%,
+        color-mix(in srgb, var(--color-ground) 70%, #2b6a78),
+        transparent 70%
+      )
+      fixed,
+    var(--color-ground);
+  color-scheme: dark;
 }
 
 body {
@@ -287,50 +298,51 @@ body {
   overflow-wrap: break-word;
 }
 
-/* ── Grid field ──────────────────────────────────────────────────────────────
-   Four repeating gradients: major and minor, each ruled in both axes. Fixed
-   to the viewport rather than the document, so it reads as the surface the
-   page is laid on instead of a texture that scrolls with it.
+/* ── Water ───────────────────────────────────────────────────────────────────
+   Two fixed pseudo-elements, each one oversized by a tile and translated by
+   exactly one tile per loop. The raster never changes: the compositor moves
+   a finished layer, so the water costs no main-thread time at all, while
+   scrolling or otherwise. That is deliberate. The grid field this replaced
+   was repainted from a script on every scroll frame and was the cause of the
+   stage's stutter.
 
-   Both alphas are multiplied by --grid-gain, so the whole field brightens
-   together and the minor/major relationship is fixed by construction — the
-   scroll loop cannot desaturate one against the other no matter what it
-   writes. The transition is a floor, not the animation: the loop already
-   updates per frame, and this only smooths the final settle back to rest.
-
-   No canvas, no element, no library — one pseudo-element and one custom
-   property. It cannot fall out of sync with the DOM because it isn't in it. */
-body::before {
+   No backdrop-filter, no SVG turbulence, no canvas: each of those re-renders
+   the full viewport per frame. */
+body::before,
+body::after {
   content: "";
   position: fixed;
-  inset: 0;
   z-index: -1;
   pointer-events: none;
+  /* Relative, so the bundler fingerprints it and applies the base path. */
+  background-image: url("./water-caustics.png");
+  will-change: transform;
+}
 
-  --minor-line: rgb(31 30 29 / calc(var(--grid-minor-alpha) * var(--grid-gain)));
-  --major-line: rgb(31 30 29 / calc(var(--grid-major-alpha) * var(--grid-gain)));
+body::before {
+  inset: calc(var(--water-tile-a) * -1) 0 0 calc(var(--water-tile-a) * -1);
+  background-size: var(--water-tile-a);
+  opacity: var(--water-alpha-a);
+  animation: water-a 48s linear infinite;
+}
 
-  background-image:
-    repeating-linear-gradient(
-      to right,
-      var(--major-line) 0 1px,
-      transparent 1px var(--grid-major)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      var(--major-line) 0 1px,
-      transparent 1px var(--grid-major)
-    ),
-    repeating-linear-gradient(
-      to right,
-      var(--minor-line) 0 1px,
-      transparent 1px var(--grid-minor)
-    ),
-    repeating-linear-gradient(
-      to bottom,
-      var(--minor-line) 0 1px,
-      transparent 1px var(--grid-minor)
-    );
+body::after {
+  inset: 0 calc(var(--water-tile-b) * -1) calc(var(--water-tile-b) * -1) 0;
+  background-size: var(--water-tile-b);
+  opacity: var(--water-alpha-b);
+  animation: water-b 71s linear infinite;
+}
+
+@keyframes water-a {
+  to {
+    transform: translate3d(var(--water-tile-a), var(--water-tile-a), 0);
+  }
+}
+
+@keyframes water-b {
+  to {
+    transform: translate3d(calc(var(--water-tile-b) * -1), calc(var(--water-tile-b) * -1), 0);
+  }
 }
 
 /* The one and only anchor offset, on the same elements that carry the `id` —
@@ -343,7 +355,7 @@ body::before {
 }
 
 ::selection {
-  background: rgba(179, 80, 44, 0.18);
+  background: rgb(227 143 108 / 0.28);
   color: var(--color-ink);
 }
 
@@ -371,8 +383,12 @@ body::before {
   border-radius: var(--radius-control);
 }
 
-.on-coal :where(a, button, summary, [tabindex]):focus-visible {
-  outline-color: var(--color-cream);
+
+/* Taps act on release without the double-tap-to-zoom wait, and the grey
+   WebKit tap flash is off because every control draws its own :active. */
+:where(a, button, summary, [role="button"], .ctl) {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* Skip link: present for keyboard users from the first Tab, absent otherwise.
@@ -624,7 +640,10 @@ html.boot .boot-term {
   }
 }
 
-html.boot body::before {
+/* The water surfaces as the terminal lifts. `from` only, so each sheet
+   lands on its own opacity rather than a shared full-strength value. */
+html.boot body::before,
+html.boot body::after {
   animation: bootGrid 300ms var(--ease-entrance) 5500ms both;
 }
 
@@ -632,10 +651,6 @@ html.boot body::before {
   from {
     opacity: 0;
     clip-path: inset(0 0 100% 0);
-  }
-  to {
-    opacity: 1;
-    clip-path: inset(0 0 0 0);
   }
 }
 
@@ -784,21 +799,6 @@ html.boot .reveal.is-in {
   text-decoration-color: var(--color-clay);
 }
 
-/* clay measures 3.43 on coal — below AA. The dark chassis takes clay-soft
-   (7.44) so inline links stay readable there. */
-.on-coal .link {
-  color: var(--color-clay-soft);
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--color-clay-soft) 50%,
-    transparent
-  );
-}
-
-.on-coal .link:hover {
-  text-decoration-color: var(--color-clay-soft);
-}
-
 /* ═══ 4. SURFACE ══════════════════════════════════════════════════════════ */
 
 .panel {
@@ -914,14 +914,17 @@ html.boot .reveal.is-in {
 
 .ctl-primary {
   --ctl-bg: var(--color-ink);
-  --ctl-fg: var(--color-cream);
+  --ctl-fg: var(--color-ground);
   --ctl-bd: var(--color-ink);
+  font-weight: 600;
 }
 
+/* The lantern: dark type on clay measures 7.30, so the label survives the
+   colour change instead of fading into it. */
 .ctl-primary:hover {
   --ctl-bg: var(--color-clay);
   --ctl-bd: var(--color-clay);
-  --ctl-fg: var(--color-cream);
+  --ctl-fg: var(--color-ground);
 }
 
 /* Quiet variant for tertiary actions — no border until addressed, and no
@@ -960,38 +963,6 @@ html.boot .reveal.is-in {
   --ctl-bg: var(--ctl-bg-rest);
 }
 
-/* Controls on the dark chassis re-point the same properties. The resting
-   fill flips to a faint cream so the body survives the surface change. */
-.on-coal .ctl {
-  --ctl-bg-rest: rgba(245, 243, 236, 0.07);
-  --ctl-bg: var(--ctl-bg-rest);
-  --ctl-fg: var(--color-cream);
-  --ctl-bd: rgba(245, 243, 236, 0.26);
-}
-
-.on-coal .ctl:hover {
-  --ctl-bd: var(--color-cream);
-  --ctl-bg: rgba(245, 243, 236, 0.08);
-  --ctl-fg: var(--color-cream);
-}
-
-.on-coal .ctl-primary {
-  --ctl-bg: var(--color-cream);
-  --ctl-fg: var(--color-coal);
-  --ctl-bd: var(--color-cream);
-}
-
-.on-coal .ctl-primary:hover {
-  --ctl-bg: var(--color-clay);
-  --ctl-fg: var(--color-cream);
-  --ctl-bd: var(--color-clay);
-}
-
-.on-coal .ctl-ok {
-  --ctl-fg: #7fd0ab;
-  --ctl-bd: #7fd0ab;
-}
-
 /* ── Trail ───────────────────────────────────────────────────────────────────
    The ghost of a pressed control, mid-flight to the top of the page. It is a
    clone of the real element and keeps the element's own classes, so almost
@@ -1021,13 +992,12 @@ html.boot .reveal.is-in {
   }
 }
 
-/* ── Dust ────────────────────────────────────────────────────────────────────
-   Ambient motes, spawned by the head script. Squares, not circles — dust on
-   this page is still milled. Sits with the grid behind everything and never
-   takes a pointer event. Each mote's waypoints, duration, phase, and opacity
-   arrive as inline custom properties; this file only owns the shape of the
-   walk. Linear segments deliberately: eased drift reads as swimming, straight
-   segments read as particles in still air. */
+/* ── Bubbles ─────────────────────────────────────────────────────────────────
+   Ambient motes, spawned by the head script: small bubbles and lit particles
+   suspended in the water, behind everything, never taking a pointer event.
+   Each one's waypoints, duration, phase, and opacity arrive as inline custom
+   properties; this file only owns the shape of the walk. Linear segments:
+   each is short enough that the sum reads as a slow drift in a current. */
 .dust {
   position: fixed;
   inset: 0;
@@ -1059,6 +1029,7 @@ html.boot .dust {
   display: block;
   width: var(--s, 2px);
   height: var(--s, 2px);
+  border-radius: 50%;
   color: color-mix(in srgb, var(--ce, var(--c)) calc(var(--p, 0) * 100%), var(--c, var(--color-ink)));
   background: currentColor;
   box-shadow: 0 0 calc(3px + var(--p, 0) * 9px) 1px currentColor;
@@ -1089,7 +1060,9 @@ html.boot .dust {
    exactly the screens most visitors bring. The spawn guard in the head
    script is the fast path; this is the guarantee. */
 @media (prefers-reduced-motion: reduce), (forced-colors: active), print {
-  .dust {
+  .dust,
+  .wake,
+  .ripple {
     display: none;
   }
 }
@@ -1116,7 +1089,7 @@ html.boot .dust {
 }
 
 .preview-sheet::backdrop {
-  background: rgba(25, 25, 25, 0.55);
+  background: rgb(2 8 11 / 0.72);
 }
 
 .preview-sheet[open] {
@@ -1185,6 +1158,699 @@ html.boot .dust {
   background: var(--color-ink);
 }
 
+/* ═══ 5b. STAGE ═══════════════════════════════════════════════════════════
+   The opening scene: a tablet running the flagship, rolling upright as the
+   reader scrolls, with the other live projects floating out around it.
+
+   Written in two layers, and the order matters:
+
+     1. STATIC   a complete composition in normal flow: device upright,
+                 cards settled in orbit, copy and caption both visible. This
+                 is what Firefox, reduced motion, print and a failed feature
+                 test all get. It is the design, not a degraded state of it.
+     2. PINNED   only inside @supports (animation-timeline: view()) and
+                 prefers-reduced-motion: no-preference. The stage grows
+                 tall, the frame pins, and every moving part reads its
+                 progress from one view timeline, --stage, declared on the
+                 tall element. `contain 0%` to `contain 100%` is exactly the
+                 pin: the frame's first and last pinned frames.
+
+   Smoothness rule, learned the hard way: every scroll-driven keyframe here
+   holds LITERAL transform/opacity values only. No var() in keyframes, and no
+   discrete property sharing an animation with them. Either one can drop an
+   animation off the compositor onto the main thread, where it lands a frame
+   behind the scroll, and that lag is what reads as jitter. Per-element
+   variation comes from static properties (transform-origin, the parent's
+   transform), never from the keyframes.
+
+   Geometry exception: the tablet is the one rounded thing on the page. The
+   squared 3px rule is for interface; this is hardware, and a squared tablet
+   would read as a screenshot in a box. The cards keep the panel radius.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.stage {
+  --device-w: min(56vw, 51rem, calc((100dvh - 17rem) * 4 / 3));
+  --card-w: clamp(10rem, 16vw, 15rem);
+
+  position: relative;
+  /* A pool of light under the device, over the water rather than instead of
+     it: the caustics still move beneath the stage. */
+  background: radial-gradient(
+    60% 50% at 50% 42%,
+    rgb(43 106 120 / 0.28),
+    transparent 70%
+  );
+  color: var(--color-cream);
+}
+
+.stage-frame {
+  display: flex;
+  flex-direction: column;
+  padding-top: calc(var(--header-h) + 4rem);
+}
+
+.stage-scene {
+  position: relative;
+  isolation: isolate;
+  height: clamp(30rem, 86vh, 50rem);
+  margin-top: 2rem;
+  display: grid;
+  place-items: center;
+}
+
+/* ── Device ──────────────────────────────────────────────────────────────── */
+
+.stage-device {
+  position: relative;
+  z-index: 2;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  perspective: 100rem;
+}
+
+.device {
+  position: relative;
+  display: block;
+  width: var(--device-w);
+  padding: calc(var(--device-w) * 0.026);
+  border: 1.5px solid transparent;
+  border-radius: calc(var(--device-w) * 0.05);
+  background:
+    linear-gradient(var(--color-bezel), var(--color-bezel)) padding-box,
+    linear-gradient(
+        160deg,
+        var(--color-alloy),
+        var(--color-alloy-dark) 38%,
+        var(--color-alloy-dark) 70%,
+        var(--color-alloy)
+      )
+      border-box;
+  box-shadow:
+    inset 0 0 0 1px rgb(238 243 242 / 0.05),
+    0 3rem 6rem -2rem rgb(2 8 11 / 0.85);
+  transform-origin: 50% 70%;
+  will-change: transform;
+}
+
+/* Front camera, centred on the long edge as on a landscape tablet. */
+.device::before {
+  content: "";
+  position: absolute;
+  top: calc(var(--device-w) * 0.0105);
+  left: 50%;
+  width: calc(var(--device-w) * 0.007);
+  aspect-ratio: 1;
+  translate: -50% 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-bezel) 70%, #3b4a57);
+}
+
+/* The screen. The capture stays underneath as the loading state when the
+   live site is switched on: the iframe fades in over it once it has loaded,
+   so there is never a blank white tablet. */
+.device-screen {
+  position: relative;
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: calc(var(--device-w) * 0.024);
+  background: var(--color-bezel);
+}
+
+.device-screen img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+
+/* Rendered at the tablet's own width, not a scaled-down desktop: the site
+   gets to show the layout it actually serves an iPad. */
+.device-screen iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  opacity: 0;
+  transition: opacity 400ms var(--ease-entrance);
+}
+
+.device-screen iframe.is-loaded {
+  opacity: 1;
+}
+
+/* The water shadow only exists for the lying pose; upright, it is off. */
+.device-shadow {
+  display: none;
+}
+
+.stage-caption {
+  max-width: 28rem;
+  margin-top: 1.75rem;
+  text-align: center;
+}
+
+/* ── Orbit ─────────────────────────────────────────────────────────────────
+   Three nested boxes per card, one transform job each, so nothing fights:
+
+     li.stage-card     where the card settles: a static translate from its
+                       flight vars. Never animated.
+     .stage-card-fly   the scroll flight. Its transform-origin is aimed back
+                       at the stage centre, so one shared keyframe, scale up
+                       from 0.45 while unwinding a 12deg arc, carries every
+                       card out from beside the device along its own path.
+     a / body          hover lift, the card's tilt, and the idle float. */
+
+.stage-orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.stage-card {
+  --card-h: calc(var(--card-w) * 0.74);
+  --x1: var(--dx1);
+  --y1: var(--dy1);
+  --r1: var(--dr1);
+  --s1: var(--ds1);
+
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  width: var(--card-w);
+  margin-left: calc(var(--card-w) / -2);
+  margin-top: calc(var(--card-h) / -2);
+  transform: translate(var(--x1), var(--y1));
+}
+
+.stage-card.is-front {
+  z-index: 3;
+}
+
+.stage-card-fly {
+  display: block;
+  pointer-events: auto;
+  transform-origin: calc(var(--card-w) / 2 - var(--x1))
+    calc(var(--card-h) / 2 - var(--y1));
+}
+
+.stage-card-link {
+  display: block;
+  text-decoration: none;
+  rotate: var(--r1);
+  scale: var(--s1);
+  transition: transform var(--dur-state) var(--ease-entrance);
+}
+
+.stage-card-body {
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgb(238 243 242 / 0.12);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+  box-shadow: var(--shadow-raised);
+  transition: border-color var(--dur-state) var(--ease-sharp);
+}
+
+.stage-card-body img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  object-position: top;
+}
+
+.stage-card-name {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: var(--text-detail);
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--color-cream);
+}
+
+.stage-card-link:hover {
+  transform: translateY(-0.25rem) scale(1.03);
+}
+
+.stage-card-link:hover .stage-card-body,
+.stage-card-link:focus-visible .stage-card-body {
+  border-color: var(--color-clay);
+}
+
+.stage-card-link:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.stage-tail {
+  padding-top: 6rem;
+}
+
+/* ── Mobile paths ──────────────────────────────────────────────────────────
+   Beside the device there is no room on a phone, so cards settle above and
+   below it instead, and the fifth is dropped. It duplicates a link in the
+   project list; it is not the only way to reach that project. */
+@media (max-width: 47.9375rem) {
+  .stage {
+    --device-w: 86vw;
+    --card-w: 34vw;
+  }
+
+  .stage-card:nth-child(1) {
+    --x1: -27vw;
+    --y1: -29vh;
+  }
+  .stage-card:nth-child(2) {
+    --x1: -30vw;
+    --y1: 29vh;
+  }
+  .stage-card:nth-child(3) {
+    --x1: 26vw;
+    --y1: -31vh;
+  }
+  .stage-card:nth-child(4) {
+    --x1: 30vw;
+    --y1: 27vh;
+  }
+  .stage-card:nth-child(5) {
+    display: none;
+  }
+
+  .stage-caption {
+    max-width: 20rem;
+  }
+}
+
+/* ── Pinned ────────────────────────────────────────────────────────────── */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .stage {
+      height: 280vh;
+      view-timeline: --stage block;
+    }
+
+    .stage-frame {
+      position: sticky;
+      top: 0;
+      height: 100dvh;
+      overflow: hidden;
+      padding: 0;
+      display: block;
+    }
+
+    .stage-scene {
+      position: absolute;
+      inset: var(--header-h) 0 0 0;
+      height: auto;
+      margin: 0;
+    }
+
+    /* Two animations on purpose. The fade is pure transform/opacity and runs
+       on the compositor; hiding is a separate, discrete animation, so the
+       faded copy stops catching clicks and focus without dragging the fade
+       back onto the main thread. */
+    .stage-copy {
+      position: absolute;
+      inset-inline: 0;
+      bottom: 7vh;
+      z-index: 4;
+      animation:
+        stage-copy-out linear both,
+        stage-copy-hide linear both;
+      animation-timeline: --stage, --stage;
+      animation-range:
+        contain 4% contain 26%,
+        contain 26% contain 27%;
+    }
+
+    .device {
+      animation: stage-device-roll linear both;
+      animation-timeline: --stage;
+      animation-range: contain 0% contain 58%;
+    }
+
+    .device-shadow {
+      display: block;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: -1;
+      width: calc(var(--device-w) * 1.1);
+      aspect-ratio: 3;
+      translate: -50% -20%;
+      background: radial-gradient(closest-side, rgb(2 8 11 / 0.8), transparent);
+      animation: stage-shadow-out linear both;
+      animation-timeline: --stage;
+      animation-range: contain 0% contain 45%;
+    }
+
+    .stage-caption {
+      animation: stage-caption-in linear both;
+      animation-timeline: --stage;
+      animation-range: contain 58% contain 76%;
+    }
+
+    .stage-card-fly {
+      animation: stage-card-out linear both;
+      animation-timeline: --stage;
+      animation-range: contain 0% contain 66%;
+    }
+
+    /* Right-hand cards swing the other way, so the orbit opens outward on
+       both sides instead of the whole ring turning one direction. */
+    .stage-card:nth-child(n + 3) .stage-card-fly {
+      animation-name: stage-card-out-cw;
+    }
+
+    /* On a phone the copy fills the lower half, so the cards start higher.
+       Separate keyframes rather than a variable: see the smoothness rule. */
+    @media (max-width: 47.9375rem) {
+      .stage-card-fly {
+        animation-name: stage-card-out-m;
+      }
+
+      .stage-card:nth-child(n + 3) .stage-card-fly {
+        animation-name: stage-card-out-m-cw;
+      }
+    }
+
+    /* Hidden is never unreachable: a keyboard user who tabs into a faded
+       caption gets it back at full strength. !important is the only author
+       declaration that outranks a running animation. */
+    .stage-caption:focus-within {
+      opacity: 1 !important;
+      transform: none !important;
+    }
+  }
+}
+
+@keyframes stage-copy-out {
+  to {
+    opacity: 0;
+    transform: translateY(-2.5rem);
+  }
+}
+
+@keyframes stage-copy-hide {
+  to {
+    visibility: hidden;
+  }
+}
+
+/* Lying back on the water, turned a little off-axis, then up to face the
+   reader. The Z twist unwinds with the X roll so the motion reads as one
+   gesture: picked up and turned toward you. */
+@keyframes stage-device-roll {
+  from {
+    transform: translateY(-17vh) rotateX(62deg) rotateZ(-13deg) scale(0.74);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes stage-shadow-out {
+  to {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
+@keyframes stage-caption-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+/* The trailing translate is inside the scale, so -30vh lands as about -13vh:
+   enough to start every card up around the lying device, clear of the
+   headline, whatever its final position below centre. */
+@keyframes stage-card-out {
+  from {
+    opacity: 0.5;
+    transform: scale(0.45) rotate(-12deg) translateY(-30vh);
+  }
+}
+
+@keyframes stage-card-out-cw {
+  from {
+    opacity: 0.5;
+    transform: scale(0.45) rotate(12deg) translateY(-30vh);
+  }
+}
+
+@keyframes stage-card-out-m {
+  from {
+    opacity: 0.5;
+    transform: scale(0.45) rotate(-12deg) translateY(-62vh);
+  }
+}
+
+@keyframes stage-card-out-m-cw {
+  from {
+    opacity: 0.5;
+    transform: scale(0.45) rotate(12deg) translateY(-62vh);
+  }
+}
+
+/* ═══ 5c. BUOYS ═══════════════════════════════════════════════════════════
+   Every block of information floats on the water, top of the page to the
+   bottom: [data-buoy="drift"] bobs on its own clock, the same small float
+   the stage cards have.
+
+   Any block can be picked up with a mouse (Buoys.tsx): it follows the hand
+   almost 1:1, carries on along the throw when released, then drifts back to
+   its place. The drag writes the individual `translate` and `rotate`
+   properties, which compose with the bob running on `transform`, so the
+   hand and the float never fight over one property. Touch and pen never
+   drag: on a phone a vertical swipe is a scroll, and taking it would trap
+   the reader. */
+
+[data-buoy] {
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  [data-buoy] {
+    cursor: grab;
+  }
+
+  /* Text and controls inside a block keep their own cursors: the grab is
+     for the block's body, not a replacement for the caret or the hand. */
+  [data-buoy] :where(a, button, summary, input, textarea, select) {
+    cursor: pointer;
+  }
+}
+
+[data-buoy].is-dragging {
+  z-index: 30;
+  cursor: grabbing;
+  box-shadow:
+    inset 0 1px 0 rgb(238 243 242 / 0.1),
+    0 3rem 5rem -1.5rem rgb(2 8 11 / 0.95);
+  will-change: translate, rotate;
+}
+
+/* Above its neighbours while it drifts home, so a thrown block never slides
+   under the one beside it. The motion itself is a Web Animation in
+   Buoys.tsx: a CSS transition here would outrank it in the cascade. */
+[data-buoy].is-returning {
+  z-index: 20;
+}
+
+html.buoy-drag,
+html.buoy-drag * {
+  user-select: none;
+  cursor: grabbing;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  [data-buoy="drift"] {
+    animation: buoy-bob 7s ease-in-out infinite alternate;
+  }
+
+  /* Staggered phases so neighbours never rise together. A block is usually
+     the only child of its Reveal wrapper, so the phase keys off whichever
+     box is the actual grid cell: the block itself, or one or two levels up. */
+  :is(
+      :nth-child(3n + 2) > [data-buoy],
+      :nth-child(3n + 2) > * > [data-buoy],
+      [data-buoy]:nth-child(3n + 2)
+    )[data-buoy="drift"] {
+    animation-delay: -2.6s;
+    animation-duration: 8.2s;
+  }
+
+  :is(
+      :nth-child(3n + 3) > [data-buoy],
+      :nth-child(3n + 3) > * > [data-buoy],
+      [data-buoy]:nth-child(3n + 3)
+    )[data-buoy="drift"] {
+    animation-delay: -5.1s;
+    animation-duration: 6.4s;
+  }
+
+  .stage-card-body {
+    animation: buoy-bob-card 5.5s ease-in-out infinite alternate;
+  }
+
+  .stage-card:nth-child(2n) .stage-card-body {
+    animation-delay: -2.2s;
+    animation-duration: 6.3s;
+  }
+
+  .stage-card:nth-child(3n) .stage-card-body {
+    animation-delay: -4s;
+  }
+}
+
+/* Small on purpose: this says "afloat", not "look at me". Vertical only:
+   even a 0.15deg roll makes the GPU resample the block's text layer, and
+   paragraphs visibly soften. The stage cards can tilt; they carry a name,
+   not a paragraph. */
+@keyframes buoy-bob {
+  from {
+    transform: translateY(-0.1875rem);
+  }
+  to {
+    transform: translateY(0.1875rem);
+  }
+}
+
+@keyframes buoy-bob-card {
+  from {
+    transform: translateY(-0.3rem) rotate(-0.6deg);
+  }
+  to {
+    transform: translateY(0.35rem) rotate(0.6deg);
+  }
+}
+
+/* Where a released block lands. One ring, spawned at the block's waterline
+   and removed on animationend: scale and opacity only. */
+.ripple {
+  position: fixed;
+  z-index: 25;
+  width: 12rem;
+  aspect-ratio: 3;
+  margin: -2rem 0 0 -6rem;
+  border: 1px solid rgb(238 243 242 / 0.35);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: ripple 1100ms var(--ease-entrance) forwards;
+}
+
+@keyframes ripple {
+  from {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.2);
+  }
+}
+
+/* The cursor's wake (Wake.tsx): rings on the water, under every block.
+   Flattened to an ellipse because the water is seen at an angle. */
+.wake {
+  position: fixed;
+  z-index: -1;
+  width: 9rem;
+  aspect-ratio: 2.6;
+  margin: -1.73rem 0 0 -4.5rem;
+  border: 1.5px solid rgb(207 227 230 / 0.4);
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 1.25rem rgb(143 193 201 / 0.14),
+    0 0 0.75rem rgb(143 193 201 / 0.1);
+  pointer-events: none;
+  animation: wake 1600ms var(--ease-entrance) forwards;
+}
+
+@keyframes wake {
+  from {
+    opacity: 0.8;
+    transform: scale(0.15);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.4);
+  }
+}
+
+/* ── Menu sheet ──────────────────────────────────────────────────────────────
+   The phone menu, a native [popover] in the top layer. It drops from under
+   the header rather than covering it, so the name and the controls it was
+   opened from stay in view. */
+.menu-sheet {
+  inset: calc(var(--header-h) + 0.5rem) 1rem auto auto;
+  width: min(18rem, calc(100vw - 2rem));
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid var(--color-line-2);
+  border-radius: var(--radius-panel);
+  background: var(--color-panel);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-raised);
+  overscroll-behavior: contain;
+}
+
+.menu-sheet::backdrop {
+  background: rgb(2 8 11 / 0.45);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .menu-sheet:popover-open {
+    animation: sheet-in var(--dur-enter) var(--ease-entrance);
+  }
+}
+
+@keyframes sheet-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+}
+
+.menu-link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding-inline: 0.75rem;
+  border-radius: var(--radius-control);
+  font-size: var(--text-body-lg);
+  font-weight: 500;
+  color: var(--color-ink);
+  text-decoration: none;
+  transition: background-color var(--dur-tap) var(--ease-sharp),
+    color var(--dur-tap) var(--ease-sharp);
+}
+
+.menu-link:hover {
+  background: var(--color-clay-wash);
+  color: var(--color-clay);
+}
+
+/* ── Paused ──────────────────────────────────────────────────────────────────
+   MotionToggle's class. Every self-running loop stops where it is: the water,
+   the bubbles, the bobbing blocks and cards. Scroll-driven motion is not in
+   this list on purpose; it only moves when the reader scrolls. */
+html.motion-paused :is(.mote, [data-buoy], .stage-card-body, .knee-ring),
+html.motion-paused body::before,
+html.motion-paused body::after {
+  animation-play-state: paused;
+}
+
 /* ═══ 6. INSTRUMENT ═══════════════════════════════════════════════════════ */
 
 /* Plotted traces draw themselves once, on entry, then rest. */
@@ -1249,7 +1915,7 @@ html.boot .dust {
   .ctl-primary:hover {
     --ctl-bg: var(--color-ink);
     --ctl-bd: var(--color-ink);
-    --ctl-fg: var(--color-cream);
+    --ctl-fg: var(--color-ground);
   }
 
   .panel-interactive:hover {
@@ -1270,12 +1936,12 @@ html.boot .dust {
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
+  }
 
-    /* The scroll loop never attaches under reduced motion, so gain would
-       already hold at rest. Pinned here as well so the field cannot be left
-       bright if the preference is switched on mid-session, after the loop
-       has already written a value to the inline style. */
-    --grid-gain: 1 !important;
+  /* The water holds still: same light, no drift. */
+  body::before,
+  body::after {
+    animation: none;
   }
 
   .js .reveal,
@@ -1356,9 +2022,9 @@ html.boot .dust {
 /* ── Forced colours ──────────────────────────────────────────────────────────
    The user's palette wins; our job is to keep structure legible without it. */
 @media (forced-colors: active) {
-  /* The user's palette has no room for a decorative ruling, and forced-colors
-     would resolve the hairlines to CanvasText — a solid grid over everything. */
-  body::before {
+  /* The user's palette has no room for decorative water. */
+  body::before,
+  body::after {
     display: none;
   }
 
@@ -1400,9 +2066,10 @@ html.boot .dust {
     font-size: 10.5pt;
   }
 
-  /* The grid field is screen furniture and would print as a grey wash across
-     every page — and on some drivers, as a solid block. */
-  body::before {
+  /* The water is screen furniture and would print as a grey wash across
+     every page, and on some drivers as a solid block. */
+  body::before,
+  body::after {
     display: none;
   }
 
@@ -1416,6 +2083,27 @@ html.boot .dust {
   /* Anything whose only job is on-screen navigation. */
   [data-print="hide"] {
     display: none !important;
+  }
+
+  /* The stage prints as its static composition, minus the orbit: floating
+     screenshots are screen furniture, and the list below has every project. */
+  .stage {
+    height: auto !important;
+    background: none;
+  }
+
+  .stage-frame {
+    position: static !important;
+    height: auto !important;
+  }
+
+  .stage-orbit,
+  .device-shadow {
+    display: none !important;
+  }
+
+  .stage-scene {
+    height: auto;
   }
 
   .js .reveal,
@@ -1433,11 +2121,22 @@ html.boot .dust {
     break-inside: avoid;
   }
 
-  .on-coal,
-  .on-coal * {
-    background: #fff !important;
-    color: #000 !important;
-    border-color: #999 !important;
+  /* Paper is light. Every component colours itself through these tokens,
+     so re-pointing them here prints the whole page in dark-on-white without
+     a per-component override. */
+  :root {
+    --color-ground: #fff;
+    --color-panel: #fff;
+    --color-well: #f3f3f3;
+    --color-coal: #fff;
+    --color-coal-2: #fff;
+    --color-cream: #000;
+    --color-ink: #000;
+    --color-fog: #444;
+    --color-line: #bbb;
+    --color-line-2: #999;
+    --color-clay: #8a3a1d;
+    --color-clay-soft: #8a3a1d;
   }
 
   /* Resolve external destinations — a printed link with no URL is dead. */

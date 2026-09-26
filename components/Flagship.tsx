@@ -24,7 +24,7 @@ export default function Flagship() {
           <div className="mt-8 space-y-4">
             {flagship.pillars.map((pillar, i) => (
               <Reveal key={pillar.title} delay={i * 60}>
-                <LabelledPanel label={pillar.title} interactive>
+                <LabelledPanel label={pillar.title} interactive buoy="drift">
                   <p className="text-detail text-fog">
                     {pillar.body}
                   </p>
@@ -43,14 +43,19 @@ export default function Flagship() {
           Recessed wells: the page reports these, the user doesn't act on them.
           Tabular figures so the column reads straight down while counting. */}
       <Reveal>
-        <div className="mt-16">
-          <div className="border-b border-line pb-3">
-            <p className="silk text-fog">Verified benchmark</p>
-          </div>
+        <div className="mt-24">
+          <h3 className="text-display-md font-semibold text-ink">
+            Verified benchmark
+          </h3>
 
-          <dl className="mt-px grid grid-cols-2 gap-px bg-line md:grid-cols-3 lg:grid-cols-6">
+          {/* One floating block, the cells divided by the block's own hairline
+              colour showing through a 1px gap. */}
+          <dl
+            data-buoy="drift"
+            className="panel mt-6 grid grid-cols-2 gap-px overflow-hidden bg-line md:grid-cols-3 lg:grid-cols-6"
+          >
             {flagship.metrics.map((m) => (
-              <div key={m.label} className="well relative rounded-none p-5">
+              <div key={m.label} className="relative bg-panel p-5">
                 <dd className="readout text-metric font-medium text-ink">
                   <CountUp value={m.value} />
                 </dd>
@@ -76,6 +81,7 @@ export default function Flagship() {
         <LabelledPanel
           label="Production architecture"
           className="mt-16"
+          buoy="drift"
         >
           <ol className="flex flex-col items-stretch gap-3 md:flex-row md:items-stretch">
             {flagship.architecture.map((a, i) => (
@@ -98,9 +104,9 @@ export default function Flagship() {
           </ol>
 
           <p className="mt-5 border-t border-line pt-4 text-micro text-fog">
-            Docker Compose for local development · 51 automated pytest tests ·
-            Ruff + ESLint · Brevo SMTP email verification ·
-            state-machine-enforced request lifecycle
+            Docker Compose for local development, 51 automated pytest tests,
+            Ruff and ESLint, Brevo SMTP email verification, and a
+            state-machine-enforced request lifecycle.
           </p>
         </LabelledPanel>
       </Reveal>
@@ -124,7 +130,7 @@ export default function Flagship() {
         {/* Stated plainly rather than discovered by a user staring at a blank
             tab for a minute — the free tier really does cold-start. */}
         <p className="mt-4 text-micro text-fog">
-          Deployed and running right now — the free-tier API cold-starts in
+          Deployed and running right now. The free-tier API cold-starts in
           roughly 50 seconds on the first request.
         </p>
       </Reveal>

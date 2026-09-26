@@ -12,13 +12,13 @@ export default function Credentials() {
   return (
     <Section
       id="credentials"
-      eyebrow="Roles · Internships · Certifications · Skills"
+      eyebrow="Roles, internships, certifications and skills"
       title="Experience &amp; Credentials"
     >
       <div className="mt-12 grid gap-5 lg:grid-cols-2">
         {experience.map((job) => (
           <Reveal key={job.company}>
-            <LabelledPanel label={job.company} note={job.period}>
+            <LabelledPanel label={job.company} note={job.period} buoy="drift">
               <p className="text-detail font-medium text-clay">{job.role}</p>
               <ul className="mt-4 space-y-2.5 text-detail text-fog">
                 {job.points.map((pt) => (
@@ -41,7 +41,7 @@ export default function Credentials() {
             single line under the certificates. They are work history, and the
             previous footnote treatment put them below an unrelated column. */}
         <Reveal delay={60}>
-          <LabelledPanel label="Internships" note={internships.note}>
+          <LabelledPanel label="Internships" note={internships.note} buoy="drift">
             <ul className="space-y-5">
               {internships.items.map((it) => (
                 <li key={it.org}>
@@ -62,7 +62,7 @@ export default function Credentials() {
         <Reveal delay={120}>
           <ul className="flex h-full flex-col gap-4">
             {certifications.map((c) => (
-              <li key={c.name} className="panel flex-1 p-5">
+              <li key={c.name} data-buoy="drift" className="panel flex-1 p-5">
                 <h3 className="text-detail font-semibold">{c.name}</h3>
                 <p className="mt-1.5 text-micro text-fog">
                   {c.issuer}
@@ -88,7 +88,7 @@ export default function Credentials() {
                   /* Stated, so a missing link reads as a property of the
                      certificate rather than a broken card. */
                   <p className="silk-sm mt-3 text-fog">
-                    Certificate of attendance — no online verification
+                    Certificate of attendance, no online verification
                   </p>
                 )}
               </li>
@@ -101,7 +101,7 @@ export default function Credentials() {
           A definition list, because that is the actual relationship: each
           group heading defines the set beneath it. */}
       <Reveal>
-        <LabelledPanel label="Skills" className="mt-16">
+        <LabelledPanel label="Skills" className="mt-16" buoy="drift">
           <dl className="space-y-5">
             {skills.map((row) => (
               <div

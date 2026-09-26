@@ -22,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
  *    Safari private mode). A restored "on" cannot autoplay — browsers require
  *    a gesture — so the button shows on and the first interaction anywhere
  *    (pointer or key) actually starts the sound.
- *  - Section entries pluck one soft note. The observer lives here, not in
+ *  - Section entries drop one soft bubble; a dragged block splashes down. The observer lives here, not in
  *    Reveal, so the audio layer stays fully detachable.
  */
 const KEY = "ambient-audio";
@@ -141,7 +141,16 @@ export default function AudioToggle() {
     return () => mo.disconnect();
   }, [eligible]);
 
-  // One soft note per section entry, only while sound is on.
+  // A block set back down on the water splashes. Buoys announces drops as a
+  // window event, so neither module imports the other.
+  useEffect(() => {
+    if (!on) return;
+    const onDrop = () => engine.current?.splash();
+    window.addEventListener("buoy:drop", onDrop);
+    return () => window.removeEventListener("buoy:drop", onDrop);
+  }, [on]);
+
+  // One soft drop per section entry, only while sound is on.
   useEffect(() => {
     if (!on || typeof IntersectionObserver === "undefined") return;
     const observer = new IntersectionObserver(
@@ -173,18 +182,20 @@ export default function AudioToggle() {
     }
   };
 
+  // Seated in the header: the offer hangs from the button it is about, and
+  // nothing floats over the page's content on a phone.
   return (
-    <>
+    <div className="relative">
       {asking && (
         <aside
           aria-label="Ambient sound offer"
           data-print="hide"
-          className="panel fixed bottom-20 right-6 z-40 w-64 p-4"
+          className="panel absolute right-0 top-full z-40 mt-3 w-64 p-4"
         >
           <p className="silk-sm text-fog">Ambient sound</p>
           <p className="mt-2 text-detail text-fog">
-            A quiet generative layer — no files, no tracking, one tap to
-            silence. Enable it?
+            Generated water: a slow swell, lapping, and the odd bubble. No
+            files, no tracking, one tap to silence. Enable it?
           </p>
           <div className="mt-3 flex gap-2">
             <button
@@ -221,7 +232,7 @@ export default function AudioToggle() {
       aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
       title={on ? "Ambient sound: on" : "Ambient sound: off"}
       data-print="hide"
-      className={`fixed bottom-6 right-6 z-40 flex h-10 w-10 items-center justify-center rounded-[2px] border transition-colors duration-200 ${
+      className={`flex h-9 w-9 items-center justify-center rounded-[2px] border transition-colors duration-200 ${
         on
           ? "border-clay bg-clay-wash text-clay"
           : "border-line bg-panel text-fog hover:border-line-2 hover:text-ink"
@@ -251,6 +262,6 @@ export default function AudioToggle() {
         )}
       </svg>
     </button>
-    </>
+    </div>
   );
 }

@@ -86,9 +86,9 @@ export default function ParetoChart() {
   const knee = front.find((p) => p.knee)!;
 
   return (
-    <figure ref={ref} className="panel overflow-hidden">
+    <figure ref={ref} data-buoy="drift" className="panel overflow-hidden">
       <div className="border-b border-line px-6 py-3">
-        <p className="silk text-fog">Pareto front — Deep GA</p>
+        <p className="silk text-fog">Pareto front, Deep GA</p>
       </div>
 
       <div className="p-4 sm:p-6">
@@ -296,7 +296,7 @@ export default function ParetoChart() {
           </li>
           <li className="silk-sm flex items-center gap-2 text-fog">
             <span aria-hidden="true" className="h-2 w-2 bg-clay" />
-            Knee point — selected
+            Knee point (selected)
           </li>
           <li className="silk-sm flex items-center gap-2 text-fog">
             <span aria-hidden="true" className="text-[0.85rem] leading-none">
@@ -330,7 +330,7 @@ export default function ParetoChart() {
           {front.map((p, i) => (
             <tr key={p.t}>
               <th scope="row">
-                {p.knee ? `Solution ${i + 1} — knee point, selected` : `Solution ${i + 1}`}
+                {p.knee ? `Solution ${i + 1}, knee point, selected` : `Solution ${i + 1}`}
               </th>
               <td>{p.t}</td>
               <td>{p.c}</td>
@@ -347,7 +347,7 @@ export default function ParetoChart() {
 
       <figcaption className="border-t border-line px-6 py-4 text-micro text-fog">
         The Deep GA (NSGA-II-style) Pareto front, drawn as the engine computes
-        it — each mark is a non-dominated manufacturer–logistics pairing trading
+        it. Each mark is a non-dominated manufacturer-logistics pairing trading
         cost against delivery time. Benchmark figures on this page come from the
         real 3,600-run evaluation.
       </figcaption>

@@ -24,7 +24,7 @@
 
 The first visit in a session opens on a terminal that deploys the page you are about to read. The command types itself, five stages report in over about four seconds, and the page arrives behind it at 6.2s. Any key, tap, wheel or touch skips the whole thing, and the screen says so.
 
-The figures printed are real properties of this build — Next 15, 109 kB first load, static export, GitHub Pages. A boot screen that lied about the thing it is booting would be a strange choice here.
+The figures printed are real properties of this build — Next 15, 111 kB first load, static export, GitHub Pages. A boot screen that lied about the thing it is booting would be a strange choice here.
 
 It is decoration, so it runs under conditions:
 
@@ -96,7 +96,7 @@ The page stops being paper and turns dark, so the end reads as an end. Availabil
 
 - **Next.js 15** (App Router) · **React 19** · **TypeScript** · **Tailwind CSS v4**
 - Static export (`output: "export"`) — no server, no runtime, deploys anywhere
-- **109 kB First Load JS** for `/`, of which 103 kB is shared, measured on the build in this repo
+- **111 kB First Load JS** for `/`, of which 103 kB is shared, measured on the build in this repo
 - Dependencies: `next`, `react`, `react-dom`. Every animation on the page is handwritten.
 - IBM Plex Sans and Mono, self-hosted at build time through `next/font`, Latin subset only, `display: swap`
 - All content is in one file, [`lib/profile.ts`](lib/profile.ts) — identity, metrics, projects, certifications. Changing what the page says never means touching a component.
