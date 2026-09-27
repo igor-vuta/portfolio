@@ -121,24 +121,43 @@ export default function AudioToggle() {
     if (stored !== null || asked !== null) return;
 
     const root = document.documentElement;
-    const show = () => {
+    const ask = () => {
       try {
         sessionStorage.setItem(ASKED, "1");
       } catch {}
       setAsking(true);
     };
-    if (!root.classList.contains("boot")) {
-      show();
-      return;
-    }
+
+    // On a phone the offer is the first thing in view, and the headline it
+    // covered is the one thing the page most needs read. There it waits until
+    // the reader has scrolled half a screen past the hero.
+    const narrow = window.matchMedia("(max-width: 767px)");
+    const past = () => window.scrollY > window.innerHeight / 2;
+    const onScroll = () => {
+      if (!past()) return;
+      window.removeEventListener("scroll", onScroll);
+      ask();
+    };
+    const show = () => {
+      if (!narrow.matches || past()) return ask();
+      window.addEventListener("scroll", onScroll, { passive: true });
+    };
+
     const mo = new MutationObserver(() => {
       if (!root.classList.contains("boot")) {
         mo.disconnect();
         show();
       }
     });
-    mo.observe(root, { attributes: true, attributeFilter: ["class"] });
-    return () => mo.disconnect();
+    if (root.classList.contains("boot")) {
+      mo.observe(root, { attributes: true, attributeFilter: ["class"] });
+    } else {
+      show();
+    }
+    return () => {
+      mo.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [eligible]);
 
   // A block set back down on the water splashes. Buoys announces drops as a
@@ -146,8 +165,16 @@ export default function AudioToggle() {
   useEffect(() => {
     if (!on) return;
     const onDrop = () => engine.current?.splash();
+    // The stage tablet breaking open (Stage3D reports it) cracks and rings.
+    const onStage = (e: Event) => {
+      if ((e as CustomEvent<{ open: boolean }>).detail.open) engine.current?.shatter();
+    };
     window.addEventListener("buoy:drop", onDrop);
-    return () => window.removeEventListener("buoy:drop", onDrop);
+    window.addEventListener("stage3d:state", onStage);
+    return () => {
+      window.removeEventListener("buoy:drop", onDrop);
+      window.removeEventListener("stage3d:state", onStage);
+    };
   }, [on]);
 
   // One soft drop per section entry, only while sound is on.
@@ -168,6 +195,10 @@ export default function AudioToggle() {
 
   if (!eligible) return null;
 
+  const openOffer = (el: HTMLElement | null) => {
+    if (el?.showPopover && !el.matches(":popover-open")) el.showPopover();
+  };
+
   const toggle = async () => {
     if (on) {
       wantOn.current = false;
@@ -182,15 +213,26 @@ export default function AudioToggle() {
     }
   };
 
-  // Seated in the header: the offer hangs from the button it is about, and
-  // nothing floats over the page's content on a phone.
+  // The offer hangs below the header controls on desktop and docks to the
+  // bottom of the screen on a phone (.sound-offer). It is a manual popover so
+  // it renders in the top layer: the header's backdrop-filter makes it the
+  // containing block for anything fixed inside it, which would pin a bottom
+  // sheet to the header instead of the screen. It is mounted only while
+  // asking, so without popover support it still disappears once answered. The live region sits
+  // outside the popover and is always mounted: text inserted into a hidden
+  // popover is not reliably announced when the popover then opens.
   return (
     <div className="relative">
+      <span className="sr-only" aria-live="polite">
+        {asking ? "Ambient sound is available. Enable it or say no thanks." : ""}
+      </span>
       {asking && (
         <aside
+          ref={openOffer}
+          popover="manual"
           aria-label="Ambient sound offer"
           data-print="hide"
-          className="panel absolute right-0 top-full z-40 mt-3 w-64 p-4"
+          className="sound-offer panel p-4"
         >
           <p className="silk-sm text-fog">Ambient sound</p>
           <p className="mt-2 text-detail text-fog">
@@ -225,18 +267,16 @@ export default function AudioToggle() {
         </aside>
       )}
 
+    {/* One stable name, state in aria-pressed. A label that flips with the
+        state double-reports it: "Turn ambient sound off, pressed". */}
     <button
       type="button"
       onClick={toggle}
       aria-pressed={on}
-      aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
+      aria-label="Ambient sound"
       title={on ? "Ambient sound: on" : "Ambient sound: off"}
       data-print="hide"
-      className={`flex h-9 w-9 items-center justify-center rounded-[2px] border transition-colors duration-200 ${
-        on
-          ? "border-clay bg-clay-wash text-clay"
-          : "border-line bg-panel text-fog hover:border-line-2 hover:text-ink"
-      }`}
+      className="ctl ctl-icon"
     >
       <svg
         aria-hidden="true"

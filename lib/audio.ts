@@ -186,3 +186,55 @@ export function splash(): void {
   bubble(ctx!, t + 0.05, between(380, 520), 0.06);
   bubble(ctx!, t + 0.16, between(700, 950), 0.035);
 }
+
+/** The stage tablet breaking open: a crack, a thump under it, then glass
+    settling. The glass skips the depth lowpass, which at the top of the page
+    would otherwise dull it to a thud. */
+export function shatter(): void {
+  if (!live()) return;
+  const c = ctx!;
+  const t = c.currentTime + 0.02;
+
+  // Crack: 60ms of white noise, high-passed, with a hard attack.
+  const len = Math.floor(c.sampleRate * 0.06);
+  const buf = c.createBuffer(1, len, c.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (rand() * 2 - 1) * (1 - i / len) ** 2;
+  const crack = new AudioBufferSourceNode(c, { buffer: buf });
+  const cg = gain(c, 0.32);
+  crack.connect(new BiquadFilterNode(c, { type: "highpass", frequency: 1800 })).connect(cg);
+  cg.connect(master);
+  cg.connect(wet);
+  crack.start(t);
+
+  // Thump: a low sine that drops as it dies.
+  const thump = new OscillatorNode(c, { frequency: 110 });
+  thump.frequency.exponentialRampToValueAtTime(48, t + 0.18);
+  const tg = gain(c, 0);
+  tg.gain.setValueAtTime(0, t);
+  tg.gain.linearRampToValueAtTime(0.22, t + 0.005);
+  tg.gain.setTargetAtTime(0, t + 0.01, 0.06);
+  thump.connect(tg).connect(master);
+  thump.start(t);
+  thump.stop(t + 0.5);
+
+  // Glass: short inharmonic pings, thinning out as the pieces land.
+  for (let i = 0; i < 12; i++) {
+    const at = t + 0.03 + i * between(0.03, 0.09) * (1 + i * 0.08);
+    const f = between(2200, 5600);
+    const peak = 0.05 * (1 - i / 16);
+    [1, 2.76].forEach((ratio, k) => {
+      const o = new OscillatorNode(c, { type: "sine", frequency: f * ratio });
+      const g = gain(c, 0);
+      g.gain.setValueAtTime(0, at);
+      g.gain.linearRampToValueAtTime(peak / (k + 1.5), at + 0.002);
+      g.gain.setTargetAtTime(0, at + 0.004, 0.05 + rand() * 0.06);
+      const p = new StereoPannerNode(c, { pan: between(-0.9, 0.9) });
+      o.connect(g).connect(p);
+      p.connect(master);
+      p.connect(wet);
+      o.start(at);
+      o.stop(at + 0.6);
+    });
+  }
+}

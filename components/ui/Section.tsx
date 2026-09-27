@@ -21,6 +21,7 @@ export default function Section({
   eyebrow,
   title,
   lede,
+  plate,
   children,
 }: {
   id: string;
@@ -29,6 +30,8 @@ export default function Section({
   eyebrow: string;
   title: string;
   lede?: string;
+  /** The chapter's illustration, as a band after the content (see .plate). */
+  plate?: Plate;
   children: ReactNode;
 }) {
   return (
@@ -53,6 +56,7 @@ export default function Section({
 
         {children}
       </div>
+      {plate && <Plate name={plate} band />}
     </section>
   );
 }
@@ -93,5 +97,24 @@ export function LabelledPanel({
       </div>
       <div className="p-6">{children}</div>
     </div>
+  );
+}
+
+export type Plate = "optimise" | "systems" | "foundation";
+
+/**
+ * A chapter illustration: neurons turning into software, drawn in the same
+ * filaments as the caustic light behind the page. Never behind text: either
+ * a `band` of its own between sections, or placed by its parent behind
+ * something that is not read (the wheel's cards, the contact panel).
+ * Decoration only, so hidden from assistive tech; never presented as work.
+ */
+export function Plate({ name, band = false }: { name: Plate; band?: boolean }) {
+  return (
+    <div
+      className={`plate plate-${name}${band ? " plate-band" : ""}`}
+      aria-hidden="true"
+      data-print="hide"
+    />
   );
 }

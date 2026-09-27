@@ -9,6 +9,7 @@ export default function Flagship() {
   return (
     <Section
       id="flagship"
+      plate="optimise"
       eyebrow={flagship.eyebrow}
       title={flagship.name}
       lede={flagship.tagline}

@@ -2,15 +2,21 @@ import Reveal from "@/components/Reveal";
 import CopyEmail from "@/components/CopyEmail";
 import { DownloadLink, ExternalLink } from "@/components/ui/Control";
 import { identity } from "@/lib/profile";
+import { Plate } from "@/components/ui/Section";
 
 export default function Footer() {
   return (
     <footer
       id="contact"
       aria-labelledby="contact-title"
-      className="text-cream"
+      className="has-plate text-cream"
     >
       <div className="mx-auto max-w-6xl px-6 pb-16 pt-24">
+        {/* The plate's bottom edge is the panel's, so its circuitry ends
+            behind the opaque panel and only the neurons show above it,
+            clear of the footer's own lines of text. */}
+        <div className="relative">
+        <Plate name="foundation" />
         <Reveal>
           {/* The last block on the water, floating like the rest. */}
           <div data-buoy="drift" className="panel p-8 sm:p-12">
@@ -45,6 +51,7 @@ export default function Footer() {
           </div>
           </div>
         </Reveal>
+        </div>
 
         {/* ── Chassis plate ───────────────────────────────────────────────── */}
         <div className="mt-20 flex flex-col justify-between gap-4 border-t border-line pt-6 text-micro text-fog sm:flex-row">

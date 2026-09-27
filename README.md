@@ -2,7 +2,7 @@
 
 # igor-vuta.github.io/portfolio
 
-**My portfolio. A dive through four pages, statically exported, no UI or animation libraries.**
+**My portfolio. A dive through four pages, statically exported, no UI or animation libraries; one 3D object.**
 
 [![Live site](https://img.shields.io/badge/Live-igor--vuta.github.io%2Fportfolio-E38F6C?style=for-the-badge)](https://igor-vuta.github.io/portfolio/)
 
@@ -10,7 +10,7 @@
 <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" />
 <img src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white" />
 <img src="https://img.shields.io/badge/Tailwind%20CSS-v4-06B6D4?logo=tailwindcss&logoColor=white" />
-<img src="https://img.shields.io/badge/dependencies-3-E38F6C" />
+<img src="https://img.shields.io/badge/dependencies-4-E38F6C" />
 
 </div>
 
@@ -24,7 +24,7 @@
 
 The first visit in a session opens on a terminal that deploys the page you are about to read. The command types itself, five stages report in, and the page surfaces behind it. Any key, tap, wheel or touch skips the whole thing, and the screen says so.
 
-The figures printed are real properties of this build: Next 15, 109 kB first load, static export, GitHub Pages. A boot screen that lied about the thing it is booting would be a strange choice here.
+The figures printed are real properties of this build: Next 15, 112 kB first load, static export, GitHub Pages. A boot screen that lied about the thing it is booting would be a strange choice here.
 
 It is decoration, so it runs under conditions: it cannot withhold content (every boot rule hangs off a class only the head script adds), it always ends (a 6.4-second cap set in the same breath as the class), and it plays once per session, never under `prefers-reduced-motion`.
 
@@ -37,12 +37,14 @@ It is decoration, so it runs under conditions: it cannot withhold content (every
 The page is a dive. It opens on dark water with light moving through it, and a tablet lying back on the surface running the flagship.
 
 <div align="center">
-<img src="docs/screenshots/portfolio-stage.png" alt="The tablet upright, showing Intelli-Factory, with five live projects floating in orbit around it and a 'Run it on the tablet' button" width="88%" />
+<img src="docs/screenshots/portfolio-stage.png" alt="The 3D tablet broken open: glass shards carrying the other live projects float around it, and the screen underneath shows the Deep GA's Pareto front with the knee point marked" width="88%" />
 </div>
 
 Scroll, and it rolls upright to face you while the other live projects float out into orbit. Every device screen and card is a capture of the deployed site, not drawn UI, and once the tablet is upright **Run it on the tablet** loads the real Intelli-Factory inside it, at the tablet's own width, so you see the layout it actually serves an iPad.
 
-All of it is CSS scroll-driven animation with literal keyframes, so it runs on the compositor and follows the scroll exactly. Browsers without scroll timelines (Firefox, today) and readers with reduced motion get a finished still composition, not a broken animation.
+Where WebGL is available, the tablet is a real object. Drag it and it turns, with momentum, and springs back to face you. Once upright it holds, face on, for most of a screen of scrolling, so Intelli-Factory gets looked at before anything happens to it. Then, or whenever you click it, the screen cracks, the cracks light up, and it shatters: the pieces burn at the edges as they fly and cool as they land, and with sound on you hear it crack and the glass settle. It stays broken for a couple of screens, with a gentle snap stop just after the pieces land, and the pieces are there to be played with: grab one and throw it and it springs back to its place, and moving the pointer through them nudges them aside. The five largest shards carry the other live projects on their backs and fly out to where their cards sit, and hovering or clicking one opens that project. Behind the broken screen is what the interface is built on: the Deep GA's Pareto front, drawn from the same benchmark data as the case study. three.js is loaded on demand after the page is interactive, and the scene reads its layout from the HTML stage underneath, so it lands in the same place at every width.
+
+The HTML stage is CSS scroll-driven animation with literal keyframes, so it runs on the compositor and follows the scroll exactly. It stays the design wherever the 3D does not run: reduced motion, no WebGL, no JavaScript and print. Browsers without scroll timelines (Firefox, today) get a finished still composition, not a broken animation.
 
 ## Choose your route
 
@@ -80,20 +82,26 @@ Then the evidence: six metrics from 120 synthetic scenarios × 30 seeds run on t
 ## The current
 
 <div align="center">
-<img src="docs/screenshots/portfolio-projects.png" alt="'Live, and yours to try': a row of project cards starting at the column edge and running off the right side of the screen" width="88%" />
+<img src="docs/screenshots/portfolio-projects.png" alt="'Live, and yours to try': the live projects on a 3D ring, the facing card showing a desktop and a phone capture, the project names outlined underneath" width="88%" />
 </div>
 
-The live projects drift past in a carousel that starts on the column and runs off the right edge of the screen; cards turn away only as they enter or leave. It is a native scroller with scroll snap, so trackpads, touch, momentum and tab focus all work as the platform intends, with arrow keys, a mouse-drag throw, and buttons on top. The turning is a view timeline on the track: no script.
+The live projects stand on a ring you turn by hand: drag it and it spins with momentum and settles on the nearest card, or use the arrows, the arrow keys, or the outlined names underneath, where the facing project's name fills in. Each card is two real captures of the deployment, the desktop layout with its phone layout stood in front of it, and the facing project's description and links sit below the ring. Open a card and its capture breaks into pieces before the live preview comes up. It is CSS 3D, not WebGL, so every card is still a real link.
+
+Behind it, and behind the case study and the contact block, are the chapter plates. The caustic light behind the page already reads as a neural web, so each plate picks that up and straightens it into engineering: synapses lining up into a Pareto front, axons becoming circuit traces and code windows, a cluster wired into a server and a terminal. They are drawn on the page's ground colour, so only the lines come through over the moving light.
 
 **Live** opens in place: ordinary `<a target="_blank">` links intercepted by delegation and shown in a native `<dialog>`, so cmd-click still gives you a real tab and with no JS every link is still a link.
+
+## The synapses
+
+The caustic light behind the page reads as a web of neurons, so there is one: a sparse graph drawn so faintly it vanishes behind text, which lights up around the pointer. Click open water and a signal travels outward along the links, one hop at a time; turn the project wheel, drop a card you dragged, or break the tablet open and a signal fires from there. Any card a signal reaches answers with a brief lantern edge. It is a plain 2D canvas that draws only while something is lit or moving, and it is off under reduced motion.
 
 ## Logbook
 
 <div align="center">
-<img src="docs/screenshots/portfolio-logbook.png" alt="The logbook: roles and internships as dated entries in a carousel, Papa Gadget first" width="88%" />
+<img src="docs/screenshots/portfolio-logbook.png" alt="The logbook: roles and internships hanging off one depth line, each marked with its period, Papa Gadget first with its 30% figure" width="88%" />
 </div>
 
-Roles and internships as dated entries in a second carousel, flat, dimming only where the track clips them. Certificates follow with their verification links and codes, and the Red Hat one is labelled a certificate of attendance, because it is one.
+Roles and internships hang off one depth line, each marked with its period, with no card around them. The one measured result, 30% less manual data entry, is set as a figure rather than left in a bullet. On the Experience page, certificates and the skills matrix follow as ledgers on hairlines, with verification links and codes, and the Red Hat one is labelled a certificate of attendance, because it is one.
 
 ## TL;DR
 
@@ -121,8 +129,8 @@ It is built to cost nothing while you scroll. The caustic light is two pre-rende
 
 - **Next.js 15** (App Router) · **React 19** · **TypeScript** · **Tailwind CSS v4**
 - Static export (`output: "export"`): four prerendered pages, no server, deploys anywhere
-- **109 kB First Load JS** for `/`, of which 103 kB is shared, measured on the build in this repo
-- Dependencies: `next`, `react`, `react-dom`. Every animation is handwritten, and the motion is CSS scroll-driven animation wherever the browser supports it
+- **112 kB First Load JS** for `/`, of which 103 kB is shared, measured on the build in this repo. three.js loads afterwards, on demand, only where the 3D stage runs
+- Dependencies: `next`, `react`, `react-dom`, and `three` for the stage tablet. Every animation is handwritten, and the motion is CSS scroll-driven animation wherever the browser supports it
 - IBM Plex Sans and Mono, self-hosted through `next/font`, Latin subset only, `display: swap`
 - Content is in [`lib/profile.ts`](lib/profile.ts); the pages are in [`lib/routes.ts`](lib/routes.ts). Changing what the site says never means touching a component
 - Checked in Chromium, WebKit and Firefox; reduced motion, forced colours, print and no-JS are real paths

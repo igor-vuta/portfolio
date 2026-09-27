@@ -15,7 +15,7 @@ export default function ProjectsPage() {
   return (
     <>
       <Projects />
-      <Relay current="/projects/" title="Keep exploring" lede="Another branch, or back to the surface." />
+      <Relay current="/projects/" title="Keep exploring" />
     </>
   );
 }

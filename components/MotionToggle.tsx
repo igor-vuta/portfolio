@@ -52,15 +52,11 @@ export default function MotionToggle() {
       type="button"
       onClick={() => setPaused((p) => !p)}
       aria-pressed={paused}
-      aria-label={paused ? "Resume background motion" : "Pause background motion"}
+      aria-label="Pause background motion"
       title={paused ? "Background motion: paused" : "Background motion: on"}
       data-print="hide"
       data-no-trail=""
-      className={`flex h-9 w-9 items-center justify-center rounded-[2px] border transition-colors duration-200 ${
-        paused
-          ? "border-clay bg-clay-wash text-clay"
-          : "border-line bg-panel text-fog hover:border-line-2 hover:text-ink"
-      }`}
+      className="ctl ctl-icon"
     >
       {/* Drawn from boxes rather than an icon path: two bars for pause, a
           border triangle for play. Decorative; the label carries meaning. */}

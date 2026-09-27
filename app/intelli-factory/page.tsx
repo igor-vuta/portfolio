@@ -19,7 +19,7 @@ export default function IntelliFactoryPage() {
     <>
       <Flagship />
       <Manifesto />
-      <Relay current="/intelli-factory/" title="Keep exploring" lede="Another branch, or back to the surface." />
+      <Relay current="/intelli-factory/" title="Keep exploring" />
     </>
   );
 }
