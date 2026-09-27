@@ -68,6 +68,8 @@ export type Project = {
   repoUrl?: string;
   /** Captured from the live deployment, under public/. Only live projects have one. */
   shot?: string;
+  /** The same deployment captured on a 390px phone, where it has a phone layout. */
+  phone?: string;
 };
 
 export const projects: Project[] = [
@@ -79,56 +81,62 @@ export const projects: Project[] = [
     liveUrl: "https://intelli-factory-frontend.vercel.app/",
     repoUrl: "https://github.com/igor-vuta/intelli-factory",
     shot: "/projects/intelli-factory.webp",
+    phone: "/projects/intelli-factory-phone.webp",
   },
   {
     name: "Todo Web App",
     blurb:
-      "Full-stack task manager with JWT authentication, shared group lists and role-based access: a modular PHP 8 REST API over a hand-written five-table MySQL schema, vanilla JS frontend. Ships as a single Caddy container; its CI re-runs schema and seeds against a live MySQL service container to prove they are idempotent.",
+      "Full-stack task manager with JWT auth and shared, role-based lists: a PHP 8 REST API over a hand-written MySQL schema, shipped as one container whose CI proves the schema and seeds are idempotent.",
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
     shot: "/projects/todo.webp",
+    phone: "/projects/todo-phone.webp",
   },
   {
     name: "Vue Folder Tree",
     blurb:
-      "Recursive folder-tree component for Vue 3 with animated expand/collapse, full keyboard navigation, ARIA roles for screen readers, and optional checkboxes. Zero runtime dependencies.",
+      "Recursive, keyboard-navigable folder tree for Vue 3 with ARIA roles, animated expand/collapse and optional checkboxes, and zero runtime dependencies.",
     stack: ["Vue 3", "Vite", "Accessibility (ARIA)", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/vue-folder-tree/",
     repoUrl: "https://github.com/igor-vuta/vue-folder-tree",
     shot: "/projects/vue-folder-tree.webp",
+    phone: "/projects/vue-folder-tree-phone.webp",
   },
   {
     name: "Qubly Landing Page",
     blurb:
-      "Pixel-perfect, responsive landing page implemented from a Figma design, with spacing, typography and breakpoints matched to spec. Hamburger navigation, a tabbed reviews component on data attributes, and smooth-scroll anchors, all hand-written against DOM events.",
+      "Pixel-perfect responsive landing page built from a Figma design, with hand-written navigation, tabbed reviews and smooth-scroll anchors.",
     stack: ["HTML5", "Sass", "jQuery", "Bootstrap grid", "Figma"],
     liveUrl: "https://igor-vuta.github.io/qubly-landing/",
     repoUrl: "https://github.com/igor-vuta/qubly-landing",
     shot: "/projects/qubly.webp",
+    phone: "/projects/qubly-phone.webp",
   },
   {
     name: "Drive Pro",
     blurb:
-      "Public website for a family-run earthworks and heavy-equipment hire company in Almaty (200+ projects since 2018). Bilingual Russian/Kazakh, equipment catalogue, pricing tables, WhatsApp call-to-action.",
+      "Bilingual Russian/Kazakh website for a family-run heavy-equipment hire company in Almaty, with an equipment catalogue, pricing tables and a WhatsApp call-to-action.",
     stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
     liveUrl: "https://igor-vuta.github.io/drivePro-website/",
     repoUrl: "https://github.com/igor-vuta/drivePro-website",
     shot: "/projects/drive-pro.webp",
+    phone: "/projects/drive-pro-phone.webp",
   },
   {
     name: "React Starter Pro",
     blurb:
-      "Opinionated React 19 + Vite starter with the tedious parts already wired up: Tailwind CSS 4, ESLint, Prettier, Husky and lint-staged pre-commit hooks, and a GitHub Actions deploy pipeline. Published with a written rationale for every decision.",
+      "React 19 + Vite starter with Tailwind CSS 4, linting, pre-commit hooks and a deploy pipeline already wired, and a written rationale for every decision.",
     stack: ["React 19", "Vite", "Tailwind CSS 4", "ESLint", "GitHub Actions"],
     liveUrl: "https://igor-vuta.github.io/react-starter-pro/",
     repoUrl: "https://github.com/igor-vuta/react-starter-pro",
     shot: "/projects/react-starter-pro.webp",
+    phone: "/projects/react-starter-pro-phone.webp",
   },
   {
     name: "Currency Exchange Bot",
     blurb:
-      "Button-only multilingual Telegram bot for live rates and conversions, with no commands to memorise. Dual data sources (currencylayer API with a BeautifulSoup scraping fallback) and persistent user preferences.",
+      "Button-only multilingual Telegram bot for live exchange rates, with an API source, a scraping fallback and saved user preferences.",
     stack: ["Python", "python-telegram-bot", "BeautifulSoup4", "REST", "Railway"],
     liveUrl: "https://t.me/currenvy_bot_for_demo_bot",
     repoUrl: "https://github.com/igor-vuta/currency-exchange-bot",
@@ -137,21 +145,21 @@ export const projects: Project[] = [
   {
     name: "DrivePro Ride-Hailing App",
     blurb:
-      "Peer-to-peer free-rides app. Expo/React Native client against a zero-dependency plain Node.js backend (http, crypto and sqlite from the standard library only) with a WebSocket realtime hub. Four milestones shipped: phone-verified accounts and live location streaming, rider map with route and ETA, first-accept-wins driver matching, and the live ride flow.",
+      "Peer-to-peer rides app: an Expo client over a zero-dependency Node.js backend with a WebSocket hub, live location, route and ETA, and first-accept-wins driver matching.",
     stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
     repoUrl: "https://github.com/igor-vuta/DrivePro_2",
   },
   {
     name: "Student Course Hub",
     blurb:
-      "University course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak over SQLite, with deliberately no frontend framework. CSRF protection and bcrypt password hashing throughout.",
+      "Course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak, with CSRF protection and bcrypt throughout.",
     stack: ["Deno", "Oak", "TypeScript", "SQLite", "Server-side rendering"],
     repoUrl: "https://github.com/igor-vuta/student-course-hub",
   },
   {
     name: "Module Chooser",
     blurb:
-      "JavaFX module-selection desktop app with strict model/view/controller separation, credit-aware selection rules and object serialization for saving state. No build tool: one script fetches JavaFX and compiles with plain javac.",
+      "JavaFX module-selection app with strict MVC separation, credit-aware selection rules and saved state, compiled with plain javac.",
     stack: ["Java", "JavaFX", "MVC", "Object serialization"],
     repoUrl: "https://github.com/igor-vuta/module-chooser-javafx",
   },
@@ -165,25 +173,32 @@ export const projects: Project[] = [
   {
     name: "Table CRM",
     blurb:
-      "Photo-to-spreadsheet semi-automatic data entry: a tkinter desktop GUI that runs EasyOCR and OpenCV over grouped photos and exports the extracted rows to XLSX. Private repository, walkthrough on request.",
+      "Desktop tool that turns grouped photos into spreadsheet rows with EasyOCR and OpenCV; walkthrough on request.",
     stack: ["Python", "tkinter", "EasyOCR", "OpenCV", "openpyxl"],
   },
   {
     name: "Intro Skipper",
     blurb:
-      "Chrome Manifest V3 browser extension that detects and auto-skips intros and outros on Netflix and Kinopoisk HD. Private repository, walkthrough on request.",
+      "Chrome Manifest V3 extension that detects and skips intros and outros on Netflix and Kinopoisk HD; walkthrough on request.",
     stack: ["JavaScript", "Chrome Manifest V3", "CSS"],
   },
 ];
+
+const intakeSaving =
+  "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout";
 
 export const experience = [
   {
     company: "Papa Gadget",
     role: "Software Developer, Telegram Bots & CRM Integration",
     period: "Feb 2024 - Sep 2024",
+    // The logbook's one headline figure. `source` is the bullet it summarises:
+    // the logbook leaves that bullet out beside the figure, and the TL;DR
+    // quotes it.
+    metric: { value: "30%", label: "less manual data entry, timed before and after rollout", source: intakeSaving },
     points: [
       "Worked in a two-person development team on two Python Telegram bots against the RemOnline CRM, including a staff intake bot with login and a whitelist so only authorised staff could write",
-      "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout",
+      intakeSaving,
       "Built automation scripts against REST APIs and JSON, and documented the processes so shop staff could support the tools themselves",
     ],
   },

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import Reveal from "@/components/Reveal";
 import LiveDevice from "@/components/LiveDevice";
+import Stage3D from "@/components/Stage3D";
 import { flagship, identity, projects } from "@/lib/profile";
 import { AnchorLink, ExternalLink, SrOnly } from "@/components/ui/Control";
 
@@ -96,6 +97,7 @@ export default function Hero() {
           </div>
 
           <div className="stage-scene">
+            <Stage3D />
             <ul className="stage-orbit" aria-label="More live projects">
               {orbit.map((p, i) => (
                 <li

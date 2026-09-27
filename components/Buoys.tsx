@@ -35,8 +35,9 @@ import { useEffect } from "react";
  * glide along the throw, then a slow ease back to its place, the way
  * something set down on water keeps going before the current returns it.
  *
- * A drop announces itself as a `buoy:drop` window event. The audio layer
- * listens for it; this component does not know sound exists.
+ * A drop announces itself as a `buoy:drop` window event, with the block's
+ * centre in `detail`. The audio and synapse layers listen for it; this
+ * component knows neither exists.
  */
 const DEAD = 5; // px before a press becomes a drag
 const FREE = 360; // px that follow the hand exactly
@@ -141,7 +142,12 @@ export default function Buoys() {
 
       if (!cancelled) {
         ripple(target);
-        window.dispatchEvent(new CustomEvent("buoy:drop"));
+        // Where it was let go, for the synapse layer; the audio layer only
+        // needs to know that it happened.
+        const r = target.getBoundingClientRect();
+        window.dispatchEvent(
+          new CustomEvent("buoy:drop", { detail: { x: r.left + r.width / 2, y: r.top + r.height / 2 } })
+        );
         // The click the browser fires after this pointerup belongs to the
         // drag, not to whatever the pointer happens to be over. It arrives
         // in the same task as the pointerup; if it never comes (released

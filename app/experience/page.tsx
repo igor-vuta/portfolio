@@ -15,7 +15,7 @@ export default function ExperiencePage() {
   return (
     <>
       <Credentials />
-      <Relay current="/experience/" title="Keep exploring" lede="Another branch, or back to the surface." />
+      <Relay current="/experience/" title="Keep exploring" />
     </>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink } from "@/components/ui/Control";
 
 /**
@@ -30,6 +30,27 @@ export default function LiveDevice({
 }) {
   const [live, setLive] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  // Set once the WebGL tablet (Stage3D) is up; until then there is nothing to
+  // open, and the control stays out of the page.
+  const [scene, setScene] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onReady = () => setScene(true);
+    const onState = (e: Event) => setOpen((e as CustomEvent<{ open: boolean }>).detail.open);
+    window.addEventListener("stage3d:ready", onReady);
+    window.addEventListener("stage3d:state", onState);
+    return () => {
+      window.removeEventListener("stage3d:ready", onReady);
+      window.removeEventListener("stage3d:state", onState);
+    };
+  }, []);
+
+  // Also re-sent when the scene comes up, in case the reader switched to the
+  // live site while three.js was still loading.
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent("stage3d:live", { detail: live }));
+  }, [live, scene]);
 
   return (
     <>
@@ -73,6 +94,17 @@ export default function LiveDevice({
           >
             {live ? "Show the screenshot" : "Run it on the tablet"}
           </button>
+          {scene && !live && (
+            <button
+              type="button"
+              className="ctl ctl-sm"
+              // The label names the action, so no aria-pressed: both at once
+              // would read as "Put it back together, pressed".
+              onClick={() => window.dispatchEvent(new CustomEvent("stage3d:toggle", { detail: !open }))}
+            >
+              {open ? "Put it back together" : "Break it open"}
+            </button>
+          )}
           <ExternalLink href={liveUrl} size="sm" preview previewLabel={name}>
             Full screen
           </ExternalLink>

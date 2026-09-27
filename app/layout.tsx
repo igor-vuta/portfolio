@@ -7,6 +7,7 @@ import ScrollProgress from "@/components/ScrollProgress";
 import LivePreview from "@/components/LivePreview";
 import Buoys from "@/components/Buoys";
 import Wake from "@/components/Wake";
+import Synapses from "@/components/Synapses";
 import TlDr, { TlDrWatch } from "@/components/TlDr";
 import { ogImage } from "@/lib/seo";
 
@@ -639,7 +640,7 @@ export const viewport: Viewport = {
  * Every timing is a fixed offset from the same origin, so the sequence is
  * identical on every load. Nothing here is measured, sampled, or randomised.
  *
- * The figures are real: 109 kB is the actual first-load budget this repo
+ * The figures are real: 112 kB is the actual first-load budget this repo
  * builds to. A boot screen that lies about the thing it is booting would be a
  * strange choice on a portfolio whose whole argument is measurement.
  */
@@ -647,7 +648,7 @@ const BOOT_COMMAND = "deploy --target=production";
 
 const BOOT_LINES = [
   { at: 1900, key: "compile", val: "next 15 · typescript · tailwind" },
-  { at: 2550, key: "bundle", val: "109 kB first load js" },
+  { at: 2550, key: "bundle", val: "112 kB first load js" },
   { at: 3200, key: "export", val: "static · prerendered" },
   { at: 3850, key: "upload", val: "github pages" },
   { at: 4500, key: "verify", val: "aa contrast · reduced-motion paths" },
@@ -694,7 +695,7 @@ function BootTerminal() {
           <span className="boot-tick">✓</span> ready — igor-vuta.github.io/portfolio
         </p>
 
-        <p className="boot-skip">press any key to skip</p>
+        <p className="boot-skip">press any key or tap to skip</p>
       </div>
     </div>
   );
@@ -757,6 +758,7 @@ export default function RootLayout({
         <LivePreview />
         <Buoys />
         <Wake />
+        <Synapses />
       </body>
     </html>
   );
