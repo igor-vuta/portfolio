@@ -1,3 +1,18 @@
+<!-- project-presentation:start -->
+
+![Igor Vuta Portfolio — Interactive software developer portfolio](.github/readme-header.svg)
+
+**[Open project](https://igor-vuta.github.io/portfolio/)** · [Repository activity](https://github.com/igor-vuta/portfolio/activity)
+
+[![Last commit](https://img.shields.io/github/last-commit/igor-vuta/portfolio?style=flat-square&color=6366f1)](https://github.com/igor-vuta/portfolio/commits)
+[![Repository size](https://img.shields.io/github/repo-size/igor-vuta/portfolio?style=flat-square&color=6366f1)](https://github.com/igor-vuta/portfolio)
+
+**4** Site pages · **13** Projects · **10** Screenshots
+
+*Project facts checked 2 October 2026. Activity badges update from GitHub.*
+
+<!-- project-presentation:end -->
+
 <div align="center">
 
 # igor-vuta.github.io/portfolio
