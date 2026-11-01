@@ -79,6 +79,8 @@ export type Project = {
   eyebrow?: string;
   highlights?: string[];
   note?: string;
+  shotAlt?: string;
+  credit?: string;
   /** A page of its own, when it is not generated from `slug`. */
   detailHref?: string;
   detailLabel?: string;
@@ -92,6 +94,9 @@ export const projects: Project[] = [
     stack: ["Tauri 2", "React", "TypeScript", "Playwright", "Oracle Cloud"],
     liveUrl: "https://app.thequire.app/",
     shot: "/projects/quire.webp",
+    phone: "/projects/quire-phone.webp",
+    shotAlt: "A Quire desk set up as a lesson on the Pythagorean theorem: a right triangle with a square on each side, the formula, a Python hypotenuse function and two PDF pages side by side",
+    credit: "PDF pages in the screenshots: Wikipedia, CC BY-SA 4.0.",
     noPreview: true,
     slug: "quire",
     eyebrow: "Main project, co-developed with my younger brother",

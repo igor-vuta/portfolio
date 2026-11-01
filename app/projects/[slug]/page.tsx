@@ -48,9 +48,9 @@ export default async function ProjectPage({ params }: Params) {
             <figure className="panel min-w-0 flex-1 overflow-hidden">
               <img
                 src={`${base}${p.shot}`}
-                alt={`${p.name} on a desktop screen`}
-                width={1366}
-                height={1024}
+                alt={p.shotAlt ?? `${p.name} on a desktop screen`}
+                width={1600}
+                height={958}
                 fetchPriority="high"
                 decoding="async"
                 className="h-auto w-full"
@@ -71,6 +71,8 @@ export default async function ProjectPage({ params }: Params) {
             )}
           </div>
         </Reveal>
+
+        {p.credit && <p className="mt-3 text-micro text-fog">{p.credit}</p>}
 
         <Reveal>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1.35fr_1fr]">

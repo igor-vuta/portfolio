@@ -121,7 +121,7 @@ function Shot({ project }: { project: Project }) {
     <div className="aspect-[16/10] overflow-hidden border-b border-line bg-well lg:border-b-0">
       <img
         src={`${base}${project.shot}`}
-        alt=""
+        alt={project.shotAlt ?? ""}
         width={800}
         height={500}
         loading="lazy"
