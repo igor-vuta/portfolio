@@ -24,8 +24,8 @@ export const flagship = {
   name: "Intelli-Factory",
   eyebrow: "Flagship project, BSc final-year project",
   tagline: "A multi-objective optimization platform for supply-chain matching",
-  liveUrl: "https://intelli-factory-frontend.vercel.app/",
-  apiDocsUrl: "https://intelli-factory-api.onrender.com/docs",
+  liveUrl: "https://intelli-factory.duckdns.org/",
+  apiDocsUrl: "https://intelli-factory-api.onrender.com/api/docs",
   repoUrl: "https://github.com/igor-vuta/intelli-factory",
   description:
     "A B2B2C platform that matches customer requests with manufacturer-logistics pairs across the “supply-chain trilemma”: cost, delivery time, and reliability. Four user roles, a nine-state request lifecycle enforced by explicit state machines, three-party contract signing, and an admin UI for comparing optimization strategies live.",
@@ -78,7 +78,7 @@ export const projects: Project[] = [
     blurb:
       "Multi-objective supply-chain matching platform and my final-year project, covered in depth in its own case study. An NSGA-II genetic algorithm on DEAP scores manufacturer-logistics pairs across cost, delivery time and reliability; benchmarked at +17.5% composite fitness over a greedy baseline across 3,600 evaluations.",
     stack: ["Next.js 14", "TypeScript", "FastAPI", "Python 3.12", "DEAP", "PostgreSQL"],
-    liveUrl: "https://intelli-factory-frontend.vercel.app/",
+    liveUrl: "https://intelli-factory.duckdns.org/",
     repoUrl: "https://github.com/igor-vuta/intelli-factory",
     shot: "/projects/intelli-factory.webp",
     phone: "/projects/intelli-factory-phone.webp",
@@ -88,7 +88,6 @@ export const projects: Project[] = [
     blurb:
       "Full-stack task manager with JWT auth and shared, role-based lists: a PHP 8 REST API over a hand-written MySQL schema, shipped as one container whose CI proves the schema and seeds are idempotent.",
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
-    liveUrl: "https://todo-app-production-5509.up.railway.app/",
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
     shot: "/projects/todo.webp",
     phone: "/projects/todo-phone.webp",
