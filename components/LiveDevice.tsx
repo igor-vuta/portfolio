@@ -80,7 +80,7 @@ export default function LiveDevice({
       <figcaption className="stage-caption">
         <p className="text-body-lg font-semibold text-cream">{name}</p>
         <p className="mt-1 text-detail text-fog">
-          {tagline}. Deployed on Vercel, Render and Aiven.
+          {tagline}. Deployed on Oracle Cloud.
         </p>
         <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
           <button

@@ -25,7 +25,7 @@ export const flagship = {
   eyebrow: "Flagship project, BSc final-year project",
   tagline: "A multi-objective optimization platform for supply-chain matching",
   liveUrl: "https://intelli-factory.duckdns.org/",
-  apiDocsUrl: "https://intelli-factory-api.onrender.com/api/docs",
+  apiDocsUrl: "https://intelli-factory.duckdns.org/api/docs",
   repoUrl: "https://github.com/igor-vuta/intelli-factory",
   description:
     "A B2B2C platform that matches customer requests with manufacturer-logistics pairs across the “supply-chain trilemma”: cost, delivery time, and reliability. Four user roles, a nine-state request lifecycle enforced by explicit state machines, three-party contract signing, and an admin UI for comparing optimization strategies live.",
@@ -36,7 +36,7 @@ export const flagship = {
     },
     {
       title: "Production platform",
-      body: "FastAPI + PostgreSQL (~25 Prisma models) behind a Next.js 14 App Router frontend; deployed as a three-tier system on Vercel, Render, and Aiven with Docker Compose for local dev.",
+      body: "FastAPI + PostgreSQL (~25 Prisma models) behind a Next.js 14 App Router frontend; deployed as a three-tier system on an Oracle Cloud VM with Docker Compose for local dev.",
     },
     {
       title: "Security & testing",
@@ -54,9 +54,9 @@ export const flagship = {
   benchmarkNote:
     "Verified benchmark: 120 synthetic scenarios × 30 random seeds, run on the production engine code.",
   architecture: [
-    { layer: "Frontend", tech: "Next.js 14 · TypeScript · Tailwind", host: "Vercel" },
-    { layer: "API", tech: "FastAPI · Python 3.12 · DEAP", host: "Render" },
-    { layer: "Database", tech: "PostgreSQL · Prisma", host: "Aiven" },
+    { layer: "Frontend", tech: "Next.js 14 · TypeScript · Tailwind", host: "Oracle Cloud" },
+    { layer: "API", tech: "FastAPI · Python 3.12 · DEAP", host: "Oracle Cloud" },
+    { layer: "Database", tech: "PostgreSQL · Prisma", host: "Oracle Cloud" },
   ],
 };
 
@@ -270,6 +270,6 @@ export const skills: { group: string; items: string[] }[] = [
   },
   {
     group: "Testing & DevOps",
-    items: ["pytest · TDD", "Docker Compose", "Git & GitHub", "GitHub Actions CI", "Vercel · Render · Aiven", "OWASP practices", "Claude Code (daily)"],
+    items: ["pytest · TDD", "Docker Compose", "Git & GitHub", "GitHub Actions CI", "Oracle Cloud · Vercel · Render", "OWASP practices", "Claude Code (daily)"],
   },
 ];

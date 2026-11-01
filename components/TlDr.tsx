@@ -27,7 +27,7 @@ export default function TlDr() {
     { k: "Degree", v: identity.degree },
     {
       k: "Flagship",
-      v: `${flagship.name}: ${lead.value} ${lead.label}, over ${runs.value} ${runs.label}. Deployed on Vercel, Render and Aiven.`,
+      v: `${flagship.name}: ${lead.value} ${lead.label}, over ${runs.value} ${runs.label}. Deployed on Oracle Cloud.`,
     },
     { k: "Commercial", v: `${role.role} at ${role.company}. ${role.metric?.source ?? role.points[0]}.` },
     { k: "Stack", v: identity.stackLine },
