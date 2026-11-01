@@ -3,6 +3,8 @@
  * and the relay at the foot of every branch, so a page can never be added
  * to one of them and forgotten in the others.
  */
+import { projectCounts } from "@/lib/profile";
+
 export type Branch = {
   href: string;
   nav: string;
@@ -20,8 +22,8 @@ export const branches: Branch[] = [
   {
     href: "/projects/",
     nav: "Projects",
-    title: "All 13 projects",
-    body: "Seven you can open and try, and six with source or a walkthrough on request.",
+    title: `All ${projectCounts.total} projects`,
+    body: `${projectCounts.live} you can open and try, and ${projectCounts.rest} with source or a walkthrough on request.`,
   },
   {
     href: "/experience/",

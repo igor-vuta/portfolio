@@ -11,9 +11,11 @@ export const identity = {
     "Available immediately for entry-level software / web developer roles. Full right to work in the UK, no sponsorship required",
   summary:
     "Computer Science graduate with commercial experience building Telegram bots and CRM integrations in Python, and a deployed, benchmarked full-stack platform as a final-year project. I care about clean code, measurable results, and security done properly.",
-  // Compiled from the general CV in the auto repo (pdflatex, one page) and
-  // served from public/. Update both together when the CV changes.
+  // Compiled from the general CVs in the job search repo (pdflatex) and served
+  // from public/. Update these together when the CVs change.
   cv: "/cv/Igor_Vuta_CV.pdf",
+  cvShort: "/cv/Igor_Vuta_CV_1page.pdf",
+  cvRu: "/cv/Igor_Vuta_CV_RU.pdf",
   // The hero's one line. `summary` is the full version; this is what fits in a
   // first viewport alongside the device without pushing the CTA below the fold.
   pitch:
@@ -70,9 +72,56 @@ export type Project = {
   shot?: string;
   /** The same deployment captured on a 390px phone, where it has a phone layout. */
   phone?: string;
+  /** The app forbids framing, so its links open a tab instead of the in-page preview. */
+  noPreview?: boolean;
+  /** Builds a page at /projects/<slug>/ from the fields below. */
+  slug?: string;
+  eyebrow?: string;
+  highlights?: string[];
+  note?: string;
+  /** A page of its own, when it is not generated from `slug`. */
+  detailHref?: string;
+  detailLabel?: string;
 };
 
 export const projects: Project[] = [
+  {
+    name: "Quire",
+    blurb:
+      "Document reader and editor with a cloud collaboration feature: open almost any file, edit PDFs, and work on a shared desk with other people in real time.",
+    stack: ["Tauri 2", "React", "TypeScript", "Playwright", "Oracle Cloud"],
+    liveUrl: "https://app.thequire.app/",
+    shot: "/projects/quire.webp",
+    noPreview: true,
+    slug: "quire",
+    eyebrow: "Main project, co-developed with my younger brother",
+    highlights: [
+      "Opens PDF, Office, EPUB, FB2 and MOBI, images, audio, video and archives in one app",
+      "PDF editor with form filling, compression and true redaction",
+      "Cloud feature: rooms joined by key, real-time co-editing, private document sharing, audio and video calls, and a peer-to-peer mode",
+      "Browser tests on Playwright; hosted on Oracle Cloud",
+    ],
+    note: "Not open source. It runs in the browser, and desktop installers download from the website.",
+  },
+  {
+    name: "DrivePro",
+    blurb:
+      "Navigation-first carpooling for Almaty: plan a walking, cycling or driving route and share a lift with people already going your way.",
+    stack: ["React Native (Expo)", "Node.js", "SQLite", "GitHub Actions", "Claude Code"],
+    liveUrl: "https://app.drivepro.dev/",
+    shot: "/projects/drivepro.webp",
+    phone: "/projects/drivepro-phone.webp",
+    noPreview: true,
+    slug: "drivepro",
+    eyebrow: "Built with Claude Code",
+    highlights: [
+      "Walking, cycling and driving routes, with lifts matched to the driver's route",
+      "Mutual confirmation before contact details are shared",
+      "Expo web build served by a dependency-free Node.js server, with SQLite storage",
+      "GitHub Actions CI/CD: 45 smoke scripts gate every deploy",
+    ],
+    note: "Free between people: nobody pays through the app.",
+  },
   {
     name: "Intelli-Factory",
     blurb:
@@ -82,6 +131,8 @@ export const projects: Project[] = [
     repoUrl: "https://github.com/igor-vuta/intelli-factory",
     shot: "/projects/intelli-factory.webp",
     phone: "/projects/intelli-factory-phone.webp",
+    detailHref: "/intelli-factory/",
+    detailLabel: "Case study",
   },
   {
     name: "Todo Web App",
@@ -89,8 +140,6 @@ export const projects: Project[] = [
       "Full-stack task manager with JWT auth and shared, role-based lists: a PHP 8 REST API over a hand-written MySQL schema, shipped as one container whose CI proves the schema and seeds are idempotent.",
     stack: ["PHP 8", "MySQL 8", "JavaScript (ESM)", "JWT", "Docker", "GitHub Actions"],
     repoUrl: "https://github.com/igor-vuta/todo-webapp-refactored",
-    shot: "/projects/todo.webp",
-    phone: "/projects/todo-phone.webp",
   },
   {
     name: "Vue Folder Tree",
@@ -113,7 +162,7 @@ export const projects: Project[] = [
     phone: "/projects/qubly-phone.webp",
   },
   {
-    name: "Drive Pro",
+    name: "Drive Pro Website",
     blurb:
       "Bilingual Russian/Kazakh website for a family-run heavy-equipment hire company in Almaty, with an equipment catalogue, pricing tables and a WhatsApp call-to-action.",
     stack: ["Next.js 14", "TypeScript", "Tailwind", "next-intl", "GitHub Pages"],
@@ -142,13 +191,6 @@ export const projects: Project[] = [
     shot: "/projects/currency-bot.webp",
   },
   {
-    name: "DrivePro Ride-Hailing App",
-    blurb:
-      "Peer-to-peer rides app: an Expo client over a zero-dependency Node.js backend with a WebSocket hub, live location, route and ETA, and first-accept-wins driver matching.",
-    stack: ["React Native (Expo)", "Node.js (stdlib)", "WebSockets", "SQLite", "Claude Code"],
-    repoUrl: "https://github.com/igor-vuta/DrivePro_2",
-  },
-  {
     name: "Student Course Hub",
     blurb:
       "Course catalogue with a role-gated admin CMS, server-rendered in TypeScript on Deno and Oak, with CSRF protection and bcrypt throughout.",
@@ -167,7 +209,6 @@ export const projects: Project[] = [
     blurb:
       "Turns a folder of documents into a public, searchable archive: a Python service with Jinja-templated pages and a light JavaScript frontend.",
     stack: ["Python", "Jinja", "JavaScript", "CSS"],
-    repoUrl: "https://github.com/igor-vuta/stackroom",
   },
   {
     name: "Table CRM",
@@ -184,7 +225,17 @@ export const projects: Project[] = [
 ];
 
 const intakeSaving =
-  "Cut repetitive manual data entry by 30%, measured by timing device intake before and after rollout";
+  "Moved device intake from paper into the bot, cutting repetitive manual data entry by roughly 30%";
+
+const liveProjects = projects.filter((p) => p.liveUrl && p.shot);
+
+/** Every count the site prints, so the copy cannot drift from the list. */
+export const projectCounts = {
+  total: projects.length,
+  live: liveProjects.length,
+  rest: projects.length - liveProjects.length,
+  publicSource: projects.filter((p) => p.repoUrl).length,
+};
 
 export const experience = [
   {
@@ -194,7 +245,7 @@ export const experience = [
     // The logbook's one headline figure. `source` is the bullet it summarises:
     // the logbook leaves that bullet out beside the figure, and the TL;DR
     // quotes it.
-    metric: { value: "30%", label: "less manual data entry, timed before and after rollout", source: intakeSaving },
+    metric: { value: "~30%", label: "less manual data entry, an estimate", source: intakeSaving },
     points: [
       "Worked in a two-person development team on two Python Telegram bots against the RemOnline CRM, including a staff intake bot with login and a whitelist so only authorised staff could write",
       intakeSaving,
@@ -220,7 +271,7 @@ export const internships = {
       context: "Leading fintech ecosystem in Kazakhstan",
       period: "Jun - Jul 2023",
       point:
-        "First-line technical support for internal users, resolving software and hardware issues to deadline; JIRA ticket hygiene and written troubleshooting documentation.",
+        "First-line technical support for internal users, resolving software and hardware issues to deadline; written troubleshooting documentation.",
     },
     {
       org: "Kazakhfilm",

@@ -46,6 +46,8 @@ export default function Footer() {
             </a>
             <CopyEmail email={identity.email} />
             <DownloadLink href={identity.cv}>Download CV</DownloadLink>
+            <DownloadLink href={identity.cvShort} variant="quiet">Short CV</DownloadLink>
+            <DownloadLink href={identity.cvRu} variant="quiet">Резюме (RU)</DownloadLink>
             <ExternalLink href={identity.github}>GitHub</ExternalLink>
             <ExternalLink href={identity.linkedin}>LinkedIn</ExternalLink>
           </div>

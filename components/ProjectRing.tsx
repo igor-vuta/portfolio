@@ -10,6 +10,7 @@ export type RingProject = {
   shot: string;
   phone?: string;
   liveUrl: string;
+  noPreview?: boolean;
 };
 
 /**
@@ -214,7 +215,7 @@ export default function ProjectRing({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="wheel-card"
-                data-preview=""
+                data-preview={p.noPreview ? undefined : ""}
                 data-preview-label={p.name}
                 // Side cards stay clickable (a click turns the wheel to them)
                 // but out of the tab order; the names below reach them.

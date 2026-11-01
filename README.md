@@ -79,7 +79,7 @@ The dive forks. The home page is the condensed version: one short chapter per to
 |---|---|
 | `/` | The stage, the relay, and a short version of each chapter |
 | `/intelli-factory/` | The case study: algorithm, Pareto front, benchmark, architecture |
-| `/projects/` | All thirteen projects |
+| `/projects/` | All projects, with pages for Quire and DrivePro |
 | `/experience/` | The logbook, certificates, and the skills matrix |
 
 One list in [`lib/routes.ts`](lib/routes.ts) feeds the header, the home relay and every branch's relay. The water, header, contact block and TL;DR live in the layout, so moving between pages reads as moving through one place.

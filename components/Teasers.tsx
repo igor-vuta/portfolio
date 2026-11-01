@@ -3,7 +3,7 @@ import Section from "@/components/ui/Section";
 import { LiveRing } from "@/components/Projects";
 import { Logbook } from "@/components/Credentials";
 import { ExternalLink, PageLink } from "@/components/ui/Control";
-import { flagship } from "@/lib/profile";
+import { flagship, projectCounts } from "@/lib/profile";
 
 /**
  * The home page's chapters, condensed. Each keeps its original section id,
@@ -57,12 +57,12 @@ export function ProjectsTeaser() {
       id="projects"
       eyebrow="Selected work"
       title="Projects"
-      lede="Six more you can open and try, drifting past below. All thirteen, with source, are on their own page."
+      lede={`${projectCounts.live - 1} more you can open and try, drifting past below. All ${projectCounts.total}, with source where it is public, are on their own page.`}
     >
       <LiveRing />
       <Reveal>
         <div className="mt-10">
-          <PageLink href="/projects/">All 13 projects</PageLink>
+          <PageLink href="/projects/">All {projectCounts.total} projects</PageLink>
         </div>
       </Reveal>
     </Section>

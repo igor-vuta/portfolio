@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { ogImage } from "@/lib/seo";
+import { projectCounts } from "@/lib/profile";
 import Projects from "@/components/Projects";
 import Relay from "@/components/Relay";
 
 export const metadata: Metadata = {
   title: "Projects",
   description:
-    "Thirteen projects: seven live and ready to try, from a deployed optimization platform to a Vue component library and a Telegram bot, and six with source or a walkthrough.",
+    `${projectCounts.total} projects: ${projectCounts.live} live and ready to try, from a document app and a carpooling app to a deployed optimization platform, and ${projectCounts.rest} with source or a walkthrough.`,
   alternates: { canonical: "/projects/" },
   openGraph: { url: "/projects/", images: [ogImage] },
 };

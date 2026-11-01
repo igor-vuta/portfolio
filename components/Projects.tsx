@@ -2,14 +2,14 @@ import Reveal from "@/components/Reveal";
 import ProjectRing from "@/components/ProjectRing";
 import Section from "@/components/ui/Section";
 import { ExternalLink, PageLink } from "@/components/ui/Control";
-import { projects, type Project } from "@/lib/profile";
+import { projectCounts, projects, type Project } from "@/lib/profile";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 /**
- * Three rhythms, so the section is not thirteen identical tiles:
+ * Three rhythms, so the section is not a wall of identical tiles:
  *
- *   1. The flagship, full width: capture on one side, story on the other.
+ *   1. The lead project, full width: capture on one side, story on the other.
  *   2. The other live projects, on a wheel the reader turns: each card a
  *      desktop and a phone capture of the deployed site.
  *   3. Source-only work as a ledger: rows on hairlines, not a third grid of
@@ -28,7 +28,7 @@ export default function Projects() {
       id="projects"
       eyebrow="Selected work"
       title="Projects"
-      lede="Thirteen projects, the seven you can open and try listed first. Eleven have public source."
+      lede={`${projectCounts.total} projects, the ${projectCounts.live} you can open and try listed first. ${projectCounts.publicSource} have public source.`}
     >
       {lead && (
         <Reveal>
@@ -44,11 +44,6 @@ export default function Projects() {
               <p className="mt-3 flex-1 text-detail text-fog">{lead.blurb}</p>
               <Stack items={lead.stack} />
               <Links project={lead} />
-              <div className="mt-4">
-                <PageLink href="/intelli-factory/" size="sm" variant="quiet">
-                  Case study
-                </PageLink>
-              </div>
             </div>
           </article>
         </Reveal>
@@ -106,7 +101,7 @@ export function LiveRing({
   return (
     <ProjectRing
       title={title}
-      projects={rest.map((p) => ({ name: p.name, shot: p.shot!, phone: p.phone, liveUrl: p.liveUrl! }))}
+      projects={rest.map((p) => ({ name: p.name, shot: p.shot!, phone: p.phone, liveUrl: p.liveUrl!, noPreview: p.noPreview }))}
       details={rest.map((p) => (
         <article key={p.name} className="wheel-detail-body">
           <h4 className="text-body-lg font-semibold text-ink">{p.name}</h4>
@@ -141,7 +136,7 @@ function Shot({ project }: { project: Project }) {
    rather than a row of loose spans. */
 /* The profile lists each stack most-important first, so a card that has to
    stay short passes max={4}: past four the row became a second paragraph. */
-function Stack({
+export function Stack({
   items,
   max,
   className = "mt-5",
@@ -164,14 +159,26 @@ function Stack({
 }
 
 /** Live and source links for a deployed project's card. */
-function Links({ project: p }: { project: Project }) {
+export function Links({
+  project: p,
+  detail = true,
+}: {
+  project: Project;
+  detail?: boolean;
+}) {
   if (!p.liveUrl) return null;
+  const detailHref = p.detailHref ?? (p.slug && `/projects/${p.slug}/`);
 
   return (
     <div className="mt-6 flex flex-wrap gap-2 border-t border-line pt-5">
-      <ExternalLink href={p.liveUrl} size="sm" preview previewLabel={p.name}>
+      <ExternalLink href={p.liveUrl} size="sm" preview={!p.noPreview} previewLabel={p.name}>
         Live
       </ExternalLink>
+      {detail && detailHref && (
+        <PageLink href={detailHref} size="sm" variant="quiet">
+          {p.detailLabel ?? "Details"}
+        </PageLink>
+      )}
       {p.repoUrl && (
         <ExternalLink href={p.repoUrl} size="sm" variant="quiet">
           Source

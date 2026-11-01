@@ -87,7 +87,9 @@ export default function TlDr() {
         >
           {identity.email}
         </a>
-        <DownloadLink href={identity.cv}>Download CV (PDF, 1 page)</DownloadLink>
+        <DownloadLink href={identity.cv}>Download CV (PDF, 2 pages)</DownloadLink>
+        <DownloadLink href={identity.cvShort} variant="quiet">Short CV (1 page)</DownloadLink>
+        <DownloadLink href={identity.cvRu} variant="quiet">Резюме (RU)</DownloadLink>
         <Link href="/intelli-factory/" className="ctl">
           Read the case study
         </Link>

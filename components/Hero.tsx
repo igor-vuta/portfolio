@@ -111,7 +111,7 @@ export default function Hero() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="stage-card-link"
-                    data-preview=""
+                    data-preview={p.noPreview ? undefined : ""}
                     data-preview-label={p.name}
                   >
                     <span className="stage-card-body">
