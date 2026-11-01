@@ -6,7 +6,7 @@ export const identity = {
   degree: "BSc (Hons) Computer Science, First-Class Honours, De Montfort University, 2026",
   email: "igor.vuta.dev@gmail.com",
   github: "https://github.com/igor-vuta",
-  linkedin: "https://www.linkedin.com/in/igor-vuta-b88017390",
+  linkedin: "https://www.linkedin.com/in/igor-vuta",
   availability:
     "Available immediately for entry-level software / web developer roles. Full right to work in the UK, no sponsorship required",
   summary:

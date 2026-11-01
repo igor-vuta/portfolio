@@ -173,6 +173,6 @@ In [`docs/screenshots/`](docs/screenshots), captured at 1440×900 at 2×. They g
 
 <div align="center">
 
-**[Igor Vuta](https://github.com/igor-vuta)** · [LinkedIn](https://www.linkedin.com/in/igor-vuta-b88017390) · igor.vuta.dev@gmail.com
+**[Igor Vuta](https://github.com/igor-vuta)** · [LinkedIn](https://www.linkedin.com/in/igor-vuta) · igor.vuta.dev@gmail.com
 
 </div>
